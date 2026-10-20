@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="เลือกส่วนอุปกรณ์ สีความหายาก และช่องออฟชั่น ดูว่าช่องนั้นสุ่ม Affix อะไรได้ สรุปสเตตัสรวมทั้งชุด และข้อมูล Region Set (Binder Town)">
+<title>ค้นหาออฟชั่นอุปกรณ์</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: in-game inventory look — paper-doll slot picker + rarity/set on the left, line tabs and affix list on the right; build summary and Region Set table below; stacks on phone. */
+:root{
+  --bg:#e9eef6; --panel:#ffffff; --panel-2:#f3f6fb; --rim:#d3dcea; --ink:#1c2636; --muted:#5f6d84; --accent:#2f62c8; --accent-soft:#e3ecfb;
+  --r-none:#9aa6ba; --r-green:#5b8a3c; --r-blue:#2f6fe0; --r-gold:#d4951c; --r-red:#d23b3b;
+  --r-none-soft:#f3f6fb; --r-green-soft:#e7f1df; --r-blue-soft:#e2ebfd; --r-gold-soft:#fbf0d9; --r-red-soft:#fbe3e3;
+  --k-pre:#2f62c8; --k-suf:#7a4fd0; --k-proc:#c0571b; --k-set:#1f8a7a; --ok:#23883a;
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(20,40,80,.06),0 6px 18px rgba(20,40,80,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --r-none:#55627d; --r-green:#8fcf6a; --r-blue:#78a8ff; --r-gold:#f2bd4e; --r-red:#ff7b7b;
+  --r-none-soft:#0f1930; --r-green-soft:#1d3220; --r-blue-soft:#172a52; --r-gold-soft:#3a2d12; --r-red-soft:#3d1a1d;
+  --k-pre:#8cb8ff; --k-suf:#c4a6ff; --k-proc:#ffa46b; --k-set:#5fd4c0; --ok:#6fdc8c; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --r-none:#55627d; --r-green:#8fcf6a; --r-blue:#78a8ff; --r-gold:#f2bd4e; --r-red:#ff7b7b;
+  --r-none-soft:#0f1930; --r-green-soft:#1d3220; --r-blue-soft:#172a52; --r-gold-soft:#3a2d12; --r-red-soft:#3d1a1d;
+  --k-pre:#8cb8ff; --k-suf:#c4a6ff; --k-proc:#ffa46b; --k-set:#5fd4c0; --ok:#6fdc8c; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 20px}
+header h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1.15;text-wrap:balance}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+header a{color:var(--muted)}
+nav.jump{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+nav.jump a{font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--rim);background:var(--panel);border-radius:999px;padding:2px 10px}
+.lv{margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--rim);border-radius:12px;padding:8px 12px;box-shadow:var(--shadow)}
+.lv label{font-family:var(--display);font-weight:500;font-size:14px;white-space:nowrap}
+.lv input[type=range]{width:150px;accent-color:var(--accent)}
+.lv output{font-variant-numeric:tabular-nums;font-family:var(--display);font-weight:600;min-width:92px}
+.lv small{color:var(--muted);font-weight:400}
+
+.grid{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rim);border-radius:16px;box-shadow:var(--shadow);padding:14px;min-width:0}
+.step{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:500;font-size:14px;color:var(--muted);margin:0 0 10px}
+.step b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--panel);font-size:12px;font-weight:600}
+.left{display:flex;flex-direction:column;gap:14px}
+h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+
+/* paper doll */
+.doll{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:8px}
+.col{display:flex;flex-direction:column;gap:8px}
+.slot{position:relative;width:72px;height:64px;border-radius:12px;border:2.5px solid var(--sc);background:var(--panel-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--display);font-size:12px;line-height:1.1;text-align:center;padding:4px;transition:transform .12s}
+.slot svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.slot:hover{transform:translateY(-1px)}
+.slot.on{background:var(--scs);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--sc)}
+.slot .cnt{position:absolute;top:3px;left:5px;font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sc)}
+.slot .st{position:absolute;top:3px;right:5px;width:9px;height:9px;border-radius:50%;background:var(--k-set)}
+.center{background:var(--panel-2);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.center h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;line-height:1.1}
+.center .en{color:var(--muted);font-size:12px;margin-top:-6px}
+.counts{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.counts div{display:flex;justify-content:space-between;gap:6px;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.warn{font-size:12px;color:var(--muted);border-top:1px dashed var(--rim);padding-top:8px}
+.tog{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.tog input{accent-color:var(--accent)}
+.setsel{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.setsel select{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--rim);border-radius:8px;padding:4px 6px;max-width:100%}
+
+/* rarity */
+.rar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rb{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid var(--rim);border-radius:12px;padding:8px 10px;background:var(--panel-2)}
+.rb .sw{width:26px;height:26px;border-radius:7px;border:3px solid var(--c);background:var(--cs);flex:none}
+.rb strong{display:block;font-family:var(--display);font-weight:600;font-size:15px;line-height:1.1}
+.rb span{font-size:12px;color:var(--muted)}
+.rb.on{border-color:var(--c);background:var(--cs)}
+.rb[disabled]{opacity:.4;cursor:not-allowed}
+.rb.wide{grid-column:1/-1}
+
+/* right side */
+.lines{display:flex;flex-wrap:wrap;gap:8px}
+.lt{border:2px solid var(--rim);border-radius:12px;padding:6px 12px;background:var(--panel-2);text-align:left;min-width:120px;flex:1 1 120px;max-width:240px}
+.lt .n{font-family:var(--display);font-weight:600;font-size:15px}
+.lt .s{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lt.on{border-color:var(--cur);background:var(--cur-soft)}
+.lt .s.pick{color:var(--ink);font-weight:600}
+.combo{font-size:13px;color:var(--muted);margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--panel-2);border:1px solid var(--rim);color:var(--ink);white-space:nowrap}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.tools input[type=search]{flex:1 1 220px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit}
+.btn{border:1px solid var(--rim);border-radius:10px;padding:7px 12px;background:var(--panel-2);font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.empty{padding:16px;text-align:center;color:var(--muted);border:1px dashed var(--rim);border-radius:10px}
+
+.group{margin-top:16px}
+.group h3{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 8px}
+.group h3 .c{font-family:var(--body);font-weight:500;font-size:13px;color:var(--muted)}
+.group h3 i{width:10px;height:10px;border-radius:3px;background:var(--k)}
+.list{display:flex;flex-direction:column;gap:6px}
+.row{border:1px solid var(--rim);border-left:4px solid var(--k);border-radius:10px;background:var(--panel)}
+.row.off{opacity:.45}
+.rh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 10px}
+.rh .nm{font-family:var(--display);font-weight:600;font-size:15px}
+.rh .nm small{font-family:var(--body);font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.rh .fx{grid-column:1/2;font-size:13.5px}
+.v{font-weight:700;font-variant-numeric:tabular-nums;color:var(--k)}
+.boost{font-size:12px;color:var(--muted);margin-left:6px}
+.rh .why{grid-column:1/2;font-size:12px;color:var(--muted)}
+.acts{grid-column:2/3;grid-row:1/4;display:flex;gap:6px;align-items:center}
+.act{border:1px solid var(--rim);border-radius:8px;padding:5px 10px;font-size:13px;background:var(--panel-2);white-space:nowrap}
+.act.pick{border-color:var(--cur)}
+.act.picked{background:var(--cur);border-color:var(--cur);color:var(--panel);font-weight:600}
+.act[disabled]{cursor:not-allowed}
+.tag{font-size:11px;font-weight:600;color:var(--k-proc);border:1px solid currentColor;border-radius:6px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.tiers{padding:0 10px 10px;overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+table.t th,table.t td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--rim);vertical-align:top}
+table.t th{font-weight:600;color:var(--muted);font-size:12px}
+.tiers table{min-width:360px}
+.tiers tr.cur td{background:var(--accent-soft);font-weight:700}
+.tiers tr.lock td{color:var(--muted)}
+
+/* summary */
+.sumhead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.sumgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;margin-top:8px}
+@media (max-width:860px){.sumgrid{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+.stat{min-width:420px}
+.stat td.val{font-weight:700;white-space:nowrap}
+.stat td.src{color:var(--muted);font-size:12px}
+.stat tr.k td:first-child{border-left:3px solid var(--k);padding-left:8px}
+.cap{font-size:11.5px;color:var(--k-proc);font-weight:600;display:block}
+.sets{display:flex;flex-direction:column;gap:8px}
+.sb{border:1px solid var(--rim);border-left:4px solid var(--k-set);border-radius:10px;padding:8px 10px;font-size:13px}
+.sb .h{display:flex;justify-content:space-between;gap:8px;font-family:var(--display);font-weight:600;font-size:15px}
+.sb .h span{font-family:var(--body);font-size:12.5px;color:var(--muted);font-weight:500}
+.sb p{margin:4px 0 0;color:var(--muted)}
+.sb p.on{color:var(--ink)}
+.sb p b{color:var(--k-set)}
+.sb p.on b::after{content:" ✓";color:var(--ok)}
+
+/* set table */
+.region{margin-top:14px}
+.region h3{font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 6px}
+.setT{min-width:640px}
+.setT td:first-child{font-family:var(--display);font-weight:600;white-space:nowrap}
+.setT td.use{white-space:nowrap}
+.mini{border:1px solid var(--rim);border-radius:6px;padding:2px 8px;font-size:12px;background:var(--panel-2)}
+
+.notes{font-size:13.5px;color:var(--muted)}
+.notes h3{font-family:var(--display);font-weight:600;color:var(--ink);font-size:16px;margin:0 0 6px}
+.notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;max-width:900px}
+.notes b{color:var(--ink)}
+@media (max-width:480px){
+  .doll{grid-template-columns:62px minmax(0,1fr) 62px;gap:6px}
+  .slot{width:62px;height:58px;font-size:11px}
+  .lv{margin-left:0;width:100%}
+  .lv input[type=range]{flex:1;width:auto;min-width:0}
+  .acts{grid-column:1/2;grid-row:auto}
+  .rh{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){.slot{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ค้นหาออฟชั่นอุปกรณ์</h1>
+      <p>เลือกส่วน → สี → ช่องที่ → ดูว่าช่องนั้นสุ่ม Affix อะไรได้บ้าง · ข้อมูลจาก <a href="https://wiki.bindertowngame.com/affixes" target="_blank" rel="noopener">Binder Town Wiki</a></p>
+      <nav class="jump"><a href="#summary">สรุปสเตตัสรวม</a><a href="#sets">Region Set ทั้งหมด</a><a href="#rules">กฎที่ควรรู้</a></nav>
+    </div>
+    <div class="lv">
+      <label for="ilv">เลเวลไอเท็ม</label>
+      <input type="range" id="ilv" min="1" max="99" value="92">
+      <output id="ilvOut"></output>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="left">
+      <section class="panel" aria-labelledby="s1">
+        <p class="step" id="s1"><b>1</b>เลือกส่วนอุปกรณ์</p>
+        <div class="doll">
+          <div class="col" id="colL"></div>
+          <div class="center" id="slotInfo"></div>
+          <div class="col" id="colR"></div>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="s2">
+        <p class="step" id="s2"><b>2</b>สีความหายาก</p>
+        <div class="rar" id="rar"></div>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="s3">
+      <p class="step" id="s3"><b>3</b>ออฟชั่นช่องที่</p>
+      <div id="lineArea">
+        <div class="lines" id="lines"></div>
+        <div class="combo" id="combo"></div>
+        <div class="tools">
+          <input type="search" id="q" placeholder="ค้นหา เช่น ATK, คริ, HP, Boss">
+          <button class="btn" id="clr" type="button">ล้างส่วนนี้</button>
+        </div>
+        <p class="hint" id="hint"></p>
+        <div id="out"></div>
+      </div>
+      <div class="empty" id="noLines" hidden>สีปกติ (Normal) ไม่มีแถว Affix — เลือกสีเขียว ฟ้า ทอง หรือแดงเพื่อดูออฟ</div>
+    </section>
+  </div>
+
+  <section class="panel" id="summary" aria-labelledby="sumT">
+    <div class="sumhead">
+      <div><h2 class="sec" id="sumT">สรุปสเตตัสรวมทั้งชุด</h2>
+      <p class="sub" id="sumSub"></p></div>
+      <button class="btn" id="clrAll" type="button">ล้างทั้งชุด</button>
+    </div>
+    <div class="sumgrid">
+      <div class="scroll" id="sumStats"></div>
+      <div><div class="sets" id="sumSets"></div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="sets" aria-labelledby="setT">
+    <h2 class="sec" id="setT">Region Set ทั้งหมด</h2>
+    <p class="sub">12 ชุด (ภูมิภาคละ 3) · ทุกอาชีพใส่ได้ · ใส่ 2 ชิ้น = กติกาเล็ก · 4 ชิ้น = กติกาใหญ่ (กติกาเล็กยังอยู่)</p>
+    <div class="counts" style="max-width:760px;gap:6px">
+      <div><span><b>ส่วนที่เป็นชิ้นชุดได้</b></span><span>มือรอง · เกราะ · สร้อยคอ · เข็มขัด · รองเท้า · เครื่องประดับ (แหวน)</span></div>
+      <div><span><b>ส่วนที่เป็นชุดไม่ได้</b></span><span>อาวุธ · หมวก · หน้า · ปาก</span></div>
+      <div><span><b>ดรอปที่ไหน</b></span><span>เฉพาะในภูมิภาคของชุด · มอนทั่วไป 5% · Elite 15% · Mini-boss 30% ของชิ้นที่ดรอป</span></div>
+      <div><span><b>Affix บนชิ้นชุด</b></span><span>ไม่เกิน 2 แถว (ปกติ / เขียว / ฟ้า)</span></div>
+    </div>
+    <div id="setTable"></div>
+  </section>
+
+  <section class="panel notes" id="rules">
+    <h3>กฎที่ควรรู้</h3>
+    <ul>
+      <li><b>สี = จำนวนแถว</b> เขียว 1 แถว · ฟ้า 2 แถว (Magic) · ทอง 3 แถว (Rare) · แดง 4 แถว มี Proc (Epic). โอกาสตอนดรอป Magic 20% · Rare 4% · Epic 0.08%</li>
+      <li><b>ในชิ้นเดียวกัน</b> มี Prefix ได้สูงสุด 2 แถว และ Suffix สูงสุด 3 แถว (Proc นับเป็น Suffix) · Affix ซ้ำกันในชิ้นเดียวไม่ได้ · แถว Proc Reroll ได้แค่ Proc</li>
+      <li><b>แถวน้อยค่าแรงขึ้น</b> 1 แถว ×1.8 · 2 แถว ×1.35 (Focused) — ค่าที่คูณแล้วแสดงไว้ข้างค่าปกติ และใช้ในสรุปสเตตัสรวม</li>
+      <li><b>Tier ของแถว</b> ปลดตามเลเวลไอเท็ม: T1 Lv 1 · T2 12 · T3 26 · T4 40 · T5 55 · T6 70 · T7 82 · T8 92 · ส่วนใหญ่ออก Tier สูงสุดที่ปลด (25–50%) · ลุ้นเกิน 1 Tier ได้ 3% ตอนดรอป / 1.5% ตอน Reroll</li>
+      <li><b>หมวก หน้า ปาก สร้อยคอ เข็มขัด</b> ได้สี Magic / Rare / Epic ยากกว่าชิ้นอื่น 3 เท่า</li>
+      <li><b>Reroll</b> ที่ช่างตีเหล็ก ทีละแถว (Spirit Coin + Gold) · ใส่ Essence ของ Affix ที่อยากได้ = โอกาส 30% · Proc ชนิดเดียวกันหลายชิ้นทำงาน 100% / 50% / 25%</li>
+      <li><b>สรุปสเตตัสรวม</b> นับเฉพาะ Affix ที่เลือกไว้ ที่ Tier สูงสุดของเลเวลไอเท็มด้านบน (ทุกชิ้นใช้เลเวลเดียวกัน) · ยังไม่รวมค่าพื้นฐานของไอเท็ม ตีบวก การ์ด และสเตตัสตัวละคร</li>
+      <li>วิกิไม่ได้ระบุลำดับแถวในเกม หน้านี้จึงวางแถว Proc ของสีแดงไว้เป็น <b>ช่อง 4</b> · Unique (ดรอป World Boss) มีแถวตายตัว ไม่อยู่ในหน้านี้</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+const TLV=[1,12,26,40,55,70,82,92];
+const SLOTS={
+  hat:{n:'หมวก',en:'Hat',hard:true,icon:'<path d="M4 15c0-5 3.6-9 8-9s8 4 8 9"/><path d="M2.5 15.5h19"/>'},
+  face:{n:'หน้า',en:'Face',hard:true,icon:'<rect x="3" y="8" width="18" height="7" rx="3.5"/><circle cx="8" cy="11.5" r="1.6"/><circle cx="16" cy="11.5" r="1.6"/>'},
+  mouth:{n:'ปาก',en:'Mouth',hard:true,icon:'<path d="M4 11c2.5 4 13.5 4 16 0"/><path d="M4 11h16"/>'},
+  neck:{n:'สร้อยคอ',en:'Necklace',hard:true,set:true,icon:'<path d="M6 4c0 6 2.7 9 6 9s6-3 6-9"/><circle cx="12" cy="16.5" r="2.8"/>'},
+  armor:{n:'เกราะ',en:'Armor',set:true,icon:'<path d="M8 3l4 2 4-2 4 4-3 2v11H7V9L4 7z"/>'},
+  belt:{n:'เข็มขัด',en:'Belt',hard:true,set:true,icon:'<rect x="2.5" y="9" width="19" height="6" rx="1.5"/><rect x="9.5" y="8" width="5" height="8" rx="1"/>'},
+  wpn:{n:'อาวุธ',en:'Weapon',icon:'<path d="M19 4l-9.5 9.5"/><path d="M14 4h5v5"/><path d="M7 13l4 4"/><path d="M5 19l3-3"/>'},
+  off:{n:'มือรอง',en:'Off-hand',set:true,icon:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/>'},
+  acc:{n:'เครื่องประดับ',en:'Accessory',set:true,icon:'<circle cx="12" cy="14" r="5.5"/><path d="M9.5 6.5L12 4l2.5 2.5L12 8.6z"/>'},
+  boots:{n:'รองเท้า',en:'Boots',set:true,icon:'<path d="M7 3h5v10l7 3v4H5V13z"/>'}
+};
+// equipped positions -> slot type
+const POS={hat:'hat',face:'face',mouth:'mouth',neck:'neck',armor:'armor',belt:'belt',wpn:'wpn',off:'off',acc1:'acc',acc2:'acc',boots:'boots'};
+const PNAME=p=>p==='acc1'?'เครื่องประดับ 1':p==='acc2'?'เครื่องประดับ 2':SLOTS[POS[p]].n;
+const LEFT=['hat','face','mouth','neck','armor','belt'], RIGHT=['wpn','off','acc1','acc2','boots'];
+const RAR=[
+  {id:'n',n:'ปกติ',sub:'Normal · ไม่มีแถว',lines:0,mult:1,c:'--r-none'},
+  {id:'g',n:'เขียว',sub:'Magic · 1 แถว',lines:1,mult:1.8,c:'--r-green'},
+  {id:'b',n:'ฟ้า',sub:'Magic · 2 แถว',lines:2,mult:1.35,c:'--r-blue'},
+  {id:'y',n:'ทอง',sub:'Rare · 3 แถว',lines:3,mult:1,c:'--r-gold'},
+  {id:'r',n:'แดง',sub:'Epic · 4 แถว + Proc',lines:4,mult:1,c:'--r-red'}
+];
+const SETS=[
+  ['Harvester','A','เก็บของที่ตกได้ไกลขึ้นอีก 2 ช่อง (ไม่ต้องเดินไปเหยียบ)','ฆ่ามอนครบทุก 20 ตัว → ได้ Rested EXP เท่ามอน 2 ตัว (ไม่เกินเพดาน Rested)'],
+  ['Meadowguard','A','ยืนบนหญ้า / ดิน / มอส → ฟื้น HP 0.6% ต่อวิ แม้ระหว่างต่อสู้','มอนที่เลเวลต่ำกว่าคุณไม่ตีก่อน (Mini-boss / บอสไม่ติด · ตีมันแล้วมันสู้กลับ)'],
+  ['Tinker','A','ทุกครั้งที่ร่ายสกิล มีโอกาส 25% ที่คูลดาวน์สกิลนั้นสั้นลงครึ่งหนึ่ง','ทุก 20 วิ สกิล 2 ครั้งถัดไปได้ MP คืนเต็ม'],
+  ['Emberwake','B','เดินแล้วทิ้งเปลวไฟทุก 1.5 ช่อง: มอนที่ยืนในไฟติดไฟ 15% ของพลังต่อวิ (เปลวไฟอยู่ 3 วิ)','มอนที่ตายบนเปลวไฟของคุณระเบิดใส่มอนรอบ 2 ช่อง 60% ของพลัง'],
+  ['Mirewalker','B','ไม่โดนสโลว์ (Root / Stun / Freeze ยังติด)','สโลว์ที่คุณใส่มอนนานขึ้น ×1.5 และดูด HP มันทุกวิ 10% ของพลังตลอดเวลาที่สโลว์'],
+  ['Duskhunter','B','ตอนกลางคืน มินิแมพเห็นมอนทั้งแมพ','ตอนกลางคืน กติกามอนโหดไม่ทำร้ายคุณ (มอนไม่ตีแรงขึ้น ไม่ถึกขึ้น ไม่เห็นไกลขึ้น) · รางวัลกลางคืนยังได้ครบ'],
+  ['Frostbound','C','ตีธรรมดาโดนมอน → Chill 1 สแตก','Shatter ที่คุณทำ → เกราะ 6% ของ HP ซ้อนได้ถึง 18% (6 วิ)'],
+  ['Stormrider','C','ขี่พาหนะต่อได้ 3 วิ แรกของการต่อสู้ (โดนตี / ตี / ร่ายสกิลไม่ทำให้ลงทันที)','ลงจากพาหนะเพราะเข้าไฟต์ → สายฟ้าฟาดมอนรอบตัว 3 ช่อง 120% ของพลัง'],
+  ['Peakwarden','C','ไม่โดนผลัก / ดึง / กระเด็น (ทั้งมอนและผู้เล่น)','มอนรุมตีคุณตั้งแต่ 2 ตัวขึ้นไป → มอนตีเบาลง 5% ต่อตัวที่เกิน 1 (สูงสุด 25%)'],
+  ['Riftborn','D','Dash กลายเป็น Blink: วาร์ปถึงปลายทางทันที (ระยะเท่าเดิม)','Dash ทิ้งรอยแยกมิติที่จุดเริ่ม 3 วิ: มอนรอบ 2 ช่องโดน 35% ของพลังทุกวิ และสโลว์ 30%'],
+  ['Umbral','D','ยืนในเงา (ติดต้นไม้ / หิน / กำแพง) → การตีโดนแรง ×1.2','ก้าวออกจากเงา → การตีโดนครั้งถัดไปภายใน 3 วิ แรงเท่าคริ'],
+  ['Wardenbreaker','D','ทุกอย่างของคุณเติม Break Bar แรงขึ้น 30%','STAGGER ที่คุณหรือเพื่อนปาร์ตี้ในระยะ 12 ช่องทำ นานขึ้น 1.5 วิ']
+].map(s=>({n:s[0],reg:s[1],p2:s[2],p4:s[3]}));
+const REGION={A:'Region A · Valebrook',B:'Region B · Ashford',C:'Region C · Stormwall City',D:'Region D · Sanctum'};
+const ATK=['wpn','acc','neck'], STAT=['wpn','acc','neck','face','mouth'], DEFS=['armor','boots','belt','off','hat'], WN=['wpn','neck'];
+// [id, kind P/S/T, name, effect with {x}, slots, T1..T5 names (T6-8 derived), 16 values = min,max per tier]
+const A=[
+ ['bossbane','P','ดาเมจใส่ Boss','+{x}% ดาเมจใส่ Boss (ไม่นับ Elite / Mini-boss)',ATK,["Challenger's","Vanquisher's","Kingslayer's","Regicide","Sovereign's"],[4,6,7,10,11,15,16,21,22,28,25,31,28,34,31,37]],
+ ['atk','P','ATK','+{x} ATK',ATK,["Sharp","Honed","Keen","Razor","Slayer's"],[6,9,12,18,21,30,33,42,45,60,54,72,66,87,78,105]],
+ ['matk','P','MATK','+{x} MATK',ATK,["Runed","Glyphed","Arcane","Mystic","Astral"],[6,9,12,18,21,30,33,42,45,60,54,72,66,87,78,105]],
+ ['atkpct','P','ATK%','+{x}% ATK',['wpn'],["Cruel","Savage","Brutal","Merciless","Tyrant's"],[2,4,5,7,8,10,11,14,14,18,16,20,18,22,20,24]],
+ ['matkpct','P','MATK%','+{x}% MATK',['wpn'],["Occult","Hexed","Sorcerer's","Archmage's","Void"],[2,4,5,7,8,10,11,14,14,18,16,20,18,22,20,24]],
+ ['critdmg','P','Crit DMG','+{x}% Crit DMG',STAT,["Deadly","Grievous","Lethal","Vicious","Ruinous"],[2.5,4.5,5,7.5,8,11,11.5,15,15.5,20,17.5,22.5,19.5,25,21.5,27.5]],
+ ['spellamp','P','Spell Amp','+{x}% Spell Amp (ดาเมจสกิลเวท)',ATK,["Humming","Resonant","Amplified","Empowered","Overcharged"],[1,1,1,2,2,3,3,4,4,6,5,7,6,8,7,9]],
+ ['crit','P','CRIT (คริ)','+{x}% CRIT',STAT,["Lucky","Blessed","Charmed","Favored","Fated"],[1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8]],
+ ['aspd','P','สปีดตี','+{x}% สปีดตี',['wpn','acc','face','mouth'],["Quick","Swift","Nimble","Rapid","Blurred"],[2,3,4,5,6,8,8,10,10,13,11,15,12,17,13,19]],
+ ['hit','P','HIT','+{x} HIT',STAT,["Steady","Accurate","True","Unerring","Perfect"],[2,4,5,7,8,11,12,16,17,22,20,26,24,31,29,37]],
+ ['vsdebuff','P','ดาเมจใส่มอนติดสถานะ','+{x}% ดาเมจใส่มอนที่ติดสตัน / ตรึง / สโลว์ / มาร์ก',ATK,["Opportunist's","Hunter's","Hungry","Butcher's","Executioner's"],[5,8,9,12,13,17,18,23,24,30,27,34,30,38,33,42]],
+ ['opener','P','ดาเมจใส่มอนเลือดเต็ม','+{x}% ดาเมจใส่มอนที่เลือดยังเกิน 90%',ATK,["Ambusher's","Stalker's","Pouncing","Assassin's","Phantom"],[8,12,13,18,19,25,26,34,35,45,39,50,43,55,47,60]],
+ ['str','P','STR','+{x} STR',STAT,["Heavy","Mighty","Titanic","Colossal","Godly"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+ ['int','P','INT','+{x} INT',STAT,["Clever","Learned","Sage's","Elder's","Prophetic"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+ ['dex','P','DEX','+{x} DEX',STAT,["Deft","Agile","Skilled","Masterful","Flawless"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+ ['guard','P','DEF','+{x} DEF',DEFS,["Plated","Reinforced","Bulwarked","Fortified","Impregnable"],[6,12,15,24,27,39,42,60,63,84,75,102,90,123,108,147]],
+ ['sturdy','P','Soft DEF','+{x} Soft DEF',DEFS,["Padded","Braced","Sturdy","Stalwart","Unyielding"],[3,6,6,9,9,15,15,21,21,30,24,36,30,42,36,51]],
+ ['evasive','P','FLEE','+{x} FLEE',DEFS,["Fleet","Elusive","Evasive","Slippery","Untouchable"],[2,4,5,7,8,11,12,16,17,22,20,26,24,31,29,37]],
+ ['castspd','P','ร่ายไว','+{x}% ร่ายไว',['face','mouth'],["Chanting","Fluent","Quick-tongued","Rapid-chant","Incanter's"],[2,3,3,4,4,6,6,8,8,10,9,11,10,12,11,13]],
+ ['block','P','Block','+{x}% Block',['face','mouth'],["Parrying","Deflecting","Warding","Guardian's","Aegis-borne"],[1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9]],
+
+ ['hp','S','Max HP','+{x} Max HP',DEFS,["of the Bear","of the Ox","of the Titan","of the Giant","of the Colossus"],[30,60,63,114,117,180,183,270,273,390,327,468,393,561,471,672]],
+ ['hppct','S','Max HP%','+{x}% Max HP',['armor','belt'],["of Vitality","of Life","of Endurance","of Fortitude","of Immortality"],[3,4,5,7,8,10,11,14,15,18,17,20,19,22,21,24]],
+ ['regen','S','HP regen','+{x} HP regen/วิ',DEFS,["of Mending","of Renewal","of the Troll","of the Phoenix","of Eternity"],[3,3,3,6,6,9,9,12,12,18,15,21,18,24,21,30]],
+ ['mp','S','Max MP','+{x} Max MP',['face','mouth'],["of the Sage","of the Owl","of Sorcery","of the Magi","of the Cosmos"],[18,30,33,54,57,84,87,120,123,165,147,198,177,237,213,285]],
+ ['cdr','S','Skill CDR','+{x}% ลดคูลดาวน์สกิล',['acc','neck','face','mouth'],["of Calm","of Clarity","of Wisdom","of Haste","of Time"],[1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9]],
+ ['move','S','สปีดวิ่ง','+{x}% Move speed',['face','mouth'],["of Travel","of Striding","of the Gale","of the Storm","of Lightning"],[3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15]],
+ ['manatide','S','Mana Tide','MP ที่ใช้กับสกิลเวท {x}% กลับเป็น HP (สูงสุด 7% ของ HP สูงสุด/วิ · ไม่มีผลตอนสู้ผู้เล่น)',['wpn','acc'],["of the Ebb","of the Tide","of the Wellspring","of the Lifeblood","of the Font"],[20,30,35,45,55,70,75,95,100,130,112,146,124,162,136,178],'magicOnlyWpn'],
+ ['mending','S','Heal power','+{x} Heal power',['neck','armor','face','mouth'],["of Care","of Mending","of Solace","of Grace","of Benediction"],[30,48,54,84,90,132,138,192,198,270,237,324,285,390,342,468]],
+ ['leech','S','ดูดเลือด','+{x}% Lifesteal (กายภาพ)',['wpn','acc'],["of Leeching","of the Tick","of the Bat","of the Vampire","of the Night Lord"],[1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,7]],
+ ['bossres','S','Boss Resist','+{x}% Boss Resist (โดนดาเมจจาก Boss / Mini-boss น้อยลง)',['armor','off','belt'],["of the Rampart","of the Bastion","of the Citadel","of the Aegis","of the Unbroken"],[1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9]],
+ ['desperate','S','ดาเมจตอนเลือดต่ำ','+{x}% ดาเมจตอนเลือดคุณต่ำกว่า 35% (รวมทุกชิ้นสูงสุด 75%)',ATK,["of Grit","of Defiance","of Despair","of the Last Stand","of the Undying"],[8,12,13,18,19,25,26,34,35,45,39,50,43,55,47,60],'cap75'],
+ ['vit','S','VIT','+{x} VIT',DEFS,["of the Boar","of Stone","of the Ox Heart","of the Behemoth","of the World Tree"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+ ['agi','S','AGI','+{x} AGI',DEFS.concat(['face','mouth']),["of the Hare","of the Cat","of the Hawk","of the Falcon","of the Wind God"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+ ['luk','S','LUK','+{x} LUK',STAT,["of Clover","of Fortune","of the Gambler","of Fate","of the Jackpot"],[1,2,2,3,3,5,5,7,7,10,8,12,10,14,12,17]],
+
+ ['p_chain','T','Chain Spark','โอกาส 10% เมื่อตีโดน → ประกายไฟเชนใส่มอนข้างๆ สูงสุด 3 เด้ง ดาเมจเวท {x}% ของฮิตนั้น (×0.6 ต่อเด้ง) · ติดซ้ำทุก 0.6 วิ',WN,["of Sparks","of Lightning","of Storms","of Thunder","of the Tempest"],[30,40,41,50,51,62,63,75,76,90,85,101,94,112,103,123]],
+ ['p_bleed','T','Rend','โอกาส 35% เมื่อคริ → เลือดไหล ดาเมจกายภาพรวม {x}% ของฮิตคริ ภายใน 3 วิ · ติดซ้ำทุก 0.3 วิ',WN,["of Wounds","of Rending","of Tearing","of Carnage","of the Slaughter"],[20,30,31,42,43,55,56,70,71,90,80,101,89,112,98,123]],
+ ['p_frost','T','Frostbite','โอกาส 8% เมื่อตีโดน → สโลว์เป้า {x}% นาน 2 วิ · ติดซ้ำทุก 0.8 วิ',WN,["of Chill","of Frost","of Rime","of Winter","of the Glacier"],[20,25,26,32,33,40,41,48,49,55,55,62,61,69,67,76]],
+ ['p_siphon','T','Siphon','ฆ่ามอน → เติม MP {x}',WN,["of Draining","of Sapping","of Soul Eating","of the Lich","of Oblivion"],[6,9,12,15,18,24,27,36,39,48,48,57,57,69,69,84]],
+ ['p_vigor','T','Vigor','ฆ่ามอน → ฮีล {x} HP',WN,["of Feasting","of Vigor","of the Wolf","of the Wendigo","of the Devourer"],[12,18,21,30,33,45,48,66,69,90,84,108,102,129,123,156]],
+ ['p_expose','T','Sunder','โอกาส 8% เมื่อตีโดน → เป้าโดนดาเมจแรงขึ้น {x}% นาน 4 วิ · ติดซ้ำทุก 4 วิ',WN,["of Weakness","of Exposure","of Sundering","of the Breach","of the Breaker"],[3,4,5,6,7,8,9,10,11,13,12,15,13,17,14,19]],
+ ['p_echo','T','Echo Strike','โอกาส 12% เมื่อตีโดน → ตีซ้ำอีกครั้ง {x}% ของดาเมจฮิตนั้น · ติดซ้ำทุก 0.7 วิ',WN,["of Echoes","of Repeating","of Resonance","of Reverberation","of the Twin Strike"],[10,14,15,19,20,25,26,32,33,40,37,45,41,50,45,55]],
+ ['p_nova','T','Death Burst','ฆ่ามอน → ระเบิดรอบศพ (รัศมี 3 ช่อง สูงสุด 5 ตัว) {x}% ของ HP สูงสุดของมอนที่ตาย · ติดซ้ำทุก 1 วิ',WN,["of Embers","of Bursting","of Detonation","of the Blast","of the Cataclysm"],[1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8]],
+ ['p_haste','T','Frenzy','โอกาส 30% เมื่อคริ → สปีดตี +{x}% นาน 5 วิ · ติดซ้ำทุก 8 วิ',WN,["of Fervor","of Frenzy","of Fury","of the Rush","of the Whirlwind"],[5,7,8,10,11,13,14,16,17,20,19,22,21,24,23,26]],
+ ['p_bulwark','T','Bulwark','โอกาส 12% เมื่อโดนดาเมจ → ลดดาเมจที่ได้รับ {x}% นาน 4 วิ · ติดซ้ำทุก 4 วิ',DEFS,["of Bracing","of the Shield","of the Bulwark","of the Fortress","of the Aegis"],[10,14,15,19,20,25,26,32,33,40,37,45,41,50,45,55]],
+ ['p_thorns','T','Thorns','โดนมอนตี → สะท้อน {x}% ของดาเมจที่โดนกลับใส่มอนตัวนั้น · ติดซ้ำทุก 0.25 วิ',DEFS,["of Thorns","of Briars","of Spikes","of Barbs","of the Bramble Wall"],[8,12,13,18,19,25,26,32,33,40,37,45,41,50,45,55]],
+ ['p_renew','T','Second Wind','โอกาส 10% เมื่อโดนดาเมจ → ฮีล {x}% ของ HP สูงสุด · ติดซ้ำทุก 6 วิ',DEFS,["of Recovery","of Second Wind","of Resilience","of Regrowth","of the Undaunted"],[1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8]],
+ ['p_gust','T','Slipstream','โอกาส 15% เมื่อโดนดาเมจ → สปีดวิ่ง +{x}% นาน 3 วิ · ติดซ้ำทุก 8 วิ',DEFS,["of Flight","of Escape","of the Breeze","of the Gale Step","of the Slipstream"],[8,10,11,14,15,18,19,22,23,28,26,31,29,34,32,37]],
+ ['p_barrier','T','Lifeline','โดนดาเมจขณะ HP < 40% → ฮีล {x}% ของ HP สูงสุด · ติดซ้ำทุก 45 วิ',DEFS,["of Last Hope","of Salvation","of the Lifeline","of the Rescue","of the Last Stand"],[6,8,9,12,13,16,17,21,22,26,25,29,28,32,31,35]]
+];
+const KIND={P:{n:'Prefix',k:'--k-pre'},S:{n:'Suffix',k:'--k-suf'},T:{n:'Proc (Trigger)',k:'--k-proc'}};
+function tierNames(t5){const out=[];const m=t5.match(/^(of the |of )?(.*)$/);for(const p of ['Ancient','Mythic','Eternal'])out.push(m[1]?('of '+p+' '+m[2]):(p+' '+m[2]));return out}
+const AFX=A.map(a=>({id:a[0],k:a[1],n:a[2],fx:a[3],sl:a[4],names:a[5].concat(tierNames(a[5][4])),v:a[6],flag:a[7]}));
+const BY=Object.fromEntries(AFX.map(a=>[a.id,a]));
+
+const blank=()=>({rar:'n',picks:{},set:''});
+const st={pos:'wpn',line:0,build:{},magicWpn:true,q:'',ilv:92,open:{}};
+for(const p in POS)st.build[p]=blank();
+st.build.wpn.rar='r';
+try{const s=JSON.parse(localStorage.getItem('affixFinder2')||'{}');
+  for(const k of ['pos','ilv','magicWpn'])if(s[k]!==undefined)st[k]=s[k];
+  if(s.build)for(const p in POS)if(s.build[p]){const b=s.build[p];st.build[p]={rar:RAR.some(r=>r.id===b.rar)?b.rar:'n',picks:Object.fromEntries(Object.entries(b.picks||{}).filter(([,id])=>BY[id])),set:SETS.some(x=>x.n===b.set)?b.set:''}}
+  if(!POS[st.pos])st.pos='wpn';
+}catch(e){}
+function save(){try{localStorage.setItem('affixFinder2',JSON.stringify({pos:st.pos,ilv:st.ilv,magicWpn:st.magicWpn,build:st.build}))}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cur=()=>st.build[st.pos];
+const slotType=()=>POS[st.pos];
+const rarOf=b=>RAR.find(r=>r.id===b.rar);
+const rar=()=>rarOf(cur());
+const maxT=()=>{let t=0;TLV.forEach((l,i)=>{if(st.ilv>=l)t=i});return t};
+const r1=x=>Math.round(x*10)/10;
+const range=(a,b)=>a===b?String(r1(a)):r1(a)+'–'+r1(b);
+const fill=(fx,txt)=>fx.replace('{x}','<span class="v">'+txt+'</span>');
+function setCur(){const r=rar();const s=document.documentElement.style;s.setProperty('--cur','var('+r.c+')');s.setProperty('--cur-soft','var('+r.c+'-soft)')}
+
+function poolFor(slot){return AFX.filter(a=>a.sl.includes(slot)&&!(a.flag==='magicOnlyWpn'&&slot==='wpn'&&!st.magicWpn))}
+function isProcLine(i){return cur().rar==='r'&&i===3}
+function check(a,i){
+  const picks=cur().picks;
+  const others=Object.entries(picks).filter(([l])=>+l!==i).map(([l,id])=>[+l,BY[id]]);
+  const dup=others.find(([,b])=>b.id===a.id);
+  if(dup)return 'ใช้แล้วในช่อง '+(dup[0]+1)+' (Affix ซ้ำในชิ้นเดียวกันไม่ได้)';
+  if(a.k==='P'&&others.filter(([,b])=>b.k==='P').length>=2)return 'Prefix เต็มแล้ว (สูงสุด 2 แถวต่อชิ้น)';
+  if(a.k!=='P'){
+    let s=others.filter(([,b])=>b.k!=='P').length;
+    if(cur().rar==='r'&&i!==3&&!picks[3])s+=1; // the Proc line always takes one Suffix spot
+    if(s>=3)return 'Suffix เต็มแล้ว (สูงสุด 3 แถวต่อชิ้น รวม Proc)';
+  }
+  return '';
+}
+
+function renderDoll(){
+  const btn=p=>{const s=SLOTS[POS[p]],b=st.build[p],r=rarOf(b),n=Object.keys(b.picks).length;
+    return '<button type="button" class="slot'+(st.pos===p?' on':'')+'" data-pos="'+p+'" aria-pressed="'+(st.pos===p)+'" title="'+PNAME(p)+(b.set?' · Set '+b.set:'')+'" style="--sc:var('+(r.lines?r.c:'--rim')+');--scs:var('+r.c+'-soft)">'+
+      (r.lines?'<span class="cnt">'+n+'/'+r.lines+'</span>':'')+(b.set?'<i class="st"></i>':'')+
+      '<svg viewBox="0 0 24 24" aria-hidden="true">'+s.icon+'</svg>'+(p==='acc1'?'ประดับ 1':p==='acc2'?'ประดับ 2':s.n)+'</button>'};
+  $('colL').innerHTML=LEFT.map(btn).join('');
+  $('colR').innerHTML=RIGHT.map(btn).join('');
+  const s=SLOTS[slotType()], pool=poolFor(slotType()), b=cur();
+  const c={P:0,S:0,T:0};pool.forEach(a=>c[a.k]++);
+  $('slotInfo').innerHTML='<h2>'+PNAME(st.pos)+'</h2><div class="en">'+s.en+' · ออฟทั้งหมด '+pool.length+' แบบ</div>'+
+    '<div class="counts">'+['P','S','T'].map(k=>'<div><span><i class="dot" style="background:var('+KIND[k].k+')"></i>'+KIND[k].n+'</span><b>'+c[k]+'</b></div>').join('')+'</div>'+
+    (slotType()==='wpn'?'<label class="tog"><input type="checkbox" id="mw"'+(st.magicWpn?' checked':'')+'> อาวุธเวท (มี Mana Tide)</label>':'')+
+    (s.set?'<label class="setsel">Region Set ของชิ้นนี้<select id="setSel"><option value="">ไม่ใช่ชิ้นชุด</option>'+['A','B','C','D'].map(g=>'<optgroup label="'+REGION[g]+'">'+SETS.filter(x=>x.reg===g).map(x=>'<option'+(b.set===x.n?' selected':'')+'>'+x.n+'</option>').join('')+'</optgroup>').join('')+'</select></label>':'')+
+    '<div class="warn">'+(s.hard?'ชิ้นนี้ได้สี Magic / Rare / Epic ยากกว่าปกติ 3 เท่า':(slotType()==='acc'?'ใส่ได้ 2 ชิ้น ออฟเหมือนกันทั้งคู่':'โอกาสได้สีตามปกติ'))+(c.T?'':' · ไม่มี Proc ให้สุ่ม แดงจึงไม่มีแถว Proc')+(s.set?'':' · ส่วนนี้เป็นชิ้นชุดไม่ได้')+'</div>';
+}
+function renderRar(){
+  const b=cur();
+  $('rar').innerHTML=RAR.map(r=>{const lock=b.set&&r.lines>2;return '<button type="button" class="rb'+(r.id==='n'?' wide':'')+(b.rar===r.id?' on':'')+'" data-rar="'+r.id+'" aria-pressed="'+(b.rar===r.id)+'"'+(lock?' disabled title="ชิ้นชุดมี Affix ได้ไม่เกิน 2 แถว"':'')+' style="--c:var('+r.c+');--cs:var('+r.c+'-soft)"><i class="sw"></i><div><strong>'+r.n+'</strong><span>'+r.sub+(r.mult>1?' · ค่า ×'+r.mult:'')+(lock?' · ชิ้นชุดใช้ไม่ได้':'')+'</span></div></button>'}).join('');
+}
+function renderLines(){
+  const r=rar(), b=cur();
+  $('lineArea').hidden=!r.lines; $('noLines').hidden=!!r.lines;
+  if(!r.lines)return;
+  let h='';
+  for(let i=0;i<r.lines;i++){
+    const p=b.picks[i]?BY[b.picks[i]]:null;
+    h+='<button type="button" class="lt'+(st.line===i?' on':'')+'" data-line="'+i+'" aria-pressed="'+(st.line===i)+'"><span class="n">ช่อง '+(i+1)+'</span><span class="s'+(p?' pick':'')+'">'+(p?esc(p.n):(isProcLine(i)?'Proc เท่านั้น':'Prefix / Suffix'))+'</span></button>';
+  }
+  $('lines').innerHTML=h;
+  const combos={g:['P','S'],b:['2P','P+S','2S'],y:['2P+S','P+2S','3S'],r:['2P+S+Proc','P+2S+Proc']}[r.id];
+  const nm=x=>x.replace(/(\d?)P(?!roc)/g,(m,n)=>(n||'1')+' Prefix').replace(/(\d?)S/g,(m,n)=>(n||'1')+' Suffix').replace(/\+/g,' + ');
+  $('combo').innerHTML='<span>รูปแบบแถวที่เป็นไปได้:</span>'+combos.map(c=>'<span class="pill">'+nm(c)+'</span>').join('');
+}
+function row(a,i,t,m){
+  const why=check(a,i), picked=cur().picks[i]===a.id, open=st.open[a.id];
+  const nx=Math.min(t+1,7);
+  let h='<div class="row'+(why&&!picked?' off':'')+'" style="--k:var('+KIND[a.k].k+')"><div class="rh">'+
+    '<div class="nm">'+esc(a.n)+(a.flag==='magicOnlyWpn'&&slotType()==='wpn'?'<span class="tag">อาวุธเวทเท่านั้น</span>':'')+'<small>'+esc(a.names[0])+' → '+esc(a.names[7])+'</small></div>'+
+    '<div class="fx">T'+(t+1)+': '+fill(a.fx,range(a.v[t*2],a.v[t*2+1]))+(m>1?'<span class="boost">×'+m+' = '+range(a.v[t*2]*m,a.v[t*2+1]*m)+'</span>':'')+(nx>t?'<span class="boost">ลุ้น T'+(nx+1)+': '+range(a.v[nx*2],a.v[nx*2+1])+'</span>':'')+'</div>'+
+    (why&&!picked?'<div class="why">'+why+'</div>':'')+
+    '<div class="acts"><button type="button" class="act" data-open="'+a.id+'" aria-expanded="'+!!open+'">'+(open?'ซ่อน Tier':'ดู Tier')+'</button>'+
+    '<button type="button" class="act '+(picked?'picked':'pick')+'" data-pick="'+a.id+'"'+(why&&!picked?' disabled':'')+'>'+(picked?'เลือกแล้ว':'ใส่ช่อง '+(i+1))+'</button></div></div>';
+  if(open){
+    h+='<div class="tiers"><table class="t"><thead><tr><th>Tier</th><th>ชื่อ</th><th>Item Lv</th><th>ค่า</th>'+(m>1?'<th>×'+m+'</th>':'')+'</tr></thead><tbody>'+
+      a.names.map((n,k)=>'<tr class="'+(k===t?'cur':(k>t+1?'lock':''))+'"><td>T'+(k+1)+'</td><td>'+esc(n)+'</td><td>'+TLV[k]+'</td><td>'+range(a.v[k*2],a.v[k*2+1])+'</td>'+(m>1?'<td>'+range(a.v[k*2]*m,a.v[k*2+1]*m)+'</td>':'')+'</tr>').join('')+
+      '</tbody></table></div>';
+  }
+  return h+'</div>';
+}
+function renderList(){
+  const r=rar(), i=st.line, t=maxT();
+  if(!r.lines)return;
+  const q=st.q.trim().toLowerCase();
+  let pool=poolFor(slotType()).filter(a=>isProcLine(i)?a.k==='T':a.k!=='T');
+  if(q)pool=pool.filter(a=>(a.n+' '+a.fx+' '+a.names.join(' ')+' '+a.id).toLowerCase().includes(q));
+  const ok=pool.filter(a=>!check(a,i)||cur().picks[i]===a.id).length;
+  $('hint').textContent='ช่อง '+(i+1)+' ของ'+PNAME(st.pos)+'สี'+r.n+': สุ่มได้ '+ok+' แบบ'+(Object.keys(cur().picks).length?' (คิดจากแถวอื่นที่เลือกไว้)':'')+' · ค่าที่ T'+(t+1)+' ตามเลเวลไอเท็ม '+st.ilv;
+  if(!pool.length){$('out').innerHTML='<div class="empty">'+(isProcLine(i)?'ส่วนนี้ไม่มี Proc ให้สุ่ม':'ไม่พบ Affix ที่ตรงกับคำค้น')+'</div>';return}
+  let h='';
+  for(const k of ['P','S','T']){
+    const g=pool.filter(a=>a.k===k);if(!g.length)continue;
+    h+='<div class="group" style="--k:var('+KIND[k].k+')"><h3><i></i>'+KIND[k].n+'<span class="c">'+g.length+' แบบ</span></h3><div class="list">'+g.map(a=>row(a,i,t,r.mult)).join('')+'</div></div>';
+  }
+  $('out').innerHTML=h;
+}
+
+function renderSummary(){
+  const t=maxT();
+  const stats={}, procs={}, sets={};
+  let lines=0, pieces=0;
+  for(const p in POS){
+    const b=st.build[p], r=rarOf(b);
+    if(b.set)(sets[b.set]=sets[b.set]||[]).push(p);
+    const ps=Object.values(b.picks);
+    if(ps.length)pieces++;
+    for(const id of ps){
+      const a=BY[id];lines++;
+      const lo=a.v[t*2]*r.mult, hi=a.v[t*2+1]*r.mult;
+      if(a.k==='T'){(procs[id]=procs[id]||[]).push({p,lo,hi})}
+      else{const g=stats[a.fx]=stats[a.fx]||{a,lo:0,hi:0,src:[]};g.lo+=lo;g.hi+=hi;g.src.push(PNAME(p)+(r.mult>1?' ×'+r.mult:''))}
+    }
+  }
+  $('sumSub').textContent=lines?('Affix ที่เลือก '+lines+' แถว จาก '+pieces+' ชิ้น · ค่าที่ T'+(t+1)+' (เลเวลไอเท็ม '+st.ilv+') รวมตัวคูณ Focused แล้ว'):'ยังไม่ได้เลือก Affix — เลือกส่วน สี แล้วกด "ใส่ช่อง" ระบบจะรวมค่าให้ที่นี่';
+  const order=AFX.map(a=>a.fx);
+  const rows=Object.values(stats).sort((x,y)=>order.indexOf(x.a.fx)-order.indexOf(y.a.fx));
+  let h='';
+  if(rows.length||Object.keys(procs).length){
+    h='<table class="t stat"><thead><tr><th>สเตตัส</th><th>รวม</th><th>มาจาก</th></tr></thead><tbody>';
+    for(const g of rows){
+      let cap='';
+      if(g.a.flag==='cap75'&&g.hi>75)cap='<span class="cap">ติดเพดานรวม 75%</span>';
+      h+='<tr class="k" style="--k:var('+KIND[g.a.k].k+')"><td>'+esc(g.a.n)+'</td><td class="val">'+fill(g.a.fx.split(' (')[0],range(g.lo,g.a.flag==='cap75'?Math.min(g.hi,75):g.hi))+cap+'</td><td class="src">'+g.src.join(', ')+'</td></tr>';
+    }
+    for(const id in procs){
+      const a=BY[id], list=procs[id].sort((x,y)=>y.hi-x.hi), w=[1,.5,.25];
+      let lo=0,hi=0;list.forEach((x,k)=>{lo+=x.lo*(w[k]||0);hi+=x.hi*(w[k]||0)});
+      h+='<tr class="k" style="--k:var(--k-proc)"><td>'+esc(a.n)+' <span class="tag">Proc</span></td><td class="val">'+range(lo,hi)+(list.length>1?'<span class="cap">'+list.length+' ชิ้น นับ 100/50/25%</span>':'')+'</td><td class="src">'+list.map(x=>PNAME(x.p)).join(', ')+'<br>'+esc(a.fx.replace('{x}','X'))+'</td></tr>';
+    }
+    h+='</tbody></table>';
+  }else h='<div class="empty">ยังไม่มีสเตตัสจาก Affix</div>';
+  $('sumStats').innerHTML=h;
+  const names=Object.keys(sets);
+  $('sumSets').innerHTML='<h3 style="font-family:var(--display);font-weight:600;font-size:16px;margin:0">โบนัส Region Set</h3>'+(names.length?names.map(n=>{const s=SETS.find(x=>x.n===n),c=sets[n].length;
+    return '<div class="sb"><div class="h">'+n+'<span>'+REGION[s.reg].split(' · ')[1]+' · ใส่อยู่ '+c+'/4</span></div><p class="'+(c>=2?'on':'')+'"><b>2 ชิ้น</b> '+esc(s.p2)+'</p><p class="'+(c>=4?'on':'')+'"><b>4 ชิ้น</b> '+esc(s.p4)+'</p><p>'+sets[n].map(PNAME).join(' · ')+'</p></div>'}).join(''):'<div class="empty">ยังไม่ได้ใส่ชิ้นชุด — เลือกส่วนที่เป็นชุดได้ (มือรอง เกราะ สร้อยคอ เข็มขัด รองเท้า เครื่องประดับ) แล้วเลือก Region Set</div>');
+}
+function renderSetTable(){
+  let h='';
+  for(const g of ['A','B','C','D']){
+    h+='<div class="region"><h3>'+REGION[g]+'</h3><div class="scroll"><table class="t setT"><thead><tr><th>ชุด</th><th>ใส่ 2 ชิ้น</th><th>ใส่ 4 ชิ้น</th><th></th></tr></thead><tbody>'+
+      SETS.filter(s=>s.reg===g).map(s=>'<tr><td>'+s.n+'</td><td>'+esc(s.p2)+'</td><td>'+esc(s.p4)+'</td><td class="use"><button type="button" class="mini" data-useset="'+s.n+'">ใส่ชิ้นนี้</button></td></tr>').join('')+
+      '</tbody></table></div></div>';
+  }
+  $('setTable').innerHTML=h;
+}
+function renderLv(){const t=maxT();$('ilvOut').innerHTML='Lv '+st.ilv+' <small>· T'+(t+1)+'</small>';$('ilv').value=st.ilv}
+function render(){setCur();renderLv();renderDoll();renderRar();renderLines();renderList();renderSummary();save()}
+function trimPicks(b){const n=rarOf(b).lines;for(const l in b.picks)if(+l>=n)delete b.picks[l]}
+
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('button');if(!btn)return;
+  const b=cur();
+  if(btn.dataset.pos){if(st.pos!==btn.dataset.pos){st.pos=btn.dataset.pos;st.line=0}render()}
+  else if(btn.dataset.rar){const was=b.rar;b.rar=btn.dataset.rar;if((was==='r')!==(b.rar==='r'))delete b.picks[3];trimPicks(b);if(st.line>=rar().lines)st.line=0;render()}
+  else if(btn.dataset.line){st.line=+btn.dataset.line;renderLines();renderList()}
+  else if(btn.dataset.open){st.open[btn.dataset.open]=!st.open[btn.dataset.open];renderList()}
+  else if(btn.dataset.pick){const id=btn.dataset.pick;if(b.picks[st.line]===id)delete b.picks[st.line];else{b.picks[st.line]=id;const n=rar().lines;for(let j=1;j<=n;j++){const nl=(st.line+j)%n;if(!b.picks[nl]){st.line=nl;break}}}render()}
+  else if(btn.dataset.useset){
+    if(!SLOTS[slotType()].set){const p=['armor','off','neck','belt','boots','acc1','acc2'].find(x=>!st.build[x].set)||'armor';st.pos=p;st.line=0}
+    setSet(btn.dataset.useset);document.getElementById('s1').scrollIntoView({behavior:'smooth',block:'start'})}
+  else if(btn.id==='clr'){b.picks={};st.line=0;render()}
+  else if(btn.id==='clrAll'){for(const p in POS)st.build[p]=blank();st.line=0;render()}
+});
+function setSet(n){const b=cur();b.set=n;if(n&&rarOf(b).lines>2){b.rar='b';trimPicks(b);if(st.line>=2)st.line=0}render()}
+document.addEventListener('change',e=>{
+  if(e.target.id==='mw'){st.magicWpn=e.target.checked;if(!st.magicWpn)for(const l in st.build.wpn.picks)if(st.build.wpn.picks[l]==='manatide')delete st.build.wpn.picks[l];render()}
+  else if(e.target.id==='setSel')setSet(e.target.value);
+});
+$('ilv').addEventListener('input',e=>{st.ilv=+e.target.value;renderLv();renderList();renderSummary();save()});
+$('q').addEventListener('input',e=>{st.q=e.target.value;renderList()});
+renderSetTable();
+render();
+})();
+</script>
+</body>
+</html>
