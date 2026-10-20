@@ -171,9 +171,15 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
   .rh{grid-template-columns:minmax(0,1fr)}
 }
 @media (prefers-reduced-motion:reduce){.slot{transition:none}}
+.sitenav{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:var(--panel);border:1px solid var(--rim);border-radius:14px;padding:6px;box-shadow:var(--shadow)}
+.sitenav .brand{font-family:var(--display);font-weight:600;font-size:14px;color:var(--muted);padding:0 10px 0 8px}
+.sitenav a{font-family:var(--display);font-weight:500;font-size:14px;color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:10px}
+.sitenav a:hover{background:var(--panel-2)}
+.sitenav a[aria-current]{background:var(--accent);color:var(--panel)}
 </style>
 </head>
 <body>
+<nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="index.html" aria-current="page">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html">Skill Tree · Scout</a></nav>
 <div class="wrap">
   <header>
     <div>
