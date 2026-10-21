@@ -176,11 +176,20 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
 .si .bt{display:flex;gap:6px;flex-wrap:wrap}
 .si .bt button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel)}
 .si .bt button.arm{background:var(--r-red);border-color:var(--r-red);color:var(--panel)}
+.hbtns{display:flex;gap:8px;align-items:center}
+.hbtns .btn{padding:10px 14px;font-family:var(--display);font-weight:500;font-size:14px;box-shadow:var(--shadow)}
+.hbtns .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;text-align:center}
+.hbtns .cnt:empty{display:none}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--ink);color:var(--panel);border-radius:12px;padding:9px 16px;font-size:14px;max-width:calc(100% - 32px);transition:opacity .2s,transform .2s;z-index:10}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
 .notes{font-size:13.5px;color:var(--muted)}
 .notes h3{font-family:var(--display);font-weight:600;color:var(--ink);font-size:16px;margin:0 0 6px}
 .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;max-width:900px}
 .notes b{color:var(--ink)}
 @media (max-width:480px){
+  .hbtns{width:100%}
+  .hbtns .btn{flex:1}
   .doll{grid-template-columns:62px minmax(0,1fr) 62px;gap:6px}
   .slot{width:62px;height:58px;font-size:11px}
   .lv{margin-left:0;width:100%}
@@ -210,6 +219,10 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
       <label for="ilv">เลเวลไอเท็ม</label>
       <input type="range" id="ilv" min="1" max="99" value="92">
       <output id="ilvOut"></output>
+    </div>
+    <div class="hbtns">
+      <button class="btn" type="button" id="hSave">บันทึกชุด<span class="cnt" id="saveCount"></span></button>
+      <button class="btn pri" type="button" id="hShare">แชร์ชุดนี้</button>
     </div>
   </header>
 
@@ -245,18 +258,6 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
     </section>
   </div>
 
-  <section class="panel" id="summary" aria-labelledby="sumT">
-    <div class="sumhead">
-      <div><h2 class="sec" id="sumT">สรุปสเตตัสรวมทั้งชุด</h2>
-      <p class="sub" id="sumSub"></p></div>
-      <button class="btn" id="clrAll" type="button">ล้างทั้งชุด</button>
-    </div>
-    <div class="sumgrid">
-      <div class="scroll" id="sumStats"></div>
-      <div><div class="sets" id="sumSets"></div></div>
-    </div>
-  </section>
-
   <section class="panel" id="saves" aria-labelledby="savT">
     <h2 class="sec" id="savT">ชุดที่บันทึกไว้</h2>
     <p class="sub">บันทึกเก็บในเครื่องนี้เท่านั้น — แต่ละเครื่อง / เบราว์เซอร์แยกกัน · กด "แชร์" แล้วส่งลิงก์ให้เพื่อนเปิดดูได้ เพื่อนจะเห็นชุดนี้โดยไม่ทับชุดของเขา</p>
@@ -267,6 +268,18 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
     </form>
     <div id="shareOut"></div>
     <div id="saveList"></div>
+  </section>
+
+  <section class="panel" id="summary" aria-labelledby="sumT">
+    <div class="sumhead">
+      <div><h2 class="sec" id="sumT">สรุปสเตตัสรวมทั้งชุด</h2>
+      <p class="sub" id="sumSub"></p></div>
+      <button class="btn" id="clrAll" type="button">ล้างทั้งชุด</button>
+    </div>
+    <div class="sumgrid">
+      <div class="scroll" id="sumStats"></div>
+      <div><div class="sets" id="sumSets"></div></div>
+    </div>
   </section>
 
   <section class="panel" id="sets" aria-labelledby="setT">
@@ -295,6 +308,7 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
     </ul>
   </section>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -571,16 +585,19 @@ function clearHash(){ try{history.replaceState(null,'',location.pathname+locatio
 function loadSaves(){ try{ const a=JSON.parse(localStorage.getItem(SAVEKEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&decBuild(x.code)):[] }catch(e){ return [] } }
 function storeSaves(a){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(a)); return true }catch(e){ flash('บันทึกไม่ได้ — เบราว์เซอร์นี้ปิดการเก็บข้อมูลไว้'); return false } }
 const shareUrl=(code,name)=>location.href.split('#')[0]+'#b='+code+(name?'~'+encodeURIComponent(name):'');
-function flash(m){ const o=$('shareOut'); if(o) o.innerHTML='<div class="shareout">'+esc(m)+'</div>'; }
+function flash(m){ const o=$('shareOut'); if(o) o.innerHTML='<div class="shareout">'+esc(m)+'</div>'; toast(m); }
+let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2400); }
 function copyLink(url,label){ const o=$('shareOut');
-  const show=ok=>{ o.innerHTML='<div class="shareout">'+(ok?'คัดลอกลิงก์'+(label?' "'+esc(label)+'"':'')+' แล้ว ส่งให้เพื่อนได้เลย':'คัดลอกลิงก์นี้ส่งให้เพื่อน')+'<input readonly value="'+esc(url)+'" aria-label="ลิงก์แชร์"></div>';
-    if(!ok){ const i=o.querySelector('input'); i.focus(); i.select(); } };
-  try{ navigator.clipboard.writeText(url).then(()=>show(true),()=>show(false)) }catch(e){ show(false) } }
+  const render=ok=>{ o.innerHTML='<div class="shareout">'+(ok?'คัดลอกลิงก์'+(label?' "'+esc(label)+'" ':'')+'แล้ว ส่งให้เพื่อนได้เลย':'กดค้างที่ลิงก์แล้วเลือกคัดลอก ส่งให้เพื่อน')+'<input readonly value="'+esc(url)+'" aria-label="ลิงก์แชร์"></div>'; return o.querySelector('input'); };
+  const fallback=()=>{ const i=render(false); i.focus({preventScroll:true}); i.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+    if(ok){ render(true); toast('คัดลอกลิงก์แชร์แล้ว ส่งให้เพื่อนได้เลย'); }
+    else { toast('คัดลอกอัตโนมัติไม่ได้ — ลิงก์อยู่ด้านล่าง'); $('saves').scrollIntoView({behavior:'smooth',block:'start'}); } };
+  try{ navigator.clipboard.writeText(url).then(()=>{ render(true); toast('คัดลอกลิงก์แชร์แล้ว ส่งให้เพื่อนได้เลย'); },fallback); }catch(e){ fallback(); } }
 function saveCurrent(name){ name=(name||'').trim().slice(0,40)||'ชุด '+new Date().toLocaleDateString('th-TH');
   const a=loadSaves(), i=a.findIndex(x=>x.name===name), item={name,code:encBuild(),t:Date.now()};
   if(i>=0)a[i]=item; else a.unshift(item);
   if(storeSaves(a)) flash(i>=0?'อัปเดต "'+name+'" แล้ว':'บันทึก "'+name+'" ลงเครื่องนี้แล้ว'); }
-function renderSaves(){ const a=loadSaves(), code=encBuild();
+function renderSaves(){ const a=loadSaves(), code=encBuild(); $('saveCount').textContent=a.length||'';
   $('saveList').innerHTML=a.length?'<div class="savelist">'+a.map((x,i)=>{ const o=decBuild(x.code);
     const n=PKEYS.reduce((s,k)=>s+Object.keys(o.build[k].picks).length,0), sets=[...new Set(PKEYS.map(k=>o.build[k].set).filter(Boolean))];
     return '<div class="si'+(x.code===code?' cur':'')+'"><b>'+esc(x.name)+'</b><small>'+new Date(x.t).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})+' · Lv '+o.ilv+' · '+n+' แถว'+(sets.length?' · Set '+esc(sets.join(', ')):'')+'</small>'+
@@ -594,6 +611,8 @@ let VIEW=null;
 { const m=location.hash.match(/^#b=([0-9a-zA-Z_-]+)(?:~(.*))?$/); const o=m&&decBuild(m[1]);
   if(o){ applyBuild(o); let name=''; try{ name=decodeURIComponent(m[2]||'').slice(0,40) }catch(e){} VIEW={name}; } }
 $('saveForm').addEventListener('submit',e=>{ e.preventDefault(); saveCurrent($('saveName').value); if(VIEW){ VIEW=null; clearHash(); } render(); });
+$('hSave').addEventListener('click',()=>{ $('saves').scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>$('saveName').focus({preventScroll:true}),350); });
+$('hShare').addEventListener('click',()=>copyLink(shareUrl(encBuild(),$('saveName').value.trim()),$('saveName').value.trim()));
 $('shareCur').addEventListener('click',()=>copyLink(shareUrl(encBuild(),$('saveName').value.trim()),$('saveName').value.trim()));
 document.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t)return;
   if(t.id==='vSave'){ saveCurrent(VIEW.name); VIEW=null; clearHash(); render(); $('saves').scrollIntoView({behavior:'smooth'}); return; }
