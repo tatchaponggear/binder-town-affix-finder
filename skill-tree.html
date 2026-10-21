@@ -33,6 +33,26 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .job small{display:block;font-weight:500;font-size:12px;color:var(--gold-soft)}
 .job select{background:transparent;border:0;color:var(--gold-soft);font:inherit;font-size:12px;padding:0}
 .job select option{color:#000}
+.viewbar{max-width:1440px;margin:0 auto 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--gold-soft);color:var(--frame);border-radius:12px;padding:10px 14px;font-size:14px}
+.viewbar[hidden]{display:none}
+.viewbar b{font-family:var(--display)}
+.viewbar .sp{flex:1 1 auto}
+.viewbar button{border:0;border-radius:9px;padding:7px 12px;font-family:var(--display);font-weight:600;font-size:14px;background:var(--frame);color:var(--ink-on-frame)}
+.viewbar button.pri{background:var(--blue);color:#fff}
+.saverow{display:flex;gap:6px}
+.saverow input{flex:1;min-width:0;border:1px solid var(--frame-3);background:var(--frame);color:var(--ink-on-frame);border-radius:9px;padding:8px 10px;font:inherit}
+.saverow button,.sbtns button{border:0;border-radius:9px;padding:8px 12px;font-family:var(--display);font-weight:600;background:var(--frame-3);color:var(--ink-on-frame)}
+.saverow button{background:var(--blue);color:#fff}
+.saveitem{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--frame);border-radius:10px;padding:8px 10px}
+.saveitem b{display:block;font-family:var(--display);font-weight:600}
+.saveitem small{color:var(--muted-on-frame);font-size:12px}
+.saveitem.cur{outline:2px solid var(--gold)}
+.sbtns{display:flex;gap:4px}
+.sbtns button{padding:5px 10px;font-size:13px}
+.sbtns button.arm{background:var(--red);color:#fff}
+.shareout{display:flex;gap:6px;flex-direction:column;font-size:12px;color:var(--muted-on-frame)}
+.shareout input{width:100%;border:1px solid var(--frame-3);background:var(--frame);color:var(--ink-on-frame);border-radius:8px;padding:6px 8px;font:inherit;font-size:12px}
+.viewnote{background:var(--gold-soft);color:var(--frame);border-radius:10px;padding:8px 10px;font-size:13px}
 .job select.jobpick{display:block;font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink-on-frame);padding:0;cursor:pointer}
 .arrow{color:var(--gold);font-weight:700;letter-spacing:-3px}
 .job.soon{color:var(--muted-on-frame);font-weight:500}
@@ -223,6 +243,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 
 </head><body>
 <nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="index.html">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html" aria-current="page">Skill Tree</a></nav>
+<div class="viewbar" id="viewBar" hidden></div>
 
 <div class="win">
   <div class="titlebar"><h1>สกิล</h1><span class="src">จำลองการอัปสกิล · ข้อมูลจาก <a id="srcLink" href="https://wiki.bindertowngame.com/job/scout" target="_blank" rel="noopener">Binder Town Wiki</a></span></div>
@@ -230,7 +251,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   <div class="main">
     <div class="tree" id="tree"></div>
     <aside class="detail" id="detail">
-      <div class="tabs"><button id="tabSkill" class="on">สกิล</button><button id="tabSum">สรุปบิลด์</button><button class="dclose" id="dclose" aria-label="ปิด">✕</button></div>
+      <div class="tabs"><button id="tabSkill" class="on">สกิล</button><button id="tabSum">สรุปบิลด์</button><button id="tabSave">บันทึก</button><button class="dclose" id="dclose" aria-label="ปิด">✕</button></div>
       <div class="dbody" id="dbody"></div>
       <div class="actions" id="actions"></div>
       <div class="why" id="why"></div>
@@ -307,10 +328,12 @@ const dec = s => { if(!/^b\d{2}[0-9a-z]{46}$/.test(s)) return null; const b=blan
   ORDER.forEach(id=>{const c=s[p++]; if(c==='a')b.evo[id]='A'; if(c==='b')b.evo[id]='B';});
   [0,1,2].forEach(i=>{const c=s[p++]; if(c!=='0') b.trait[i]=+c-1;});
   b.hot=[0,1,2,3,4,5].map(()=>{const c=s[p++]; return c==='z'?null:(ORDER[parseInt(c,36)]||null);}); return b; };
-{ const h=HASH.includes('.')?HASH.split('.')[1]:HASH; const b=dec(h); if(b){ st.builds[st.cur]=b; } }
+let VIEW=null;
+{ const part=HASH.includes('.')?HASH.split('.').slice(1).join('.'):HASH; const [code,...nm]=part.split('~'); const b=dec(code);
+  if(b){ st.builds[st.cur]=b; let name=''; try{ name=decodeURIComponent(nm.join('~')).slice(0,40); }catch(e){} VIEW={name}; st.tab='skill'; } }
 
-const save = () => { try{ localStorage.setItem(KEY,JSON.stringify(st)); localStorage.setItem('bt-skill-last',JOBID); }catch(e){} };
-function switchJob(id){ save(); loadJob(id); loadState(); render(); toast(`เปลี่ยนเป็น ${CLASS.name}`); }
+const save = () => { if(VIEW) return; try{ localStorage.setItem(KEY,JSON.stringify(st)); localStorage.setItem('bt-skill-last',JOBID); }catch(e){} };
+function switchJob(id){ save(); if(VIEW){ VIEW=null; clearHash(); } loadJob(id); loadState(); render(); toast(`เปลี่ยนเป็น ${CLASS.name}`); }
 
 /* ---------- rules ---------- */
 function whyNotUp(id){ const s=S[id];
@@ -375,7 +398,7 @@ function renderStrip(){ const b=B(); const over=left()<0;
   $('classTrait').onclick=()=>{st.sel='__class';st.tab='skill';render(true);};
   $('swap').onclick=()=>{st.cur=1-st.cur;render();toast(`ใช้ Build ${st.cur+1}`);};
   $('reset').onclick=()=>{ if($('reset').dataset.arm){ Object.assign(B(),{lv:{},evo:{},trait:{},hot:[null,null,null,null,null,null]}); render(); toast('คืนแต้มสกิลทั้งหมดแล้ว'); } else { $('reset').dataset.arm=1; $('reset').textContent='กดอีกครั้งเพื่อยืนยัน'; setTimeout(()=>renderStrip(),2500);} };
-  $('share').onclick=()=>{ const code=JOBID+'.'+enc(B()), url=location.href.split('#')[0]+'#'+code; try{history.replaceState(null,'','#'+code);}catch(e){}
+  $('share').onclick=()=>{ st.tab='save'; openSheet(); render(true); copyLink(shareUrl(JOBID,enc(B()),'')); return; const code=JOBID+'.'+enc(B()), url=location.href.split('#')[0]+'#'+code; try{history.replaceState(null,'','#'+code);}catch(e){}
     const done=()=>toast('คัดลอกลิงก์บิลด์แล้ว'); try{ navigator.clipboard.writeText(url).then(done,()=>toast('โค้ดบิลด์: '+JOBID+'.'+enc(B()))); }catch(e){ toast('โค้ดบิลด์: '+JOBID+'.'+enc(B())); } };
 }
 
@@ -410,8 +433,9 @@ function nextBox(s,n){ if(!s.dmg){ const cdNow=n?s.cd[n-1]:null, cdNext=n<s.max?
    <div class="row"><span class="note">ประมาณการก่อนหัก DEF เป้า</span><label class="atk">${/MATK/.test(CLASS.dmgType)?'MATK':'ATK'} <input id="atk" type="number" min="0" value="${st.atk||''}" placeholder="ใส่ ATK"></label></div></div>`; }
 
 function renderDetail(){ const body=$('dbody'), act=$('actions'), why=$('why'); why.textContent=''; act.innerHTML='';
-  $('tabSkill').classList.toggle('on',st.tab==='skill'); $('tabSum').classList.toggle('on',st.tab==='sum');
+  $('tabSkill').classList.toggle('on',st.tab==='skill'); $('tabSum').classList.toggle('on',st.tab==='sum'); $('tabSave').classList.toggle('on',st.tab==='save');
   if(st.tab==='sum') return renderSummary();
+  if(st.tab==='save') return renderSaves();
   const sel=st.sel;
   if(sel==='__class'){ body.innerHTML=`<div class="dhead"><div class="icon">${IC['_'+JOBID]?`<img src="${IC['_'+JOBID]}" alt="">`:''}</div><div><h3>${CLASS.trait}</h3><div class="meta">Class Trait · ${CLASS.name} · ติดตัวตั้งแต่เลือกอาชีพ ไม่ใช้แต้ม</div></div></div>
     <div class="fx">${CLASS.traitText.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
@@ -467,7 +491,7 @@ function renderHot(){ const b=B(), s=S[st.sel], can = s && isActive(st.sel) && l
 
 let first=true;
 function render(keepScroll){ const sc=$('dbody').scrollTop; tidy(); renderStrip(); renderTree(); renderDetail(); renderHot(); if(keepScroll) $('dbody').scrollTop=sc; save();
-  if(!first) try{history.replaceState(null,'',location.pathname+location.search);}catch(e){} first=false; }
+  if(!first && !VIEW) clearHash(); first=false; renderView(); }
 
 /* ---------- events ---------- */
 $('tree').addEventListener('click',e=>{ const c=e.target.closest('.card'), tr=e.target.closest('[data-trait]');
@@ -485,7 +509,7 @@ $('detail').addEventListener('click',e=>{ const ev=e.target.closest('[data-evo]'
   if(ev&&!ev.disabled){ const b=B(); b.evo[st.sel]= b.evo[st.sel]===ev.dataset.evo?undefined:ev.dataset.evo; if(!b.evo[st.sel]) delete b.evo[st.sel]; render(true); }
   if(tr&&!tr.disabled){ const li=+st.sel.slice(7), b=B(); b.trait[li]= b.trait[li]===+tr.dataset.tr?undefined:+tr.dataset.tr; if(b.trait[li]==null) delete b.trait[li]; render(true); } });
 $('detail').addEventListener('change',e=>{ if(e.target.id==='atk'){ st.atk=Math.max(0,+e.target.value||0); render(true); } });
-$('tabSkill').onclick=()=>{st.tab='skill';render();}; $('tabSum').onclick=()=>{st.tab='sum';openSheet();render();};
+$('tabSkill').onclick=()=>{st.tab='skill';render();}; $('tabSum').onclick=()=>{st.tab='sum';openSheet();render();}; $('tabSave').onclick=()=>{st.tab='save';openSheet();render();};
 $('dclose').onclick=()=>$('detail').classList.remove('open');
 function openSheet(){ $('detail').classList.add('open'); }
 $('slots').addEventListener('click',e=>{ const sl=e.target.closest('[data-slot]'); if(!sl) return; const i=+sl.dataset.slot, b=B(), id=st.sel;
@@ -496,6 +520,53 @@ $('slots').addEventListener('contextmenu',e=>{ const sl=e.target.closest('[data-
 $('autoHot').onclick=()=>{ const act=ORDER.filter(id=>isActive(id)&&lv(id)>0).sort((a,b)=>(S[b].dmg?1:0)-(S[a].dmg?1:0)||lv(b)-lv(a)); const b=B();
   b.hot=[0,1,2,3,4,5].map(i=>act[i]||null); render(); toast('จัดช่องลัดอัตโนมัติแล้ว'); };
 
+/* ---------- saved builds (this device only) + share links ---------- */
+const SAVEKEY='bt-skill-saves';
+function clearHash(){ try{history.replaceState(null,'',location.pathname+location.search);}catch(e){} }
+function loadSaves(){ try{ const a=JSON.parse(localStorage.getItem(SAVEKEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&x.code&&x.job):[]; }catch(e){ return []; } }
+function storeSaves(a){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(a)); return true; }catch(e){ toast('บันทึกไม่ได้ — เบราว์เซอร์นี้ปิดการเก็บข้อมูลไว้'); return false; } }
+const jobName = id => (JD.jobs.find(j=>j.id===id)||{name:id}).name;
+const shareUrl = (job,code,name) => location.href.split('#')[0]+'#'+job+'.'+code+(name?'~'+encodeURIComponent(name):'');
+function saveCurrent(name){ name=(name||'').trim().slice(0,40)||`${CLASS.name} ${new Date().toLocaleDateString('th-TH')}`;
+  const a=loadSaves(), code=enc(B()), i=a.findIndex(x=>x.name===name&&x.job===JOBID), item={name,job:JOBID,code,t:Date.now()};
+  if(i>=0) a[i]=item; else a.unshift(item);
+  if(storeSaves(a)) toast(i>=0?`อัปเดต "${name}" แล้ว`:`บันทึก "${name}" ลงเครื่องนี้แล้ว`); return name; }
+function copyLink(url){ const out=$('shareOut');
+  const show=ok=>{ if(out) out.innerHTML=`<div class="shareout">${ok?'คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย':'คัดลอกลิงก์นี้ส่งให้เพื่อน'}<input readonly value="${esc(url)}" aria-label="ลิงก์แชร์"></div>`;
+    const inp=out&&out.querySelector('input'); if(inp&&!ok){ inp.focus(); inp.select(); } if(ok) toast('คัดลอกลิงก์แชร์แล้ว'); };
+  try{ navigator.clipboard.writeText(url).then(()=>show(true),()=>show(false)); }catch(e){ show(false); } }
+function renderSaves(){ const a=loadSaves(), code=enc(B());
+  $('dbody').innerHTML=`<div class="sum" style="display:flex;flex-direction:column;gap:10px">
+   ${VIEW?`<div class="viewnote">กำลังดูบิลด์ที่แชร์มา${VIEW.name?` <b>${esc(VIEW.name)}</b>`:''} — ยังไม่ได้บันทึกลงเครื่องนี้</div>`:''}
+   <div class="sect">บันทึกบิลด์นี้ · ${CLASS.name} · Build ${st.cur+1}</div>
+   <form id="saveForm" class="saverow"><input id="saveName" maxlength="40" placeholder="ตั้งชื่อ เช่น ${CLASS.name} ฟาร์ม" value="${VIEW&&VIEW.name?esc(VIEW.name):''}"><button type="submit">บันทึก</button></form>
+   <div class="saverow"><button type="button" id="shareNow" style="background:var(--frame-3)">แชร์บิลด์นี้</button></div>
+   <div id="shareOut"></div>
+   <div class="scale" style="font-size:12px">บันทึกเก็บในเครื่องนี้เท่านั้น — แต่ละเครื่อง / เบราว์เซอร์แยกกัน · เพื่อนที่เปิดลิงก์แชร์จะเห็นบิลด์ แต่ไม่ทับบิลด์ของเขา จนกว่าจะกดบันทึกเอง</div>
+   <div class="sect">บิลด์ที่บันทึกไว้ในเครื่องนี้ (${a.length})</div>
+   ${a.length?a.map((x,i)=>`<div class="saveitem ${x.job===JOBID&&x.code===code?'cur':''}"><div style="min-width:0"><b>${esc(x.name)}</b><small>${esc(jobName(x.job))} · ${new Date(x.t).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}</small></div>
+     <div class="sbtns"><button type="button" data-load="${i}">โหลด</button><button type="button" data-share="${i}">แชร์</button><button type="button" data-del="${i}">ลบ</button></div></div>`).join('')
+     :'<div class="scale">ยังไม่มีบิลด์ที่บันทึกไว้ — ตั้งชื่อแล้วกด "บันทึก"</div>'}
+  </div>`; }
+function renderView(){ const v=$('viewBar'); if(!v) return; v.hidden=!VIEW; if(!VIEW) return;
+  v.innerHTML=`<span>กำลังดูบิลด์ที่แชร์มา${VIEW.name?` <b>${esc(VIEW.name)}</b>`:''} · ${CLASS.name} — แก้ได้ แต่จะไม่บันทึกทับบิลด์ของคุณ</span><span class="sp"></span>
+    <button type="button" class="pri" id="vSave">บันทึกลงเครื่องนี้</button><button type="button" id="vBack">กลับไปบิลด์ของฉัน</button>`; }
+document.addEventListener('submit',e=>{ if(e.target.id!=='saveForm') return; e.preventDefault();
+  const name=saveCurrent($('saveName').value); if(VIEW){ VIEW=null; clearHash(); save(); } render(true); });
+document.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t) return;
+  if(t.id==='vSave'){ saveCurrent(VIEW.name); VIEW=null; clearHash(); save(); st.tab='save'; openSheet(); render(); return; }
+  if(t.id==='vBack'){ VIEW=null; clearHash(); loadState(); render(); toast('กลับไปบิลด์ของคุณแล้ว'); return; }
+  if(t.id==='shareNow'){ copyLink(shareUrl(JOBID,enc(B()),($('saveName')||{}).value||'')); return; }
+  const a=loadSaves();
+  if(t.dataset.load){ const x=a[+t.dataset.load]; if(!x) return;
+    if(VIEW){ VIEW=null; clearHash(); }
+    if(x.job!==JOBID){ save(); loadJob(x.job); loadState(); }
+    const b=dec(x.code); if(!b){ toast('บิลด์นี้เสีย โหลดไม่ได้'); return; }
+    st.builds[st.cur]=b; st.tab='save'; render(true); toast(`โหลด "${x.name}" ใส่ Build ${st.cur+1}`); return; }
+  if(t.dataset.share){ const x=a[+t.dataset.share]; if(x) copyLink(shareUrl(x.job,x.code,x.name)); return; }
+  if(t.dataset.del){ const i=+t.dataset.del;
+    if(!t.classList.contains('arm')){ t.classList.add('arm'); t.textContent='ยืนยันลบ'; setTimeout(()=>{ if(t.isConnected){ t.classList.remove('arm'); t.textContent='ลบ'; } },3000); return; }
+    const x=a.splice(i,1)[0]; if(storeSaves(a)) toast(`ลบ "${x.name}" แล้ว`); render(true); } });
 let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
 render();
 </script>

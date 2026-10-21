@@ -158,6 +158,24 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
 .setT td.use{white-space:nowrap}
 .mini{border:1px solid var(--rim);border-radius:6px;padding:2px 8px;font-size:12px;background:var(--panel-2)}
 
+.viewbar{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--r-gold-soft);border:2px solid var(--r-gold);border-radius:14px;padding:10px 14px;font-size:14px}
+.viewbar b{font-family:var(--display)}
+.viewbar .sp{flex:1 1 auto}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:600}
+.saverow{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.saverow input{flex:1 1 220px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit}
+.shareout{margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.shareout input{width:100%;border:1px solid var(--rim);background:var(--panel-2);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px}
+.savelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:8px;margin-top:12px}
+.si{border:1px solid var(--rim);border-radius:12px;padding:10px 12px;background:var(--panel-2);display:flex;flex-direction:column;gap:6px;min-width:0}
+.si.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.si b{font-family:var(--display);font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.si small{color:var(--muted);font-size:12px}
+.si .dots{display:flex;gap:3px;flex-wrap:wrap}
+.si .dots i{width:12px;height:12px;border-radius:3px;border:2px solid var(--c);background:var(--cs)}
+.si .bt{display:flex;gap:6px;flex-wrap:wrap}
+.si .bt button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel)}
+.si .bt button.arm{background:var(--r-red);border-color:var(--r-red);color:var(--panel)}
 .notes{font-size:13.5px;color:var(--muted)}
 .notes h3{font-family:var(--display);font-weight:600;color:var(--ink);font-size:16px;margin:0 0 6px}
 .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;max-width:900px}
@@ -180,12 +198,13 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
 </head>
 <body>
 <nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="index.html" aria-current="page">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html">Skill Tree</a></nav>
+<div class="viewbar" id="viewBar" hidden></div>
 <div class="wrap">
   <header>
     <div>
       <h1>ค้นหาออฟชั่นอุปกรณ์</h1>
       <p>เลือกส่วน → สี → ช่องที่ → ดูว่าช่องนั้นสุ่ม Affix อะไรได้บ้าง · ข้อมูลจาก <a href="https://wiki.bindertowngame.com/affixes" target="_blank" rel="noopener">Binder Town Wiki</a></p>
-      <nav class="jump"><a href="#summary">สรุปสเตตัสรวม</a><a href="#sets">Region Set ทั้งหมด</a><a href="#rules">กฎที่ควรรู้</a></nav>
+      <nav class="jump"><a href="#summary">สรุปสเตตัสรวม</a><a href="#saves">ชุดที่บันทึกไว้</a><a href="#sets">Region Set ทั้งหมด</a><a href="#rules">กฎที่ควรรู้</a></nav>
     </div>
     <div class="lv">
       <label for="ilv">เลเวลไอเท็ม</label>
@@ -236,6 +255,18 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
       <div class="scroll" id="sumStats"></div>
       <div><div class="sets" id="sumSets"></div></div>
     </div>
+  </section>
+
+  <section class="panel" id="saves" aria-labelledby="savT">
+    <h2 class="sec" id="savT">ชุดที่บันทึกไว้</h2>
+    <p class="sub">บันทึกเก็บในเครื่องนี้เท่านั้น — แต่ละเครื่อง / เบราว์เซอร์แยกกัน · กด "แชร์" แล้วส่งลิงก์ให้เพื่อนเปิดดูได้ เพื่อนจะเห็นชุดนี้โดยไม่ทับชุดของเขา</p>
+    <form class="saverow" id="saveForm">
+      <input id="saveName" maxlength="40" placeholder="ตั้งชื่อชุด เช่น Scout ฟาร์ม Lv 90" aria-label="ชื่อชุด">
+      <button class="btn pri" type="submit">บันทึกชุดนี้</button>
+      <button class="btn" type="button" id="shareCur">แชร์ชุดนี้</button>
+    </form>
+    <div id="shareOut"></div>
+    <div id="saveList"></div>
   </section>
 
   <section class="panel" id="sets" aria-labelledby="setT">
@@ -374,7 +405,7 @@ try{const s=JSON.parse(localStorage.getItem('affixFinder2')||'{}');
   if(s.build)for(const p in POS)if(s.build[p]){const b=s.build[p];st.build[p]={rar:RAR.some(r=>r.id===b.rar)?b.rar:'n',picks:Object.fromEntries(Object.entries(b.picks||{}).filter(([,id])=>BY[id])),set:SETS.some(x=>x.n===b.set)?b.set:''}}
   if(!POS[st.pos])st.pos='wpn';
 }catch(e){}
-function save(){try{localStorage.setItem('affixFinder2',JSON.stringify({pos:st.pos,ilv:st.ilv,magicWpn:st.magicWpn,build:st.build}))}catch(e){}}
+function save(){if(VIEW)return;try{localStorage.setItem('affixFinder2',JSON.stringify({pos:st.pos,ilv:st.ilv,magicWpn:st.magicWpn,build:st.build}))}catch(e){}}
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -519,7 +550,61 @@ function renderSetTable(){
   $('setTable').innerHTML=h;
 }
 function renderLv(){const t=maxT();$('ilvOut').innerHTML='Lv '+st.ilv+' <small>· T'+(t+1)+'</small>';$('ilv').value=st.ilv}
-function render(){setCur();renderLv();renderDoll();renderRar();renderLines();renderList();renderSummary();save()}
+/* ---------- saved gear sets (this device only) + share links ---------- */
+const AL='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+const PKEYS=Object.keys(POS), SAVEKEY='affixFinderSaves';
+function encBuild(){ let c='e1'+String(st.ilv).padStart(2,'0')+(st.magicWpn?'1':'0');
+  for(const p of PKEYS){ const b=st.build[p];
+    c+=AL[Math.max(0,RAR.findIndex(r=>r.id===b.rar))]+AL[b.set?SETS.findIndex(x=>x.n===b.set)+1:0];
+    for(let i=0;i<4;i++){ const id=b.picks[i]; c+=AL[id?AFX.findIndex(a=>a.id===id)+1:0]; } }
+  return c; }
+function decBuild(c){ if(!/^e1\d\d[01][0-9a-zA-Z_-]{66}$/.test(c||''))return null;
+  let p=5; const ix=()=>AL.indexOf(c[p++]);
+  const o={ilv:Math.min(99,Math.max(1,+c.slice(2,4))),magicWpn:c[4]==='1',build:{}};
+  for(const k of PKEYS){ const r=RAR[ix()]||RAR[0], si=ix(), b={rar:r.id,picks:{},set:SETS[si-1]?SETS[si-1].n:''};
+    for(let i=0;i<4;i++){ const a=AFX[ix()-1]; if(a&&i<r.lines&&poolForType(POS[k],o.magicWpn).includes(a))b.picks[i]=a.id; }
+    o.build[k]=b; }
+  return o; }
+function poolForType(slot,mw){return AFX.filter(a=>a.sl.includes(slot)&&!(a.flag==='magicOnlyWpn'&&slot==='wpn'&&!mw))}
+function applyBuild(o){ st.ilv=o.ilv; st.magicWpn=o.magicWpn; st.build=o.build; st.line=0; }
+function clearHash(){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} }
+function loadSaves(){ try{ const a=JSON.parse(localStorage.getItem(SAVEKEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&decBuild(x.code)):[] }catch(e){ return [] } }
+function storeSaves(a){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(a)); return true }catch(e){ flash('บันทึกไม่ได้ — เบราว์เซอร์นี้ปิดการเก็บข้อมูลไว้'); return false } }
+const shareUrl=(code,name)=>location.href.split('#')[0]+'#b='+code+(name?'~'+encodeURIComponent(name):'');
+function flash(m){ const o=$('shareOut'); if(o) o.innerHTML='<div class="shareout">'+esc(m)+'</div>'; }
+function copyLink(url,label){ const o=$('shareOut');
+  const show=ok=>{ o.innerHTML='<div class="shareout">'+(ok?'คัดลอกลิงก์'+(label?' "'+esc(label)+'"':'')+' แล้ว ส่งให้เพื่อนได้เลย':'คัดลอกลิงก์นี้ส่งให้เพื่อน')+'<input readonly value="'+esc(url)+'" aria-label="ลิงก์แชร์"></div>';
+    if(!ok){ const i=o.querySelector('input'); i.focus(); i.select(); } };
+  try{ navigator.clipboard.writeText(url).then(()=>show(true),()=>show(false)) }catch(e){ show(false) } }
+function saveCurrent(name){ name=(name||'').trim().slice(0,40)||'ชุด '+new Date().toLocaleDateString('th-TH');
+  const a=loadSaves(), i=a.findIndex(x=>x.name===name), item={name,code:encBuild(),t:Date.now()};
+  if(i>=0)a[i]=item; else a.unshift(item);
+  if(storeSaves(a)) flash(i>=0?'อัปเดต "'+name+'" แล้ว':'บันทึก "'+name+'" ลงเครื่องนี้แล้ว'); }
+function renderSaves(){ const a=loadSaves(), code=encBuild();
+  $('saveList').innerHTML=a.length?'<div class="savelist">'+a.map((x,i)=>{ const o=decBuild(x.code);
+    const n=PKEYS.reduce((s,k)=>s+Object.keys(o.build[k].picks).length,0), sets=[...new Set(PKEYS.map(k=>o.build[k].set).filter(Boolean))];
+    return '<div class="si'+(x.code===code?' cur':'')+'"><b>'+esc(x.name)+'</b><small>'+new Date(x.t).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})+' · Lv '+o.ilv+' · '+n+' แถว'+(sets.length?' · Set '+esc(sets.join(', ')):'')+'</small>'+
+      '<div class="dots" aria-hidden="true">'+[...LEFT,...RIGHT].map(k=>{const r=rarOf(o.build[k]);return '<i style="--c:var('+(r.lines?r.c:'--rim')+');--cs:var('+r.c+'-soft)"></i>'}).join('')+'</div>'+
+      '<div class="bt"><button type="button" data-sload="'+i+'">โหลด</button><button type="button" data-sshare="'+i+'">แชร์</button><button type="button" data-sdel="'+i+'">ลบ</button></div></div>' }).join('')+'</div>'
+    :'<div class="empty" style="margin-top:12px">ยังไม่มีชุดที่บันทึกไว้ — ตั้งชื่อแล้วกด "บันทึกชุดนี้"</div>'; }
+function renderView(){ const v=$('viewBar'); v.hidden=!VIEW; if(!VIEW)return;
+  v.innerHTML='<span>กำลังดูชุดที่แชร์มา'+(VIEW.name?' <b>'+esc(VIEW.name)+'</b>':'')+' — แก้ได้ แต่จะไม่บันทึกทับชุดของคุณ</span><span class="sp"></span>'+
+    '<button type="button" class="btn pri" id="vSave">บันทึกลงเครื่องนี้</button><button type="button" class="btn" id="vBack">กลับไปชุดของฉัน</button>'; }
+let VIEW=null;
+{ const m=location.hash.match(/^#b=([0-9a-zA-Z_-]+)(?:~(.*))?$/); const o=m&&decBuild(m[1]);
+  if(o){ applyBuild(o); let name=''; try{ name=decodeURIComponent(m[2]||'').slice(0,40) }catch(e){} VIEW={name}; } }
+$('saveForm').addEventListener('submit',e=>{ e.preventDefault(); saveCurrent($('saveName').value); if(VIEW){ VIEW=null; clearHash(); } render(); });
+$('shareCur').addEventListener('click',()=>copyLink(shareUrl(encBuild(),$('saveName').value.trim()),$('saveName').value.trim()));
+document.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t)return;
+  if(t.id==='vSave'){ saveCurrent(VIEW.name); VIEW=null; clearHash(); render(); $('saves').scrollIntoView({behavior:'smooth'}); return; }
+  if(t.id==='vBack'){ location.replace(location.pathname+location.search); return; }
+  const a=loadSaves();
+  if(t.dataset.sload){ const x=a[+t.dataset.sload]; if(!x)return; if(VIEW){ VIEW=null; clearHash(); }
+    applyBuild(decBuild(x.code)); $('saveName').value=x.name; render(); flash('โหลด "'+x.name+'" แล้ว'); document.getElementById('s1').scrollIntoView({behavior:'smooth'}); return; }
+  if(t.dataset.sshare){ const x=a[+t.dataset.sshare]; if(x)copyLink(shareUrl(x.code,x.name),x.name); return; }
+  if(t.dataset.sdel){ if(!t.classList.contains('arm')){ t.classList.add('arm'); t.textContent='ยืนยันลบ'; setTimeout(()=>{ if(t.isConnected){ t.classList.remove('arm'); t.textContent='ลบ'; } },3000); return; }
+    const x=a.splice(+t.dataset.sdel,1)[0]; if(storeSaves(a))flash('ลบ "'+x.name+'" แล้ว'); renderSaves(); } });
+function render(){setCur();renderLv();renderDoll();renderRar();renderLines();renderList();renderSummary();renderSaves();renderView();save()}
 function trimPicks(b){const n=rarOf(b).lines;for(const l in b.picks)if(+l>=n)delete b.picks[l]}
 
 document.addEventListener('click',e=>{
