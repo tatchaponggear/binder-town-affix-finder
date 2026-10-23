@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="ค้นหาการ์ดวิญญาณ Binder Town ว่าได้จากมอนตัวไหน แมพไหน ทดลองใส่การ์ด 9 ช่อง ดู Resonance และสรุปสเตตัสรวม">
+<title>Spirit Album Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: in-game Spirit Album — 3×3 slot board + load meter on the left, build summary/resonance on the right, searchable card catalogue below; stacks on phone. */
+:root{
+  --bg:#e9eef6; --panel:#ffffff; --panel-2:#f3f6fb; --rim:#d3dcea; --ink:#1c2636; --muted:#5f6d84; --accent:#2f62c8; --accent-soft:#e3ecfb;
+  --c-red:#d0463c; --c-blue:#2f6fe0; --c-green:#3f8f3a; --c-purple:#8a4fe8; --c-legend:#d99a1e;
+  --c-red-soft:#fbe5e3; --c-blue-soft:#e2ebfd; --c-green-soft:#e5f2e1; --c-purple-soft:#efe6fd; --c-legend-soft:#fbf0d9;
+  --ok:#23883a; --warn:#c0571b;
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(20,40,80,.06),0 6px 18px rgba(20,40,80,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --c-red:#ff7b6f; --c-blue:#78a8ff; --c-green:#8fcf6a; --c-purple:#c4a6ff; --c-legend:#f2bd4e;
+  --c-red-soft:#3d1a1d; --c-blue-soft:#172a52; --c-green-soft:#1d3220; --c-purple-soft:#2a1f4a; --c-legend-soft:#3a2d12;
+  --ok:#6fdc8c; --warn:#ffa46b; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --c-red:#ff7b6f; --c-blue:#78a8ff; --c-green:#8fcf6a; --c-purple:#c4a6ff; --c-legend:#f2bd4e;
+  --c-red-soft:#3d1a1d; --c-blue-soft:#172a52; --c-green-soft:#1d3220; --c-purple-soft:#2a1f4a; --c-legend-soft:#3a2d12;
+  --ok:#6fdc8c; --warn:#ffa46b; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.sitenav{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:var(--panel);border:1px solid var(--rim);border-radius:14px;padding:6px;box-shadow:var(--shadow)}
+.sitenav .brand{font-family:var(--display);font-weight:600;font-size:14px;color:var(--muted);padding:0 10px 0 8px}
+.sitenav a{font-family:var(--display);font-weight:500;font-size:14px;color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:10px}
+.sitenav a:hover{background:var(--panel-2)}
+.sitenav a[aria-current]{background:var(--accent);color:var(--panel)}
+.viewbar{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--c-legend-soft);border:2px solid var(--c-legend);border-radius:14px;padding:10px 14px;font-size:14px}
+.viewbar b{font-family:var(--display)}
+.viewbar .sp{flex:1 1 auto}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px}
+header h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1.15;text-wrap:balance}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
+header a{color:var(--muted)}
+.hctl{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--rim);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow);font-family:var(--display);font-size:14px}
+.ctl input[type=number]{width:64px;border:1px solid var(--rim);border-radius:8px;background:var(--panel-2);padding:3px 6px;font-variant-numeric:tabular-nums}
+.seg{display:flex;border:1px solid var(--rim);border-radius:9px;overflow:hidden}
+.seg button{padding:3px 10px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.btn{border:1px solid var(--rim);border-radius:10px;padding:8px 13px;background:var(--panel);font-size:14px;font-family:var(--display);box-shadow:var(--shadow)}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.btn .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;text-align:center}
+.btn .cnt:empty{display:none}
+.panel{background:var(--panel);border:1px solid var(--rim);border-radius:16px;box-shadow:var(--shadow);padding:14px;min-width:0}
+h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* album */
+.loadbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-family:var(--display);font-size:14px}
+.loadbar .bar{flex:1;height:10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--rim);overflow:hidden}
+.loadbar .bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.loadbar.over .bar i{background:var(--c-red)}
+.loadbar b{font-variant-numeric:tabular-nums}
+.album{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.slot{position:relative;border:2px dashed var(--rim);border-radius:12px;background:var(--panel-2);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;text-align:center;font-size:12px;color:var(--muted)}
+.slot.lock{opacity:.55}
+.slot.fill{border-style:solid;border-color:var(--cc);background:var(--ccs);color:var(--ink)}
+.slot.sel{box-shadow:0 0 0 3px var(--accent)}
+.slot img{width:52px;height:72px;image-rendering:auto}
+.slot .nm{font-family:var(--display);font-weight:600;font-size:13px;line-height:1.15}
+.slot .meta{font-size:11px;color:var(--muted)}
+.slot .echo{font-size:11px;font-weight:600;color:var(--warn)}
+.slot .no{position:absolute;top:4px;left:7px;font-size:11px;font-weight:600;color:var(--muted)}
+.slot .x{position:absolute;top:2px;right:4px;width:24px;height:24px;border-radius:50%;font-size:14px;line-height:24px;color:var(--muted)}
+.slot .x:hover{background:var(--panel);color:var(--c-red)}
+.stars{display:flex;gap:1px}
+.stars button{font-size:15px;line-height:1;padding:0 1px;color:var(--rim)}
+.stars button.on{color:var(--c-legend)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+
+/* summary */
+.stat{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.stat td{padding:5px 6px;border-bottom:1px solid var(--rim);vertical-align:top}
+.stat .v{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.res .v{font-weight:700;color:var(--ok)}
+.stat td.src{font-size:12px;color:var(--muted)}
+.cap{display:block;font-size:11px;color:var(--warn);font-weight:600}
+.reslist{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.res{border:1px solid var(--rim);border-radius:10px;padding:7px 10px;font-size:13px;background:var(--panel-2)}
+.res.on{border-color:var(--ok);background:var(--panel)}
+.res .h{display:flex;justify-content:space-between;gap:8px;font-family:var(--display);font-weight:600}
+.res .h span{font-family:var(--body);font-weight:600;font-size:12px;color:var(--muted);white-space:nowrap}
+.res.on .h span{color:var(--ok)}
+.res p{margin:2px 0 0;color:var(--muted)}
+.res.on p{color:var(--ink)}
+.empty{padding:16px;text-align:center;color:var(--muted);border:1px dashed var(--rim);border-radius:10px;font-size:14px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--rim);border-radius:999px;padding:4px 12px;font-size:13px;background:var(--panel-2)}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+
+/* catalogue */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filters input[type=search]{flex:1 1 240px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.filters select{border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:7px 8px;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--rim);border-radius:999px;padding:3px 10px;font-size:13px;background:var(--panel-2)}
+.chip i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--cc);margin-right:5px;vertical-align:0}
+.chip[aria-pressed="true"]{border-color:var(--cc,var(--accent));background:var(--ccs,var(--accent-soft));font-weight:600}
+.count{font-size:13px;color:var(--muted);margin:0 0 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:10px}
+.card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:4px 12px;border:1px solid var(--rim);border-left:4px solid var(--cc);border-radius:12px;padding:10px;background:var(--panel)}
+.card img{width:58px;height:80px;grid-row:1/4}
+.card .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline;min-width:0}
+.card .t b{font-family:var(--display);font-weight:600;font-size:15.5px;overflow-wrap:anywhere}
+.card .t small{color:var(--muted);font-size:12px;white-space:nowrap}
+.card .tags{display:flex;flex-wrap:wrap;gap:4px;font-size:11.5px}
+.card .tags span{border-radius:6px;padding:0 6px;background:var(--panel-2);border:1px solid var(--rim);color:var(--muted)}
+.card .tags span.col{background:var(--ccs);border-color:var(--cc);color:var(--ink);font-weight:600}
+.card .fx{font-size:13.5px;min-width:0}
+.card .fx .v{font-weight:700;color:var(--cc);font-variant-numeric:tabular-nums}
+.card .ln{font-family:var(--display);font-weight:600;color:var(--c-legend)}
+.card .where{grid-column:1/-1;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--rim);padding-top:6px;display:flex;flex-direction:column;gap:2px}
+.card .where b{color:var(--ink);font-weight:600}
+.card .where a{color:var(--accent)}
+.card .act{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.card .act button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel-2)}
+.card .act button.add{border-color:var(--accent);color:var(--accent);font-weight:600}
+.card .act button:disabled{opacity:.5;cursor:not-allowed}
+.card table{grid-column:1/-1;width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.card table td{padding:3px 6px;border-bottom:1px solid var(--rim);vertical-align:top}
+.card table tr.cur td{background:var(--accent-soft);font-weight:600}
+.more{display:flex;justify-content:center;margin-top:12px}
+
+/* saves */
+.saverow{display:flex;flex-wrap:wrap;gap:8px}
+.saverow input{flex:1 1 220px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.shareout{margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.shareout input{width:100%;border:1px solid var(--rim);background:var(--panel-2);border-radius:8px;padding:6px 10px;font-size:13px}
+.savelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:8px;margin-top:12px}
+.si{border:1px solid var(--rim);border-radius:12px;padding:10px 12px;background:var(--panel-2);display:flex;flex-direction:column;gap:6px;min-width:0}
+.si.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.si b{font-family:var(--display);font-weight:600;overflow-wrap:anywhere}
+.si small{color:var(--muted);font-size:12px}
+.si .bt{display:flex;gap:6px;flex-wrap:wrap}
+.si .bt button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel)}
+.si .bt button.arm{background:var(--c-red);border-color:var(--c-red);color:var(--panel)}
+.notes{font-size:13.5px;color:var(--muted)}
+.notes h3{font-family:var(--display);font-weight:600;color:var(--ink);font-size:16px;margin:0 0 6px}
+.notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;max-width:900px}
+.notes b{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--ink);color:var(--panel);border-radius:12px;padding:9px 16px;font-size:14px;max-width:calc(100% - 32px);transition:opacity .2s,transform .2s;z-index:10}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:520px){
+  .album{gap:6px}
+  .slot{min-height:136px;padding:6px 3px}
+  .slot img{width:44px;height:61px}
+  .hctl{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){.toast,.loadbar .bar i{transition:none}}
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="index.html">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html">Skill Tree</a><a href="cards.html" aria-current="page">การ์ด</a></nav>
+<div class="viewbar" id="viewBar" hidden></div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>การ์ดวิญญาณ</h1>
+      <p>ค้นหาว่าการ์ดได้จากมอนตัวไหน แมพไหน · ทดลองใส่การ์ด 9 ช่อง ดู Resonance และสเตตัสรวม · ค่าการ์ดตามตัวเกม ณ 24 ต.ค. 2569 · แหล่งที่หาจาก <a href="https://wiki.bindertowngame.com/cards" target="_blank" rel="noopener">Binder Town Wiki</a></p>
+    </div>
+    <div class="hctl">
+      <label class="ctl" for="lv">Lv ตัวละคร <input type="number" id="lv" min="1" max="99" value="60"></label>
+      <div class="ctl"><span>เวลา</span><div class="seg" role="group" aria-label="กลางวันหรือกลางคืน"><button type="button" id="tDay" aria-pressed="true">☀ กลางวัน</button><button type="button" id="tNight" aria-pressed="false">☾ กลางคืน</button></div></div>
+      <label class="ctl" for="codex">Codex <input type="number" id="codex" min="0" max="123" value="0"></label>
+      <button class="btn" type="button" id="hSave">บันทึก<span class="cnt" id="saveCount"></span></button>
+      <button class="btn pri" type="button" id="hShare">แชร์</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="albT">
+      <h2 class="sec" id="albT">ทดลองใส่การ์ด</h2>
+      <p class="sub">กด "ใส่การ์ด" ในรายการด้านล่าง การ์ดจะเข้าช่องว่างแรก · กดช่องเพื่อเลือก แล้วกดใส่การ์ดอีกใบเพื่อสลับ · ปรับดาวที่ช่องได้</p>
+      <div class="loadbar" id="loadbar"><span>Spirit Load</span><div class="bar"><i id="loadFill"></i></div><b id="loadTxt"></b></div>
+      <div class="album" id="album"></div>
+      <p class="hint" id="albumHint"></p>
+    </section>
+    <section class="panel" id="summary" aria-labelledby="sumT">
+      <h2 class="sec" id="sumT">สรุปการ์ด</h2>
+      <p class="sub" id="sumSub"></p>
+      <div class="tabs" role="group" aria-label="มุมมองสรุป"><button type="button" data-tab="stats" aria-pressed="true">สเตตัสรวม</button><button type="button" data-tab="res" aria-pressed="false">Resonance</button><button type="button" data-tab="codex" aria-pressed="false">Codex</button></div>
+      <div id="sumBody"></div>
+    </section>
+  </div>
+
+  <section class="panel" id="catalog" aria-labelledby="catT">
+    <h2 class="sec" id="catT">ค้นหาการ์ด</h2>
+    <p class="sub">ค้นด้วยชื่อมอน ผลการ์ด หรือชื่อแมพ เช่น "คริ" "Gold" "Riverside" · แต่ละใบบอกว่ามอนอยู่แมพไหน ช่วงเลเวลแมพ โอกาสได้วิญญาณ และจำนวนวิญญาณที่ต้องใช้แลก</p>
+    <div class="filters">
+      <input type="search" id="q" placeholder="ค้นหาการ์ด ผลการ์ด หรือแมพ" aria-label="ค้นหาการ์ด">
+      <select id="fMap" aria-label="แมพ"></select>
+      <select id="fRole" aria-label="ประเภทมอน"></select>
+      <select id="fStar" aria-label="ดาวที่ใช้แสดงค่า"><option value="1">แสดงค่า ★1</option><option value="2">★2</option><option value="3">★3</option><option value="4">★4</option><option value="5" selected>★5</option></select>
+    </div>
+    <div class="filters"><div class="chips" id="fColor"></div><div class="chips" id="fRegion"></div></div>
+    <p class="count" id="count"></p>
+    <div class="cards" id="cards"></div>
+    <div class="more"><button class="btn" type="button" id="more" hidden>แสดงเพิ่ม</button></div>
+  </section>
+
+  <section class="panel" id="saves" aria-labelledby="savT">
+    <h2 class="sec" id="savT">ชุดการ์ดที่บันทึกไว้</h2>
+    <p class="sub">บันทึกเก็บในเครื่องนี้เท่านั้น — แต่ละเครื่อง / เบราว์เซอร์แยกกัน · กด "แชร์" แล้วส่งลิงก์ให้เพื่อนเปิดดูได้ เพื่อนจะเห็นชุดนี้โดยไม่ทับชุดของเขา</p>
+    <form class="saverow" id="saveForm">
+      <input id="saveName" maxlength="40" placeholder="ตั้งชื่อชุด เช่น การ์ดฟาร์ม Lv 60" aria-label="ชื่อชุดการ์ด">
+      <button class="btn pri" type="submit">บันทึกชุดนี้</button>
+      <button class="btn" type="button" id="shareCur">แชร์ชุดนี้</button>
+    </form>
+    <div id="shareOut"></div>
+    <div id="saveList"></div>
+  </section>
+
+  <section class="panel notes" id="rules">
+    <h3>กฎการ์ด</h3>
+    <ul>
+      <li><b>ช่องการ์ด</b> 9 ช่อง เปิดที่ Lv 12 · 18 · 25 · 32 · 40 · 50 · 60 · 70 · 85 · ใส่การ์ดไหนช่องไหนก็ได้ ไม่ต้องใส่ในอุปกรณ์ · ถอดช่องละ 1,000 Gold</li>
+      <li><b>Spirit Load</b> มอนทั่วไป 1 · Elite 2 · Mini-boss 3 · Field Boss 5 · รับได้ 4 ที่ Lv 12 แล้วเพิ่ม 1 ทุก 6 เลเวล สูงสุด 18</li>
+      <li><b>ใบซ้ำ (Echo)</b> การ์ดมอนตัวเดิมใบที่ 2 ได้ผล 50% · ใบที่ 3 25% · ใบที่ 4 ไม่มีผล</li>
+      <li><b>ดาว</b> ★1 → ★5 ค่าเพิ่มเป็นเส้นตรง · การ์ดในสมุดโตเองเมื่อล่ามอนสายเดียวกัน · ใช้วิญญาณมอนตัวเดิมเร่งดาวได้</li>
+      <li><b>กลางวัน / กลางคืน</b> การ์ด ☾ Nocturnal แรง ×1.4 ตอนกลางคืน · ☀ Diurnal แรง ×1.4 ตอนกลางวัน · อีกช่วง ×0.85 · ◐ Steady เท่ากันทั้งวัน</li>
+      <li><b>Resonance</b> ภูมิภาคเดียวกัน 3 / 5 ใบ · มอนสายเดียวกัน 2 ใบ · สีเดียวกัน ★3 ขึ้นไป 3 ใบ (Legendary 2 ใบ) · นับมอนไม่ซ้ำตัว</li>
+      <li><b>เพดาน</b> ลดดาเมจที่ได้รับรวมสูงสุด 25% · ลดดาเมจจากบอส 30% · กลางคืน 30% · ต่อสายมอน 40%</li>
+      <li><b>เวอร์ชันข้อมูล</b> ค่าการ์ดและ Resonance ตามตัวเกม 24 ต.ค. 2569 — ใหม่กว่าวิกิ: Umbral Horror, Marrow Horror, Pitch Brute, Sky Sentinel ได้ Armor Pierce เพิ่ม และ Resonance สีนับการ์ด ★3 ขึ้นไป (วิกิเขียน ★5)</li>
+    </ul>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+window.CARDDATA = {"cards":[{"id":"skitter","n":"Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"crit","v":[1,4]}],"cost":3000,"chance":"15%","lv":[2,3],"maps":[{"id":"southvale_field","n":"Southvale Field","c":25,"b":[1,4],"boss":false}]},{"id":"gloom_skitter","n":"Gloom Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"night","v":[2.9,12]}],"cost":3000,"chance":"15%","lv":[90,97],"maps":[{"id":"throne_of_warden","n":"Throne of the Warden","c":20,"b":[90,99],"boss":false},{"id":"wardens_seat","n":"Warden's Seat","c":6,"b":[94,99],"boss":true}]},{"id":"rock_skitter","n":"Rock Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"brute"}],"cost":3000,"chance":"15%","lv":[12,15],"maps":[{"id":"old_quarry","n":"Old Quarry","c":42,"b":[10,16],"boss":false}]},{"id":"plains_skitter","n":"Plains Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"atkPct","v":[1,4.7]}],"cost":3600,"chance":"15%","lv":[20,23],"maps":[{"id":"sunfield_plains","n":"Sunfield Plains","c":33,"b":[18,24],"boss":false}]},{"id":"dusk_skitter","n":"Dusk Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"bleed","v":[13,47]}],"cost":4200,"chance":"15%","lv":[40,44],"maps":[{"id":"duskgate_pass","n":"Duskgate Pass","c":89,"b":[40,45],"boss":false}]},{"id":"frost_skitter","n":"Frost Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"slayer","v":[6,28],"species":"crab"}],"cost":4200,"chance":"15%","lv":[46,49],"maps":[{"id":"frostpeak_slopes","n":"Frostpeak Slopes","c":31,"b":[45,52],"boss":false}]},{"id":"umbral_skitter","n":"Umbral Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"expose","v":[4,14]}],"cost":5400,"chance":"15%","lv":[81,87],"maps":[{"id":"umbral_depths","n":"Umbral Depths","c":29,"b":[80,90],"boss":false}]},{"id":"acorn_skitter","n":"Acorn Skitter","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[6,28],"species":"sprout"}],"cost":3000,"chance":"15%","lv":[4,8],"maps":[{"id":"whispering_woods","n":"Whispering Woods","c":31,"b":[4,9],"boss":false},{"id":"bloomcrown_glade","n":"Bloomcrown Glade","c":8,"b":[6,9],"boss":true}]},{"id":"reed_skipper","n":"Reed Skipper","role":"trash","rt":"ทั่วไป","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"opener","v":[3.6,16]}],"cost":3000,"chance":"15%","lv":[6,9],"maps":[{"id":"riverside","n":"Riverside","c":21,"b":[6,12],"boss":false}]},{"id":"ash_hound","n":"Ash Hound","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"B","sp":"hound","fx":[{"k":"haste","v":[4,17]}],"cost":3600,"chance":"15%","lv":[18,22],"maps":[{"id":"sunfield_plains","n":"Sunfield Plains","c":36,"b":[18,24],"boss":false}]},{"id":"ember_hound","n":"Ember Hound","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"B","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"remnant"}],"cost":3600,"chance":"15%","lv":[30,35],"maps":[{"id":"ember_hollow","n":"Ember Hollow","c":49,"b":[28,36],"boss":false},{"id":"cinder_eyrie","n":"Cinder Eyrie","c":12,"b":[32,36],"boss":true}]},{"id":"frost_fang","n":"Frost Fang","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"wisp"}],"cost":4200,"chance":"15%","lv":[46,51],"maps":[{"id":"frostpeak_slopes","n":"Frostpeak Slopes","c":47,"b":[45,52],"boss":false}]},{"id":"steppe_hound","n":"Steppe Hound","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"skitter"}],"cost":4800,"chance":"15%","lv":[58,61],"maps":[{"id":"howling_steppes","n":"Howling Steppes","c":50,"b":[58,64],"boss":false}]},{"id":"ice_otter","n":"Ice Otter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"echo","v":[10,40]}],"cost":4200,"chance":"15%","lv":[52,57],"maps":[{"id":"frozen_mere","n":"Frozen Mere","c":42,"b":[52,58],"boss":false},{"id":"aurora_hollow","n":"Aurora Hollow","c":14,"b":[55,58],"boss":true}]},{"id":"storm_harpy","n":"Storm Harpy","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"harpy","fx":[{"k":"chain","v":[6.4,23]}],"cost":4800,"chance":"15%","lv":[59,63],"maps":[{"id":"howling_steppes","n":"Howling Steppes","c":36,"b":[58,64],"boss":false}]},{"id":"thornling","n":"Thornling","role":"ambush","rt":"ซุ่มโจมตี","color":"red","load":1,"rg":"A","sp":"thornling","fx":[{"k":"debuffed","v":[2.1,9.4]}],"cost":3000,"chance":"15%","lv":[5,8],"maps":[{"id":"whispering_woods","n":"Whispering Woods","c":17,"b":[4,9],"boss":false},{"id":"bloomcrown_glade","n":"Bloomcrown Glade","c":4,"b":[6,9],"boss":true}]},{"id":"corrupt_thornling","n":"Corrupt Thornling","role":"ambush","rt":"ซุ่มโจมตี","color":"red","load":1,"rg":"B","sp":"thornling","fx":[{"k":"lifesteal","v":[0.5,2.5]}],"cost":3600,"chance":"15%","lv":[26,29],"maps":[{"id":"gloomroot_forest","n":"Gloomroot Forest","c":27,"b":[24,30],"boss":false}]},{"id":"shard_thornling","n":"Shard Thornling","role":"ambush","rt":"ซุ่มโจมตี","color":"red","load":1,"rg":"D","sp":"thornling","fx":[{"k":"critDmg","v":[2.3,12]}],"cost":4800,"chance":"15%","lv":[75,79],"maps":[{"id":"shattered_vale","n":"Shattered Vale","c":16,"b":[70,80],"boss":false},{"id":"opalweb_grotto","n":"Opalweb Grotto","c":3,"b":[75,80],"boss":true}]},{"id":"umbral_horror","n":"Umbral Horror","role":"elite","rt":"Elite","color":"red","load":2,"rg":"D","sp":"horror","fx":[{"k":"desperate","v":[8,30]},{"k":"crit","v":[1,3]},{"k":"armorPen","v":[1.5,4]}],"cost":1620,"chance":"35%","lv":[91,91],"maps":[{"id":"umbral_depths","n":"Umbral Depths","c":1,"b":[80,90],"boss":false}]},{"id":"hive_skitter","n":"Hive Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"thornling"}],"cost":3000,"chance":"15%","lv":[5,7],"maps":[{"id":"honeyrill","n":"Honeyrill","c":28,"b":[3,8],"boss":false}]},{"id":"fern_thornling","n":"Fern Thornling","role":"ambush","rt":"ซุ่มโจมตี","color":"red","load":1,"rg":"A","sp":"thornling","fx":[{"k":"bleed","v":[10,38]}],"cost":3000,"chance":"15%","lv":[11,15],"maps":[{"id":"bracken_sink","n":"Bracken Sink","c":27,"b":[9,15],"boss":false}]},{"id":"burrow_skitter","n":"Burrow Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"opener","v":[3,14]}],"cost":3000,"chance":"15%","lv":[11,14],"maps":[{"id":"bracken_sink","n":"Bracken Sink","c":48,"b":[9,15],"boss":false}]},{"id":"hill_hound","n":"Hill Hound","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"A","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"pebblit"}],"cost":3000,"chance":"15%","lv":[15,18],"maps":[{"id":"verdigris_rise","n":"Verdigris Rise","c":28,"b":[14,20],"boss":false}]},{"id":"tar_thornling","n":"Tar Thornling","role":"ambush","rt":"ซุ่มโจมตี","color":"red","load":1,"rg":"B","sp":"thornling","fx":[{"k":"slayer","v":[5,25],"species":"hound"}],"cost":3600,"chance":"15%","lv":[26,29],"maps":[{"id":"pitchwood","n":"Pitchwood","c":27,"b":[24,30],"boss":false}]},{"id":"sulfur_skitter","n":"Sulfur Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"crab"}],"cost":3600,"chance":"15%","lv":[31,35],"maps":[{"id":"yellowlick_flats","n":"Yellowlick Flats","c":53,"b":[30,36],"boss":false}]},{"id":"drift_skitter","n":"Drift Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"critDmg","v":[2,10]}],"cost":4200,"chance":"15%","lv":[48,52],"maps":[{"id":"sledrun_gully","n":"Sledrun Gully","c":49,"b":[47,53],"boss":false}]},{"id":"tusk_fang","n":"Tusk Fang","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"lurker"}],"cost":4200,"chance":"15%","lv":[47,52],"maps":[{"id":"sledrun_gully","n":"Sledrun Gully","c":37,"b":[47,53],"boss":false}]},{"id":"kite_harpy","n":"Kite Harpy","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"harpy","fx":[{"k":"aspd","v":[1.5,6.7]}],"cost":4800,"chance":"15%","lv":[65,69],"maps":[{"id":"kitewind_terraces","n":"Kitewind Terraces","c":34,"b":[64,70],"boss":false}]},{"id":"terrace_skitter","n":"Terrace Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"opener","v":[3.3,15]}],"cost":4800,"chance":"15%","lv":[65,68],"maps":[{"id":"kitewind_terraces","n":"Kitewind Terraces","c":21,"b":[64,70],"boss":false}]},{"id":"wrack_skitter","n":"Wrack Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"expose","v":[3.6,13.2]}],"cost":4800,"chance":"15%","lv":[75,78],"maps":[{"id":"glasswrack","n":"Glasswrack","c":29,"b":[72,80],"boss":false}]},{"id":"marrow_skitter","n":"Marrow Skitter","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"bleed","v":[12,44]}],"cost":5400,"chance":"15%","lv":[83,89],"maps":[{"id":"marrowdeep","n":"Marrowdeep","c":30,"b":[82,90],"boss":false}]},{"id":"marrow_horror","n":"Marrow Horror","role":"elite","rt":"Elite","color":"red","load":2,"rg":"D","sp":"horror","fx":[{"k":"desperate","v":[8,30]},{"k":"crit","v":[1.4,4.4]},{"k":"armorPen","v":[1,3]}],"cost":1620,"chance":"35%","lv":[91,91],"maps":[{"id":"marrowdeep","n":"Marrowdeep","c":1,"b":[82,90],"boss":false}]},{"id":"muster_hound","n":"Muster Hound","role":"pack","rt":"ฝูง","color":"red","load":1,"rg":"D","sp":"hound","fx":[{"k":"atkPct","v":[1.1,5]}],"cost":5400,"chance":"15%","lv":[94,97],"maps":[{"id":"rustbell_barracks","n":"Rustbell Barracks","c":23,"b":[92,99],"boss":false}]},{"id":"snipcrab","n":"Snipcrab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"A","sp":"crab","fx":[{"k":"thorns","v":[8,35]}],"cost":3000,"chance":"15%","lv":[6,11],"maps":[{"id":"riverside","n":"Riverside","c":26,"b":[6,12],"boss":false}]},{"id":"bog_crab","n":"Bog Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"B","sp":"crab","fx":[{"k":"ward","v":[6.5,29],"species":"brute"}],"cost":3600,"chance":"15%","lv":[36,40],"maps":[{"id":"mistmire_swamp","n":"Mistmire Swamp","c":19,"b":[34,40],"boss":false},{"id":"lotus_hollow","n":"Lotus Hollow","c":4,"b":[37,40],"boss":true}]},{"id":"frost_crab","n":"Frost Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"C","sp":"crab","fx":[{"k":"wardNight","v":[3.6,13]}],"cost":4200,"chance":"15%","lv":[54,57],"maps":[{"id":"frozen_mere","n":"Frozen Mere","c":25,"b":[52,58],"boss":false},{"id":"aurora_hollow","n":"Aurora Hollow","c":4,"b":[55,58],"boss":true}]},{"id":"pebblit","n":"Pebblit","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"A","sp":"pebblit","fx":[{"k":"dmgTaken","v":[1,5]}],"cost":3000,"chance":"15%","lv":[11,15],"maps":[{"id":"old_quarry","n":"Old Quarry","c":22,"b":[10,16],"boss":false}]},{"id":"magma_pebblit","n":"Magma Pebblit","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"B","sp":"pebblit","fx":[{"k":"barrier","v":[7.9,29]}],"cost":3600,"chance":"15%","lv":[30,35],"maps":[{"id":"ember_hollow","n":"Ember Hollow","c":22,"b":[28,36],"boss":false},{"id":"cinder_eyrie","n":"Cinder Eyrie","c":4,"b":[32,36],"boss":true}]},{"id":"tide_brute","n":"Tide Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[3.7,16]}],"cost":900,"chance":"35%","lv":[13,13],"maps":[{"id":"riverside","n":"Riverside","c":1,"b":[6,12],"boss":false}]},{"id":"brute","n":"Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"bulwark","v":[8,26]}],"cost":900,"chance":"35%","lv":[17,17],"maps":[{"id":"old_quarry","n":"Old Quarry","c":1,"b":[10,16],"boss":false}]},{"id":"quarry_brute","n":"Quarry Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"dmgTaken","v":[1.5,6.5]},{"k":"wardBoss","v":[2,8]}],"cost":900,"chance":"35%","lv":[17,17],"maps":[{"id":"old_quarry","n":"Old Quarry","c":1,"b":[10,16],"boss":false}]},{"id":"field_brute","n":"Field Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"thorns","v":[15,60]},{"k":"dmgTaken","v":[0.5,1.9]}],"cost":1080,"chance":"35%","lv":[25,25],"maps":[{"id":"sunfield_plains","n":"Sunfield Plains","c":1,"b":[18,24],"boss":false}]},{"id":"corrupt_treant","n":"Corrupt Treant","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"renew","v":[0.7,3.5]},{"k":"dmgTaken","v":[1.1,4.4]}],"cost":1080,"chance":"35%","lv":[31,31],"maps":[{"id":"gloomroot_forest","n":"Gloomroot Forest","c":1,"b":[24,30],"boss":false}]},{"id":"cinder_brute","n":"Cinder Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"wardBoss","v":[5.3,20]},{"k":"dmgTaken","v":[0.5,1.9]}],"cost":1080,"chance":"35%","lv":[37,37],"maps":[{"id":"ember_hollow","n":"Ember Hollow","c":1,"b":[28,36],"boss":false}]},{"id":"gate_brute","n":"Gate Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"hound"},{"k":"dmgTaken","v":[1,3.9]}],"cost":1260,"chance":"35%","lv":[45,45],"maps":[]},{"id":"rime_brute","n":"Rime Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"wisp"},{"k":"dmgTaken","v":[1,3.9]}],"cost":1260,"chance":"35%","lv":[53,53],"maps":[{"id":"frostpeak_slopes","n":"Frostpeak Slopes","c":1,"b":[45,52],"boss":false}]},{"id":"cloud_brute","n":"Cloud Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"remnant"},{"k":"dmgTaken","v":[1,3.9]}],"cost":1440,"chance":"35%","lv":[71,71],"maps":[{"id":"cloudspire_ruins","n":"Cloudspire Ruins","c":1,"b":[64,70],"boss":false}]},{"id":"shard_brute","n":"Shard Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"dmgTaken","v":[1.2,4.9]},{"k":"thorns","v":[7.3,30]}],"cost":1620,"chance":"35%","lv":[81,81],"maps":[{"id":"shattered_vale","n":"Shattered Vale","c":1,"b":[70,80],"boss":false}]},{"id":"depth_brute","n":"Depth Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"barrier","v":[11,38]},{"k":"wardBoss","v":[4.1,14]}],"cost":1620,"chance":"35%","lv":[91,91],"maps":[]},{"id":"thicket_stag","n":"Thicket Stag","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[2.8,13]},{"k":"moveSpeed","v":[1.4,5.6]}],"cost":900,"chance":"35%","lv":[10,10],"maps":[{"id":"whispering_woods","n":"Whispering Woods","c":1,"b":[4,9],"boss":false}]},{"id":"moss_crab","n":"Moss Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"A","sp":"crab","fx":[{"k":"ward","v":[6.5,29],"species":"skitter"}],"cost":3000,"chance":"15%","lv":[10,13],"maps":[{"id":"bracken_sink","n":"Bracken Sink","c":12,"b":[9,15],"boss":false}]},{"id":"copper_pebblit","n":"Copper Pebblit","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"A","sp":"pebblit","fx":[{"k":"wardNight","v":[3.2,12]}],"cost":3000,"chance":"15%","lv":[16,19],"maps":[{"id":"verdigris_rise","n":"Verdigris Rise","c":22,"b":[14,20],"boss":false}]},{"id":"willow_brute","n":"Willow Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[3,13]},{"k":"renew","v":[0.4,1.6]}],"cost":900,"chance":"35%","lv":[9,9],"maps":[{"id":"honeyrill","n":"Honeyrill","c":1,"b":[3,8],"boss":false}]},{"id":"moss_brute","n":"Moss Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"barrier","v":[9,34]},{"k":"dmgTaken","v":[1.1,4.4]}],"cost":900,"chance":"35%","lv":[16,16],"maps":[{"id":"bracken_sink","n":"Bracken Sink","c":1,"b":[9,15],"boss":false}]},{"id":"copper_brute","n":"Copper Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"wardBoss","v":[4.5,17]},{"k":"dmgTaken","v":[0.6,2.4]}],"cost":900,"chance":"35%","lv":[21,21],"maps":[{"id":"verdigris_rise","n":"Verdigris Rise","c":1,"b":[14,20],"boss":false}]},{"id":"pitch_brute","n":"Pitch Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"thorns","v":[14,56]},{"k":"maxHpPct","v":[0.8,3.2]},{"k":"armorPen","v":[1.5,4]}],"cost":1080,"chance":"35%","lv":[31,31],"maps":[{"id":"pitchwood","n":"Pitchwood","c":1,"b":[24,30],"boss":false}]},{"id":"salt_pebblit","n":"Salt Pebblit","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"B","sp":"pebblit","fx":[{"k":"ward","v":[6.5,29],"species":"wisp"}],"cost":3600,"chance":"15%","lv":[33,35],"maps":[{"id":"yellowlick_flats","n":"Yellowlick Flats","c":12,"b":[30,36],"boss":false}]},{"id":"salt_brute","n":"Salt Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"wardNight","v":[4,15]},{"k":"dmgTaken","v":[1,3.9]}],"cost":1080,"chance":"35%","lv":[37,37],"maps":[{"id":"yellowlick_flats","n":"Yellowlick Flats","c":1,"b":[30,36],"boss":false}]},{"id":"peat_crab","n":"Peat Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"B","sp":"crab","fx":[{"k":"dmgTaken","v":[1.1,4.8]}],"cost":3600,"chance":"15%","lv":[38,41],"maps":[{"id":"peatcut_bog","n":"Peatcut Bog","c":22,"b":[36,42],"boss":false}]},{"id":"scree_pebblit","n":"Scree Pebblit","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"C","sp":"pebblit","fx":[{"k":"thorns","v":[9,38]}],"cost":4200,"chance":"15%","lv":[49,52],"maps":[{"id":"sledrun_gully","n":"Sledrun Gully","c":11,"b":[47,53],"boss":false}]},{"id":"gully_brute","n":"Gully Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"skitter"},{"k":"dmgTaken","v":[1,3.9]}],"cost":1260,"chance":"35%","lv":[54,54],"maps":[{"id":"sledrun_gully","n":"Sledrun Gully","c":1,"b":[47,53],"boss":false}]},{"id":"brine_crab","n":"Brine Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"C","sp":"crab","fx":[{"k":"maxHpPct","v":[1.5,7]}],"cost":4200,"chance":"15%","lv":[55,59],"maps":[{"id":"brinecrust_shoals","n":"Brinecrust Shoals","c":26,"b":[54,60],"boss":false}]},{"id":"floe_brute","n":"Floe Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"barrier","v":[11,40]},{"k":"thorns","v":[8,32]}],"cost":1440,"chance":"35%","lv":[61,61],"maps":[{"id":"brinecrust_shoals","n":"Brinecrust Shoals","c":1,"b":[54,60],"boss":false}]},{"id":"glass_crab","n":"Glass Crab","role":"tank","rt":"ถึก","color":"blue","load":1,"rg":"D","sp":"crab","fx":[{"k":"wardBoss","v":[2.5,10]}],"cost":4800,"chance":"15%","lv":[75,77],"maps":[{"id":"glasswrack","n":"Glasswrack","c":7,"b":[72,80],"boss":false}]},{"id":"wrack_brute","n":"Wrack Brute","role":"elite","rt":"Elite","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"maxHpPct","v":[2.8,13]},{"k":"thorns","v":[6,24]}],"cost":1620,"chance":"35%","lv":[81,81],"maps":[{"id":"glasswrack","n":"Glasswrack","c":1,"b":[72,80],"boss":false}]},{"id":"sprout","n":"Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"A","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"vit"}],"cost":3000,"chance":"15%","lv":[1,2],"maps":[{"id":"southvale_field","n":"Southvale Field","c":32,"b":[1,4],"boss":false}]},{"id":"field_sprout","n":"Field Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"str"}],"cost":3000,"chance":"15%","lv":[19,23],"maps":[{"id":"sunfield_plains","n":"Sunfield Plains","c":33,"b":[18,24],"boss":false}]},{"id":"gloom_sprout","n":"Gloom Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"int"}],"cost":3600,"chance":"15%","lv":[25,28],"maps":[{"id":"gloomroot_forest","n":"Gloomroot Forest","c":31,"b":[24,30],"boss":false}]},{"id":"vale_sprout","n":"Vale Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"D","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"dex"}],"cost":4800,"chance":"15%","lv":[71,78],"maps":[{"id":"shattered_vale","n":"Shattered Vale","c":22,"b":[70,80],"boss":false},{"id":"opalweb_grotto","n":"Opalweb Grotto","c":5,"b":[75,80],"boss":true}]},{"id":"elder_sprout","n":"Elder Sprout","role":"elite","rt":"Elite","color":"green","load":2,"rg":"A","sp":"sprout","fx":[{"k":"gather","v":[4.5,15]},{"k":"stat","v":[2,9],"stat":"vit"},{"k":"maxHpPct","v":[0.4,1.7]}],"cost":900,"chance":"35%","lv":[5,5],"maps":[{"id":"southvale_field","n":"Southvale Field","c":1,"b":[1,4],"boss":false}]},{"id":"mire_lurker","n":"Mire Lurker","role":"ambush","rt":"ซุ่มโจมตี","color":"green","load":1,"rg":"B","sp":"lurker","fx":[{"k":"stat","v":[1,8],"stat":"agi"}],"cost":3600,"chance":"15%","lv":[37,40],"maps":[{"id":"mistmire_swamp","n":"Mistmire Swamp","c":14,"b":[34,40],"boss":false},{"id":"lotus_hollow","n":"Lotus Hollow","c":4,"b":[37,40],"boss":true}]},{"id":"mire_elder","n":"Mire Elder","role":"elite","rt":"Elite","color":"green","load":2,"rg":"B","sp":"lurker","fx":[{"k":"drop","v":[3,15]},{"k":"maxHpPct","v":[1,3.8]}],"cost":1260,"chance":"35%","lv":[41,41],"maps":[{"id":"mistmire_swamp","n":"Mistmire Swamp","c":1,"b":[34,40],"boss":false}]},{"id":"mere_lurker","n":"Mere Lurker","role":"elite","rt":"Elite","color":"green","load":2,"rg":"C","sp":"lurker","fx":[{"k":"spirit","v":[9.4,50]}],"cost":1260,"chance":"35%","lv":[59,59],"maps":[{"id":"frozen_mere","n":"Frozen Mere","c":1,"b":[52,58],"boss":false}]},{"id":"lantern_moth","n":"Lantern Moth","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"D","sp":"wisp","fx":[{"k":"stat","v":[1,8],"stat":"luk"}],"cost":3000,"chance":"15%","lv":[94,98],"maps":[{"id":"throne_of_warden","n":"Throne of the Warden","c":12,"b":[90,99],"boss":false},{"id":"wardens_seat","n":"Warden's Seat","c":5,"b":[94,99],"boss":true}]},{"id":"shrine_firefly","n":"Shrine Firefly","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"A","sp":"wisp","fx":[{"k":"gold","v":[3,15]}],"cost":3000,"chance":"15%","lv":[15,19],"maps":[{"id":"ancient_ruins","n":"Ancient Ruins","c":71,"b":[14,20],"boss":true}]},{"id":"spore_lantern","n":"Spore Lantern","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"B","sp":"wisp","fx":[{"k":"moveSpeed","v":[2.4,9.6]}],"cost":3000,"chance":"15%","lv":[25,29],"maps":[{"id":"gloomroot_forest","n":"Gloomroot Forest","c":24,"b":[24,30],"boss":false}]},{"id":"abyss_jelly","n":"Abyss Jelly","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"D","sp":"wisp","fx":[{"k":"gust","v":[13,40]},{"k":"maxHpPct","v":[0.4,1.8]}],"cost":4800,"chance":"15%","lv":[84,89],"maps":[{"id":"umbral_depths","n":"Umbral Depths","c":27,"b":[80,90],"boss":false}]},{"id":"clover_sprout","n":"Clover Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"A","sp":"sprout","fx":[{"k":"gather","v":[3,12]}],"cost":3000,"chance":"15%","lv":[3,5],"maps":[{"id":"honeyrill","n":"Honeyrill","c":31,"b":[3,8],"boss":false}]},{"id":"resin_sprout","n":"Resin Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,7],"stat":"luk"}],"cost":3600,"chance":"15%","lv":[24,28],"maps":[{"id":"pitchwood","n":"Pitchwood","c":34,"b":[24,30],"boss":false}]},{"id":"reed_lurker","n":"Reed Lurker","role":"ambush","rt":"ซุ่มโจมตี","color":"green","load":1,"rg":"B","sp":"lurker","fx":[{"k":"drop","v":[2,10]}],"cost":3600,"chance":"15%","lv":[39,42],"maps":[{"id":"peatcut_bog","n":"Peatcut Bog","c":22,"b":[36,42],"boss":false}]},{"id":"peat_elder","n":"Peat Elder","role":"elite","rt":"Elite","color":"green","load":2,"rg":"B","sp":"lurker","fx":[{"k":"gather","v":[4.5,15]},{"k":"maxHpPct","v":[1,3.8]},{"k":"drop","v":[1.2,5]}],"cost":1260,"chance":"35%","lv":[43,43],"maps":[{"id":"peatcut_bog","n":"Peatcut Bog","c":1,"b":[36,42],"boss":false}]},{"id":"crust_lurker","n":"Crust Lurker","role":"ambush","rt":"ซุ่มโจมตี","color":"green","load":1,"rg":"C","sp":"lurker","fx":[{"k":"stat","v":[1,7],"stat":"vit"}],"cost":4200,"chance":"15%","lv":[58,60],"maps":[{"id":"brinecrust_shoals","n":"Brinecrust Shoals","c":14,"b":[54,60],"boss":false}]},{"id":"glass_sprout","n":"Glass Sprout","role":"trash","rt":"ทั่วไป","color":"green","load":1,"rg":"D","sp":"sprout","fx":[{"k":"stat","v":[1,7],"stat":"int"}],"cost":4800,"chance":"15%","lv":[73,79],"maps":[{"id":"glasswrack","n":"Glasswrack","c":18,"b":[72,80],"boss":false}]},{"id":"pit_lurker","n":"Pit Lurker","role":"ambush","rt":"ซุ่มโจมตี","color":"green","load":1,"rg":"D","sp":"lurker","fx":[{"k":"moveSpeed","v":[2.2,9]}],"cost":5400,"chance":"15%","lv":[85,89],"maps":[{"id":"marrowdeep","n":"Marrowdeep","c":12,"b":[82,90],"boss":false}]},{"id":"wisp","n":"Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"matkPct","v":[1,4.7]}],"cost":3000,"chance":"15%","lv":[2,3],"maps":[{"id":"southvale_field","n":"Southvale Field","c":12,"b":[1,4],"boss":false}]},{"id":"gloom_wisp","n":"Gloom Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"focus","v":[0.8,4]}],"cost":3000,"chance":"15%","lv":[5,8],"maps":[{"id":"whispering_woods","n":"Whispering Woods","c":27,"b":[4,9],"boss":false},{"id":"bloomcrown_glade","n":"Bloomcrown Glade","c":4,"b":[6,9],"boss":true}]},{"id":"river_wisp","n":"River Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"echo","v":[8,32]}],"cost":3000,"chance":"15%","lv":[7,11],"maps":[{"id":"riverside","n":"Riverside","c":33,"b":[6,12],"boss":false}]},{"id":"ember_wisp","n":"Ember Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"nova","v":[1,3.9]}],"cost":3600,"chance":"15%","lv":[30,35],"maps":[{"id":"ember_hollow","n":"Ember Hollow","c":26,"b":[28,36],"boss":false},{"id":"cinder_eyrie","n":"Cinder Eyrie","c":4,"b":[32,36],"boss":true}]},{"id":"bog_wisp","n":"Bog Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"lurker"}],"cost":3600,"chance":"15%","lv":[35,39],"maps":[{"id":"mistmire_swamp","n":"Mistmire Swamp","c":23,"b":[34,40],"boss":false},{"id":"lotus_hollow","n":"Lotus Hollow","c":8,"b":[37,40],"boss":true}]},{"id":"frost_wisp","n":"Frost Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"frost","v":[10,30]}],"cost":4200,"chance":"15%","lv":[48,51],"maps":[{"id":"frostpeak_slopes","n":"Frostpeak Slopes","c":24,"b":[45,52],"boss":false}]},{"id":"ice_wisp","n":"Ice Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"cdr","v":[1,5]}],"cost":4200,"chance":"15%","lv":[55,57],"maps":[{"id":"frozen_mere","n":"Frozen Mere","c":31,"b":[52,58],"boss":false},{"id":"aurora_hollow","n":"Aurora Hollow","c":4,"b":[55,58],"boss":true}]},{"id":"gale_wisp","n":"Gale Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"aspd","v":[1.5,6.7]}],"cost":4800,"chance":"15%","lv":[60,63],"maps":[{"id":"howling_steppes","n":"Howling Steppes","c":33,"b":[58,64],"boss":false}]},{"id":"sky_wisp","n":"Sky Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"elite","v":[3,13]}],"cost":4800,"chance":"15%","lv":[64,69],"maps":[{"id":"cloudspire_ruins","n":"Cloudspire Ruins","c":56,"b":[64,70],"boss":false},{"id":"tempest_aerie","n":"Tempest Aerie","c":11,"b":[67,70],"boss":true}]},{"id":"void_wisp","n":"Void Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"boss","v":[3.5,16]}],"cost":4800,"chance":"15%","lv":[73,79],"maps":[{"id":"shattered_vale","n":"Shattered Vale","c":20,"b":[70,80],"boss":false},{"id":"opalweb_grotto","n":"Opalweb Grotto","c":3,"b":[75,80],"boss":true}]},{"id":"pollen_wisp","n":"Pollen Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"renew","v":[0.8,3.6]}],"cost":3000,"chance":"15%","lv":[5,7],"maps":[{"id":"honeyrill","n":"Honeyrill","c":23,"b":[3,8],"boss":false}]},{"id":"dust_wisp","n":"Dust Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"focus","v":[1,4.6]}],"cost":3000,"chance":"15%","lv":[16,19],"maps":[{"id":"verdigris_rise","n":"Verdigris Rise","c":25,"b":[14,20],"boss":false}]},{"id":"sap_wisp","n":"Sap Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"thornling"}],"cost":3600,"chance":"15%","lv":[27,29],"maps":[{"id":"pitchwood","n":"Pitchwood","c":15,"b":[24,30],"boss":false}]},{"id":"vent_wisp","n":"Vent Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"nova","v":[1.1,4.2]}],"cost":3600,"chance":"15%","lv":[31,35],"maps":[{"id":"yellowlick_flats","n":"Yellowlick Flats","c":27,"b":[30,36],"boss":false}]},{"id":"peat_wisp","n":"Peat Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"crab"}],"cost":3600,"chance":"15%","lv":[37,40],"maps":[{"id":"peatcut_bog","n":"Peatcut Bog","c":15,"b":[36,42],"boss":false}]},{"id":"floe_wisp","n":"Floe Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"matkPct","v":[1.1,5]}],"cost":4200,"chance":"15%","lv":[55,58],"maps":[{"id":"brinecrust_shoals","n":"Brinecrust Shoals","c":28,"b":[54,60],"boss":false}]},{"id":"chime_wisp","n":"Chime Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"echo","v":[9,34]}],"cost":4800,"chance":"15%","lv":[65,69],"maps":[{"id":"kitewind_terraces","n":"Kitewind Terraces","c":18,"b":[64,70],"boss":false}]},{"id":"terrace_sentinel","n":"Terrace Sentinel","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"C","sp":"remnant","fx":[{"k":"elite","v":[6,21]},{"k":"cdr","v":[0.8,2.4]}],"cost":1440,"chance":"35%","lv":[71,71],"maps":[{"id":"kitewind_terraces","n":"Kitewind Terraces","c":1,"b":[64,70],"boss":false}]},{"id":"tallow_wisp","n":"Tallow Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"night","v":[2.9,12]}],"cost":5400,"chance":"15%","lv":[85,87],"maps":[{"id":"marrowdeep","n":"Marrowdeep","c":9,"b":[82,90],"boss":false}]},{"id":"rust_remnant","n":"Rust Remnant","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"D","sp":"remnant","fx":[{"k":"matkPct","v":[1,4.4]}],"cost":5400,"chance":"15%","lv":[93,98],"maps":[{"id":"rustbell_barracks","n":"Rustbell Barracks","c":16,"b":[92,99],"boss":false}]},{"id":"lamp_wisp","n":"Lamp Wisp","role":"trash","rt":"ทั่วไป","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"gold","v":[3,15]}],"cost":5400,"chance":"15%","lv":[95,97],"maps":[{"id":"rustbell_barracks","n":"Rustbell Barracks","c":7,"b":[92,99],"boss":false}]},{"id":"rust_captain","n":"Rust Captain","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"boss","v":[6,21]},{"k":"dmgTaken","v":[1,3.5]}],"cost":1620,"chance":"35%","lv":[99,99],"maps":[{"id":"rustbell_barracks","n":"Rustbell Barracks","c":1,"b":[92,99],"boss":false}]},{"id":"remnant","n":"Remnant","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"A","sp":"remnant","fx":[{"k":"matkPct","v":[2,8]},{"k":"cdr","v":[1,3]}],"cost":900,"chance":"35%","lv":[21,21],"maps":[{"id":"ancient_ruins","n":"Ancient Ruins","c":3,"b":[14,20],"boss":true}]},{"id":"dusk_remnant","n":"Dusk Remnant","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"B","sp":"remnant","fx":[{"k":"night","v":[5,20]},{"k":"expose","v":[3,10]}],"cost":1260,"chance":"35%","lv":[46,46],"maps":[{"id":"duskgate_pass","n":"Duskgate Pass","c":1,"b":[40,45],"boss":false}]},{"id":"storm_remnant","n":"Storm Remnant","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"C","sp":"remnant","fx":[{"k":"chain","v":[11,38]},{"k":"aspd","v":[0.8,3.8]}],"cost":1440,"chance":"35%","lv":[71,71],"maps":[{"id":"cloudspire_ruins","n":"Cloudspire Ruins","c":1,"b":[64,70],"boss":false}]},{"id":"vale_remnant","n":"Vale Remnant","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"renew","v":[0.5,2.1]},{"k":"matkPct","v":[1.2,5.8]}],"cost":1440,"chance":"35%","lv":[81,81],"maps":[{"id":"shattered_vale","n":"Shattered Vale","c":1,"b":[70,80],"boss":false}]},{"id":"throne_guard","n":"Throne Guard","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"dmgTaken","v":[1.2,4.9]},{"k":"thorns","v":[7.3,30]}],"cost":1440,"chance":"35%","lv":[99,99],"maps":[{"id":"throne_of_warden","n":"Throne of the Warden","c":1,"b":[90,99],"boss":false}]},{"id":"golden_sentinel","n":"Golden Sentinel","role":"elite","rt":"Elite","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"gold","v":[4,16]},{"k":"drop","v":[2,8]}],"cost":1440,"chance":"35%","lv":[67,67],"maps":[]},{"id":"vale_keeper","n":"Vale Keeper","role":"mini-boss","rt":"Mini-boss","color":"purple","load":3,"rg":"A","sp":"remnant","fx":[{"k":"elite","v":[7.5,30]},{"k":"renew","v":[0.6,2.5]}],"cost":216,"chance":"100%","lv":[22,22],"maps":[{"id":"ancient_ruins","n":"Ancient Ruins","c":1,"b":[14,20],"boss":true}]},{"id":"dusk_herald","n":"Dusk Herald","role":"mini-boss","rt":"Mini-boss","color":"purple","load":3,"rg":"B","sp":"remnant","fx":[{"k":"night","v":[6,24]},{"k":"nova","v":[2,7]}],"cost":252,"chance":"100%","lv":[47,47],"maps":[{"id":"duskgate_pass","n":"Duskgate Pass","c":1,"b":[40,45],"boss":false}]},{"id":"sky_sentinel","n":"Sky Sentinel","role":"mini-boss","rt":"Mini-boss","color":"purple","load":3,"rg":"C","sp":"remnant","fx":[{"k":"boss","v":[7.6,28]},{"k":"crit","v":[1.3,5.1]},{"k":"armorPen","v":[2,5]}],"cost":288,"chance":"100%","lv":[72,72],"maps":[{"id":"cloudspire_ruins","n":"Cloudspire Ruins","c":1,"b":[64,70],"boss":false}]},{"id":"vale_warden","n":"Vale Warden","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"D","sp":"warden","fx":[{"k":"judgment","v":[40,100]},{"k":"maxHpPct","v":[4,15]}],"cost":80,"chance":"100%","lv":[99,99],"maps":[{"id":"wardens_seat","n":"Warden's Seat","c":1,"b":[94,99],"boss":true}],"ln":"Warden's Judgment"},{"id":"bloom_crowned_stag","n":"Bloom Crowned Stag","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"A","sp":"warden","fx":[{"k":"bloom","v":[6,15]},{"k":"moveSpeed","v":[3,10]}],"cost":60,"chance":"100%","lv":[25,25],"maps":[{"id":"bloomcrown_glade","n":"Bloomcrown Glade","c":1,"b":[6,9],"boss":true}],"ln":"Spring Bloom"},{"id":"prism_shell_sovereign","n":"Prism Shell Sovereign","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"A","sp":"warden","fx":[{"k":"prism","v":[10,25]},{"k":"dmgTaken","v":[2,8]}],"cost":60,"chance":"100%","lv":[25,25],"maps":[{"id":"ancient_ruins","n":"Ancient Ruins","c":1,"b":[14,20],"boss":true}],"ln":"Prism Ward"},{"id":"cinder_plume_roc","n":"Cinder Plume Roc","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"B","sp":"warden","fx":[{"k":"phoenix","v":[15,40]},{"k":"atkPct","v":[2,8]}],"cost":65,"chance":"100%","lv":[36,36],"maps":[{"id":"cinder_eyrie","n":"Cinder Eyrie","c":1,"b":[32,36],"boss":true}],"ln":"Phoenix Flame"},{"id":"lotus_maw_matriarch","n":"Lotus Maw Matriarch","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"B","sp":"warden","fx":[{"k":"lotusdrain","v":[1.5,4]},{"k":"lifesteal","v":[1,4]}],"cost":65,"chance":"100%","lv":[40,40],"maps":[{"id":"lotus_hollow","n":"Lotus Hollow","c":1,"b":[37,40],"boss":true}],"ln":"Lotus Drain"},{"id":"aurora_antler_regent","n":"Aurora Antler Regent","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"C","sp":"warden","fx":[{"k":"polar","v":[20,40]},{"k":"matkPct","v":[2,9]}],"cost":70,"chance":"100%","lv":[58,58],"maps":[{"id":"aurora_hollow","n":"Aurora Hollow","c":1,"b":[55,58],"boss":true}],"ln":"Polar Night"},{"id":"tempest_kite_empress","n":"Tempest Kite Empress","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"C","sp":"warden","fx":[{"k":"storm","v":[60,150]},{"k":"aspd","v":[3,12]}],"cost":75,"chance":"100%","lv":[70,70],"maps":[{"id":"tempest_aerie","n":"Tempest Aerie","c":1,"b":[67,70],"boss":true}],"ln":"Storm Call"},{"id":"opal_weaver_queen","n":"Opal Weaver Queen","role":"boss","rt":"Boss","color":"legend","load":5,"rg":"D","sp":"warden","fx":[{"k":"web","v":[8,20]},{"k":"debuffed","v":[6,24]}],"cost":80,"chance":"100%","lv":[80,80],"maps":[{"id":"opalweb_grotto","n":"Opalweb Grotto","c":1,"b":[75,80],"boss":true}],"ln":"Web of Fate"}],"tpl":{"crit":"โอกาสคริ +{x}%","night":"ช่วงกลางคืน: ดาเมจ +{x}%","slayer":"ดาเมจใส่สาย {sp} +{x}%","atkPct":"ATK +{x}%","bleed":"เมื่อคริ (35%): เลือดไหล {x}% ของดาเมจใน 3 วิ","expose":"เมื่อโจมตีโดน (10%): เป้าโดนดาเมจแรงขึ้น +{x}% นาน 4 วิ","opener":"ดาเมจใส่มอนที่ HP > 90% +{x}%","haste":"เมื่อคริ (30%): สปีดตี +{x}% นาน 5 วิ","echo":"เมื่อโจมตีโดน (12%): วิญญาณตีซ้ำ {x}% ของดาเมจ (เวท)","chain":"เมื่อโจมตีโดน (10%): สายฟ้าเชนใส่มอนข้างๆ 3 เด้ง {x}% ของดาเมจ ลดลงทุกเด้ง","debuffed":"ดาเมจใส่มอนที่ติดดีบัฟ +{x}%","lifesteal":"ดูดเลือด {x}% ของดาเมจกายภาพ","critDmg":"ดาเมจคริ +{x}%","desperate":"ขณะ HP < 35%: ดาเมจ +{x}%","aspd":"สปีดตี +{x}%","thorns":"เมื่อโดนดาเมจจากมอน: สะท้อนดาเมจกลับ {x}%","ward":"ลดดาเมจที่ได้รับจากสาย {sp} {x}%","wardNight":"ช่วงกลางคืน: ลดดาเมจที่ได้รับ {x}%","dmgTaken":"ลดดาเมจที่ได้รับ {x}%","barrier":"เมื่อโดนดาเมจขณะ HP < 40%: ฮีล {x}% ทันที (ทุก 45 วิ)","maxHpPct":"Max HP +{x}%","bulwark":"เมื่อโดนดาเมจ (12%): ลดดาเมจที่ได้รับ {x}% นาน 4 วิ","wardBoss":"ลดดาเมจที่ได้รับจาก Boss / Mini-boss {x}%","renew":"เมื่อสังหารมอน: ฮีล {x}% Max HP","moveSpeed":"สปีดวิ่ง +{x}%","stat:vit":"VIT +{x}","stat:str":"STR +{x}","stat:int":"INT +{x}","stat:dex":"DEX +{x}","gather":"เวลา Gathering / ตกปลา −{x}%","stat:agi":"AGI +{x}","drop":"เรทดรอป +{x}%","spirit":"เรทดรอปวิญญาณมอน +{x}%","stat:luk":"LUK +{x}","gold":"Gold จากมอน +{x}%","gust":"เมื่อสังหารมอน: สปีดวิ่ง +{x}% นาน 3 วิ","matkPct":"MATK +{x}%","focus":"เมื่อสังหารมอน: ฟื้น MP {x}% Max MP","nova":"เมื่อสังหารมอน: ศพระเบิดตีหมู่รอบๆ {x}% ของ Max HP ตัวที่ตาย","frost":"เมื่อโจมตีโดน (8%): สโลว์เป้า {x}% นาน 2 วิ","cdr":"คูลดาวน์สกิล −{x}%","elite":"ดาเมจใส่ Elite / Mini-boss +{x}%","boss":"ดาเมจใส่ Field Boss +{x}%","judgment":"เมื่อสังหารมอน: สกิลดาเมจครั้งถัดไปแรงขึ้น +{x}% (ทุก 20 วิ)","bloom":"เมื่อสังหารมอน: ฮีลตัวเองและปาร์ตี้ในระยะ 8 ช่อง {x}% Max HP (ทุก 15 วิ)","prism":"เมื่อโดนดาเมจ: ได้โล่ {x}% Max HP นาน 8 วิ (ทุก 25 วิ)","phoenix":"เมื่อโดนดาเมจขณะ HP < 25%: ฟื้น {x}% Max HP + ระเบิดไฟใส่มอนรอบตัว (ทุก 2 นาที)","lotusdrain":"เมื่อสังหารมอน: ดูด HP และ MP {x}%","polar":"เมื่อโจมตีโดน (15%): แช่แข็งเป้า 1.2 วิ + สโลว์มอนรอบเป้า {x}% (ไม่ใช้กับ Boss / Mini-boss)","storm":"เมื่อโจมตีโดน (20%): ฟ้าผ่ามอนรอบเป้าสูงสุด 4 ตัว {x}% ของดาเมจ (เวท)","web":"เมื่อคริ (50%): ตรึงเป้า 2 วิ + เป้าโดนดาเมจแรงขึ้น +{x}% นาน 4 วิ","armorPen":"Armor Pierce +{x}% (เมิน DEF เป้า)"}};
+</script>
+<script>
+(function(){
+const D=window.CARDDATA, CARDS=D.cards, BY=Object.fromEntries(CARDS.map(c=>[c.id,c])), TPL=D.tpl;
+const SLOTLV=[12,18,25,32,40,50,60,70,85], PA=[1,.5,.25,0], STAR_MAX=5;
+const COLOR={red:{n:'แดง',e:'Attack'},blue:{n:'น้ำเงิน',e:'Guard'},green:{n:'เขียว',e:'Growth'},purple:{n:'ม่วง',e:'Spirit'},legend:{n:'ตำนาน',e:'Legendary'}};
+const ROLE={trash:'ทั่วไป',pack:'ฝูง',tank:'ถึก',ambush:'ซุ่มโจมตี',elite:'Elite','mini-boss':'Mini-boss',boss:'Field Boss'};
+const REGION={A:'Valebrook',B:'Ashford',C:'Stormwall',D:'Sanctum'};
+const SPN={sprout:'Sprout',skitter:'Skitter',wisp:'Wisp',thornling:'Thornling',crab:'Crab',brute:'Brute',pebblit:'Pebblit',remnant:'Remnant',hound:'Hound',lurker:'Lurker',harpy:'Harpy',horror:'Horror',warden:'Warden'};
+const J=(k,v,stat)=>({k,v,stat});
+const RES_REGION={A:{name:'Hearthland',t3:[J('maxHpPct',6),J('gold',6)],t5:[J('maxHpPct',6),J('drop',6)]},B:{name:'Emberheart',t3:[J('atkPct',5),J('matkPct',5)],t5:[J('critDmg',6),J('atkPct',3),J('matkPct',3)]},C:{name:'Frostbound',t3:[J('dmgTaken',5)],t5:[J('dmgTaken',4),J('maxHpPct',8)]},D:{name:'Riftsight',t3:[J('cdr',4),J('crit',2)],t5:[J('cdr',3),J('crit',2),J('spirit',15)]}};
+const RES_KIN={skitter:{name:'Swarm Instinct',fx:[J('crit',2)]},hound:{name:'Pack Bond',fx:[J('aspd',5)]},thornling:{name:'Bramble Pact',fx:[J('debuffed',8)]},brute:{name:'Hide of Giants',fx:[J('maxHpPct',6)]},crab:{name:'Shellguard',fx:[J('thorns',12)]},pebblit:{name:'Pebble Wall',fx:[J('dmgTaken',3)]},sprout:{name:'Deep Roots',fx:[J('stat',3,'vit'),J('stat',3,'str')]},lurker:{name:'Mire Ambush',fx:[J('opener',10)]},wisp:{name:"Will-o'-Chorus",fx:[J('matkPct',5)]},remnant:{name:'Echoing Oath',fx:[J('cdr',4)]}};
+const RES_COLOR={red:{name:'Crimson Mastery',need:3,fx:[J('atkPct',3),J('matkPct',3)]},blue:{name:'Azure Mastery',need:3,fx:[J('dmgTaken',3),J('maxHpPct',3)]},green:{name:'Verdant Mastery',need:3,fx:[J('gold',5),J('drop',3),J('gather',3)]},purple:{name:'Violet Mastery',need:3,fx:[J('cdr',3),J('crit',1)]},legend:{name:'Sovereign Mastery',need:2,fx:[J('boss',8),J('maxHpPct',4)]}};
+const COLOR_STAR=3;
+const SIX=['str','agi','vit','int','dex','luk'];
+const CODEX=[{n:5,fx:SIX.map(s=>J('stat',1,s))},{n:10,fx:[J('atkPct',2),J('matkPct',2)]},{n:20,fx:[J('maxHpPct',3)]},{n:30,fx:SIX.map(s=>J('stat',1,s))},{n:40,fx:[J('gold',5),J('drop',3)]},{n:50,fx:[J('atkPct',2),J('matkPct',2)]},{n:60,fx:[J('dmgTaken',3)]},{n:75,fx:[J('crit',2),...SIX.map(s=>J('stat',2,s))]}];
+const NIGHT_SP=new Set(['wisp','remnant','horror','lurker']), DAY_SP=new Set(['sprout','crab','pebblit','harpy','hound']);
+function cycle(c){ if(/gloom|dusk|umbral|void|abyss|lantern|firefly|night|shade/.test(c.id))return 'night'; if(/sun|golden|shrine_|field|plains|bloom|sky/.test(c.id))return 'day'; return NIGHT_SP.has(c.sp)?'night':DAY_SP.has(c.sp)?'day':'steady'; }
+const dayMult=(c,night)=>{const g=cycle(c);return g==='steady'?1:(g==='night')===night?1.4:.85};
+const loadCap=lv=>lv<12?0:Math.min(18,4+Math.floor((lv-12)/6));
+const starVal=(f,s)=>{const a=Math.max(1,Math.min(STAR_MAX,s)),n=f.v[0]+(f.v[1]-f.v[0])*(a-1)/(STAR_MAX-1);return f.k==='stat'?Math.round(n):Math.round(n*10)/10};
+const r1=x=>Math.round(x*10)/10;
+const fkey=f=>f.k+(f.stat?':'+f.stat:'')+(f.species?'@'+f.species:'');
+function label(key,val){ const [k0,sp]=key.split('@'); let t=TPL[k0]||TPL[k0.split(':')[0]]||(k0+' +{x}'); if(sp) t=t.replace('{sp}',SPN[sp]||sp);
+  return t.replace('{x}','<span class="v">'+val+'</span>'); }
+const fxText=(c,s)=>c.fx.map(f=>label(fkey(f),starVal(f,s))).join(' · ');
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const blank=()=>({lv:60,night:false,codex:0,slots:Array(9).fill(null)});
+let st=blank(), sel=-1, tab='stats', VIEW=null, shown=24;
+const filt={q:'',map:'',role:'',star:5,colors:new Set(),regions:new Set()};
+try{ const s=JSON.parse(localStorage.getItem('cardPlanner')||'null'); if(s&&Array.isArray(s.slots)) st=Object.assign(blank(),s,{slots:s.slots.slice(0,9).map(x=>x&&BY[x.id]?{id:x.id,star:Math.min(5,Math.max(1,x.star|0))}:null)}); }catch(e){}
+function save(){ if(VIEW)return; try{localStorage.setItem('cardPlanner',JSON.stringify(st))}catch(e){} }
+
+/* ---------- engine (mirrors the game's Spirit Album maths) ---------- */
+function calc(){
+  const tot={}, src={}, add=(key,v,from)=>{ tot[key]=(tot[key]||0)+v; if(from)(src[key]=src[key]||[]).push(from); };
+  const placed=[], seen=new Map();
+  st.slots.forEach((x,i)=>{ if(!x||st.lv<SLOTLV[i])return; const c=BY[x.id]; const n=seen.get(c.id)||0; seen.set(c.id,n+1); placed.push({i,c,star:x.star,echo:PA[Math.min(n,PA.length-1)]}); });
+  for(const p of placed){ if(!p.echo)continue; const m=dayMult(p.c,st.night)*p.echo;
+    for(const f of p.c.fx){ const v=f.k==='stat'?Math.round(starVal(f,p.star)*m):r1(starVal(f,p.star)*m); add(fkey(f),v,p.c.n+(p.echo<1?' ('+p.echo*100+'%)':'')); } }
+  const uniq=[...new Map(placed.map(p=>[p.c.id,p])).values()].map(p=>({c:p.c,star:Math.max(...placed.filter(q=>q.c.id===p.c.id).map(q=>q.star))}));
+  const res=[];
+  for(const g of ['A','B','C','D']){ const ms=uniq.filter(u=>u.c.rg===g), n=ms.length, R=RES_REGION[g];
+    res.push({kind:'ภูมิภาค',name:R.name,sub:REGION[g],count:n,need:n>=3?5:3,on:n>=3,tier:n>=5?2:n>=3?1:0,fx:n>=5?[...R.t3,...R.t5]:R.t3,next:n>=5?null:n>=3?R.t5:R.t3,mobs:ms});
+    if(n>=3)R.t3.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); if(n>=5)R.t5.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name+' II')); }
+  for(const [sp,R] of Object.entries(RES_KIN)){ const ms=uniq.filter(u=>u.c.sp===sp), n=ms.length;
+    res.push({kind:'สายมอน',name:R.name,sub:SPN[sp],count:n,need:2,on:n>=2,fx:R.fx,mobs:ms}); if(n>=2)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
+  for(const [col,R] of Object.entries(RES_COLOR)){ const ms=uniq.filter(u=>u.c.color===col&&u.star>=COLOR_STAR), n=ms.length;
+    res.push({kind:'สี',name:R.name,sub:COLOR[col].n+' ★'+COLOR_STAR+'+',count:n,need:R.need,on:n>=R.need,fx:R.fx,mobs:ms}); if(n>=R.need)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
+  const cx=Math.max(0,Math.min(CARDS.length,st.codex|0));
+  for(const t of CODEX) if(cx>=t.n) t.fx.forEach(f=>add(fkey(f),f.v,'Codex '+t.n));
+  const caps={}; const capAt=(k,m)=>{ if(tot[k]>m){ caps[k]=tot[k]; tot[k]=m; } };
+  capAt('dmgTaken',25); capAt('wardBoss',30); capAt('wardNight',30);
+  for(const k of Object.keys(tot)) if(k.startsWith('ward@')) capAt(k,40);
+  for(const k of Object.keys(tot)) tot[k]=r1(tot[k]);
+  const load=placed.reduce((a,p)=>a+p.c.load,0);
+  return {tot,src,caps,res,placed,load,cap:loadCap(st.lv)};
+}
+
+/* ---------- album ---------- */
+function renderAlbum(R){
+  $('loadFill').style.width=Math.min(100,R.cap?R.load/R.cap*100:0)+'%';
+  $('loadTxt').textContent=R.load+' / '+R.cap; $('loadbar').classList.toggle('over',R.load>R.cap);
+  const echoOf=new Map(R.placed.map(p=>[p.i,p.echo]));
+  $('album').innerHTML=st.slots.map((x,i)=>{ const lock=st.lv<SLOTLV[i];
+    if(lock) return '<div class="slot lock"><span class="no">'+(i+1)+'</span>🔒<br>เปิดที่ Lv '+SLOTLV[i]+'</div>';
+    if(!x) return '<button type="button" class="slot'+(sel===i?' sel':'')+'" data-slot="'+i+'"><span class="no">'+(i+1)+'</span>ช่องว่าง<br><small>กด "ใส่การ์ด" ด้านล่าง</small></button>';
+    const c=BY[x.id], e=echoOf.get(i), g=cycle(c);
+    return '<div class="slot fill'+(sel===i?' sel':'')+'" style="--cc:var(--c-'+c.color+');--ccs:var(--c-'+c.color+'-soft)" data-slot="'+i+'" role="button" tabindex="0" aria-label="ช่อง '+(i+1)+' '+esc(c.n)+'">'+
+      '<span class="no">'+(i+1)+'</span><button type="button" class="x" data-rm="'+i+'" aria-label="ถอดการ์ด">✕</button>'+
+      '<img src="img/card/'+c.id+'.svg" alt="" loading="lazy"><span class="nm">'+esc(c.n)+'</span>'+
+      '<span class="meta">Load '+c.load+' · '+(g==='night'?'☾':g==='day'?'☀':'◐')+'</span>'+
+      '<span class="stars" role="group" aria-label="ดาว">'+[1,2,3,4,5].map(s=>'<button type="button" data-star="'+i+':'+s+'" class="'+(s<=x.star?'on':'')+'" aria-label="★'+s+'">★</button>').join('')+'</span>'+
+      (e<1?'<span class="echo">ใบซ้ำ '+(e*100)+'%</span>':'')+'</div>'; }).join('');
+  const open=SLOTLV.filter(l=>st.lv>=l).length;
+  $('albumHint').textContent=open?('เปิดอยู่ '+open+' / 9 ช่อง'+(open<9?' · ช่องถัดไปเปิดที่ Lv '+SLOTLV[open]:'')+(R.load>R.cap?' · Load เกิน '+(R.load-R.cap)+' — ในเกมใส่ไม่ได้':'')):'ช่องการ์ดเปิดที่ Lv 12';
+}
+
+/* ---------- summary ---------- */
+const ORDER=Object.keys(TPL);
+function sortKeys(keys){ return keys.sort((a,b)=>{ const ia=ORDER.indexOf(a.split('@')[0]), ib=ORDER.indexOf(b.split('@')[0]); return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b); }); }
+function renderSummary(R){
+  const nOn=R.res.filter(r=>r.on).length;
+  $('sumSub').textContent=R.placed.length?('การ์ด '+R.placed.length+' ใบ · Resonance เปิด '+nOn+' · '+(st.night?'คิดค่าตอนกลางคืน':'คิดค่าตอนกลางวัน')+' · Lv '+st.lv):'ยังไม่ได้ใส่การ์ด — กด "ใส่การ์ด" ในรายการด้านล่าง';
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
+  let h='';
+  if(tab==='stats'){ const keys=sortKeys(Object.keys(R.tot).filter(k=>R.tot[k]));
+    h=keys.length?'<table class="stat"><tbody>'+keys.map(k=>'<tr><td>'+label(k,R.tot[k])+(R.caps[k]?'<span class="cap">ติดเพดาน (รวมได้ '+r1(R.caps[k])+')</span>':'')+'</td><td class="src">'+esc((R.src[k]||[]).join(', '))+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">ยังไม่มีสเตตัสจากการ์ด</div>'; }
+  else if(tab==='res'){ const list=R.res.slice().sort((a,b)=>(b.on-a.on)||(b.count/b.need-a.count/a.need));
+    h='<div class="reslist">'+list.map(r=>'<div class="res'+(r.on?' on':'')+'"><div class="h">'+esc(r.name)+' <span>'+r.kind+' '+esc(r.sub)+' · '+r.count+'/'+r.need+(r.on?' ✓':'')+'</span></div>'+
+      '<p>'+r.fx.map(f=>label(fkey(f),f.v)).join(' · ')+'</p>'+(r.mobs.length?'<p>นับแล้ว: '+r.mobs.map(m=>esc(m.c.n)).join(', ')+'</p>':'')+'</div>').join('')+'</div>'; }
+  else { const cx=st.codex|0;
+    h='<p class="sub">Codex = จำนวนมอนที่เคยผูกการ์ด (บันทึกถาวร) · ใส่จำนวนของคุณที่หัวหน้า</p><div class="reslist">'+CODEX.map(t=>'<div class="res'+(cx>=t.n?' on':'')+'"><div class="h">ครบ '+t.n+' ตัว <span>'+Math.min(cx,t.n)+'/'+t.n+(cx>=t.n?' ✓':'')+'</span></div><p>'+t.fx.map(f=>label(fkey(f),f.v)).join(' · ')+'</p></div>').join('')+'</div>'; }
+  $('sumBody').innerHTML=h;
+}
+
+/* ---------- catalogue ---------- */
+const MAPS=(()=>{ const m=new Map(); CARDS.forEach(c=>c.maps.forEach(x=>{ if(!m.has(x.n)) m.set(x.n,x); })); return [...m.values()].sort((a,b)=>((a.b||[0])[0]-(b.b||[0])[0])||a.n.localeCompare(b.n)); })();
+function initFilters(){
+  $('fMap').innerHTML='<option value="">ทุกแมพ</option>'+MAPS.map(m=>'<option value="'+esc(m.n)+'">'+esc(m.n)+(m.b?' (Lv '+m.b[0]+'–'+m.b[1]+')':'')+'</option>').join('')+'<option value="__none">ไม่มีในแมพปกติ</option>';
+  $('fRole').innerHTML='<option value="">ทุกประเภทมอน</option>'+Object.entries(ROLE).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('');
+  $('fColor').innerHTML=Object.entries(COLOR).map(([k,v])=>'<button type="button" class="chip" data-col="'+k+'" aria-pressed="false" style="--cc:var(--c-'+k+');--ccs:var(--c-'+k+'-soft)"><i></i>'+v.n+'</button>').join('');
+  $('fRegion').innerHTML=Object.entries(REGION).map(([k,v])=>'<button type="button" class="chip" data-reg="'+k+'" aria-pressed="false">'+k+' · '+v+'</button>').join('');
+}
+function matches(c){
+  if(filt.colors.size&&!filt.colors.has(c.color))return false;
+  if(filt.regions.size&&!filt.regions.has(c.rg))return false;
+  if(filt.role&&c.role!==filt.role)return false;
+  if(filt.map==='__none'){ if(c.maps.length)return false; } else if(filt.map&&!c.maps.some(m=>m.n===filt.map))return false;
+  if(filt.q){ const hay=(c.n+' '+c.id+' '+(c.ln||'')+' '+c.fx.map(f=>label(fkey(f),'')).join(' ')+' '+c.maps.map(m=>m.n).join(' ')+' '+(SPN[c.sp]||'')+' '+COLOR[c.color].n+' '+COLOR[c.color].e+' '+(ROLE[c.role]||'')).toLowerCase().replace(/<[^>]+>/g,'');
+    if(!filt.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w)))return false; }
+  return true;
+}
+const open={};
+function cardTile(c){
+  const s=filt.star, inAlbum=st.slots.filter(x=>x&&x.id===c.id).length, g=cycle(c);
+  const where=c.maps.length?c.maps.map(m=>'<span><b>'+(m.id?'<a href="https://wiki.bindertowngame.com/map/'+m.id+'" target="_blank" rel="noopener">'+esc(m.n)+'</a>':esc(m.n))+'</b>'+(m.b?' · แมพ Lv '+m.b[0]+'–'+m.b[1]:'')+(m.c?' · ประมาณ '+m.c+' ตัว':'')+(m.boss?' · แมพบอส':'')+'</span>').join(''):'<span>ไม่มีในแมพปกติ (มอนพิเศษ / อีเวนต์)</span>';
+  let h='<article class="card" style="--cc:var(--c-'+c.color+');--ccs:var(--c-'+c.color+'-soft)"><img src="img/card/'+c.id+'.svg" alt="" loading="lazy">'+
+    '<div class="t"><b>'+esc(c.n)+'</b><small>Load '+c.load+'</small></div>'+
+    '<div class="tags"><span class="col">'+COLOR[c.color].n+' · '+COLOR[c.color].e+'</span><span>'+(ROLE[c.role]||c.rt)+'</span><span>'+c.rg+' · '+REGION[c.rg]+'</span>'+(c.sp?'<span>สาย '+SPN[c.sp]+'</span>':'')+'<span>'+(g==='night'?'☾ Nocturnal':g==='day'?'☀ Diurnal':'◐ Steady')+'</span></div>'+
+    '<div class="fx">'+(c.ln?'<span class="ln">'+esc(c.ln)+'</span> · ':'')+'★'+s+': '+fxText(c,s)+'</div>'+
+    '<div class="where"><span>หาได้ที่:</span>'+where+'<span>โอกาสได้วิญญาณ '+esc(c.chance||'—')+' · แลกการ์ดใช้ '+(c.cost!=null?c.cost.toLocaleString('en-US'):'—')+' ดวง'+(c.lv?' · มอน Lv '+c.lv[0]+(c.lv[1]!==c.lv[0]?'–'+c.lv[1]:''):'')+'</span></div>'+
+    '<div class="act"><button type="button" class="add" data-add="'+c.id+'">'+(sel>=0&&st.slots[sel]?'สลับใส่ช่อง '+(sel+1):'ใส่การ์ด')+'</button><button type="button" data-open="'+c.id+'" aria-expanded="'+!!open[c.id]+'">'+(open[c.id]?'ซ่อน ★1–★5':'ดู ★1–★5')+'</button>'+(inAlbum?'<span class="count" style="margin:0;align-self:center">ใส่อยู่ '+inAlbum+' ใบ</span>':'')+'</div>';
+  if(open[c.id]) h+='<table><tbody>'+[1,2,3,4,5].map(n=>'<tr class="'+(n===s?'cur':'')+'"><td>★'+n+'</td><td>'+fxText(c,n)+'</td></tr>').join('')+'</tbody></table>';
+  return h+'</article>';
+}
+function renderCatalog(){
+  const list=CARDS.filter(matches);
+  $('count').textContent='พบ '+list.length+' / '+CARDS.length+' ใบ';
+  $('cards').innerHTML=list.slice(0,shown).map(cardTile).join('')||'<div class="empty">ไม่พบการ์ดที่ตรงกับตัวกรอง</div>';
+  $('more').hidden=list.length<=shown; $('more').textContent='แสดงเพิ่ม ('+(list.length-shown)+' ใบ)';
+}
+
+/* ---------- saves + share ---------- */
+const AL='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_', SAVEKEY='cardPlannerSaves';
+const idx=id=>CARDS.findIndex(c=>c.id===id)+1;
+function enc(){ let c='c1'+String(st.lv).padStart(2,'0')+(st.night?'1':'0')+String(Math.max(0,Math.min(999,st.codex|0))).padStart(3,'0');
+  for(const x of st.slots){ const i=x?idx(x.id):0; c+=AL[Math.floor(i/64)]+AL[i%64]+(x?x.star:0); } return c; }
+function dec(c){ if(!/^c1\d\d[01]\d{3}([0-9a-zA-Z_-]{2}[0-5]){9}$/.test(c||''))return null;
+  const o=blank(); o.lv=Math.max(1,Math.min(99,+c.slice(2,4))); o.night=c[4]==='1'; o.codex=+c.slice(5,8);
+  for(let i=0;i<9;i++){ const p=8+i*3, n=AL.indexOf(c[p])*64+AL.indexOf(c[p+1]), s=+c[p+2]; o.slots[i]=n&&CARDS[n-1]&&s?{id:CARDS[n-1].id,star:s}:null; }
+  return o; }
+function clearHash(){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} }
+function loadSaves(){ try{ const a=JSON.parse(localStorage.getItem(SAVEKEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&dec(x.code)):[] }catch(e){ return [] } }
+function storeSaves(a){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(a)); return true }catch(e){ toast('บันทึกไม่ได้ — เบราว์เซอร์นี้ปิดการเก็บข้อมูลไว้'); return false } }
+const shareUrl=(code,name)=>location.href.split('#')[0]+'#c='+code+(name?'~'+encodeURIComponent(name):'');
+let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2400); }
+function copyLink(url,label){ const o=$('shareOut');
+  const put=ok=>{ o.innerHTML='<div class="shareout">'+(ok?'คัดลอกลิงก์'+(label?' "'+esc(label)+'" ':'')+'แล้ว ส่งให้เพื่อนได้เลย':'กดค้างที่ลิงก์แล้วเลือกคัดลอก ส่งให้เพื่อน')+'<input readonly value="'+esc(url)+'" aria-label="ลิงก์แชร์"></div>'; return o.querySelector('input'); };
+  const fallback=()=>{ const i=put(false); i.focus({preventScroll:true}); i.select(); let ok=false; try{ ok=document.execCommand('copy') }catch(e){}
+    if(ok){ put(true); toast('คัดลอกลิงก์แชร์แล้ว ส่งให้เพื่อนได้เลย'); } else { toast('คัดลอกอัตโนมัติไม่ได้ — ลิงก์อยู่ด้านล่าง'); $('saves').scrollIntoView({behavior:'smooth',block:'start'}); } };
+  try{ navigator.clipboard.writeText(url).then(()=>{ put(true); toast('คัดลอกลิงก์แชร์แล้ว ส่งให้เพื่อนได้เลย'); },fallback) }catch(e){ fallback() } }
+function saveCurrent(name){ name=(name||'').trim().slice(0,40)||'ชุดการ์ด '+new Date().toLocaleDateString('th-TH');
+  const a=loadSaves(), i=a.findIndex(x=>x.name===name), item={name,code:enc(),t:Date.now()};
+  if(i>=0)a[i]=item; else a.unshift(item);
+  if(storeSaves(a)) toast(i>=0?'อัปเดต "'+name+'" แล้ว':'บันทึก "'+name+'" ลงเครื่องนี้แล้ว'); }
+function renderSaves(){ const a=loadSaves(), code=enc(); $('saveCount').textContent=a.length||'';
+  $('saveList').innerHTML=a.length?'<div class="savelist">'+a.map((x,i)=>{ const o=dec(x.code), cs=o.slots.filter(Boolean);
+    return '<div class="si'+(x.code===code?' cur':'')+'"><b>'+esc(x.name)+'</b><small>'+new Date(x.t).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})+' · Lv '+o.lv+' · '+cs.length+' ใบ</small><small>'+esc(cs.map(s=>BY[s.id].n+' ★'+s.star).join(', ')||'ว่าง')+'</small>'+
+      '<div class="bt"><button type="button" data-sload="'+i+'">โหลด</button><button type="button" data-sshare="'+i+'">แชร์</button><button type="button" data-sdel="'+i+'">ลบ</button></div></div>' }).join('')+'</div>'
+    :'<div class="empty" style="margin-top:12px">ยังไม่มีชุดที่บันทึกไว้ — ตั้งชื่อแล้วกด "บันทึกชุดนี้"</div>'; }
+function renderView(){ const v=$('viewBar'); v.hidden=!VIEW; if(!VIEW)return;
+  v.innerHTML='<span>กำลังดูชุดการ์ดที่แชร์มา'+(VIEW.name?' <b>'+esc(VIEW.name)+'</b>':'')+' — แก้ได้ แต่จะไม่บันทึกทับชุดของคุณ</span><span class="sp"></span><button type="button" class="btn pri" id="vSave">บันทึกลงเครื่องนี้</button><button type="button" class="btn" id="vBack">กลับไปชุดของฉัน</button>'; }
+{ const m=location.hash.match(/^#c=([0-9a-zA-Z_-]+)(?:~(.*))?$/); const o=m&&dec(m[1]);
+  if(o){ st=o; let name=''; try{ name=decodeURIComponent(m[2]||'').slice(0,40) }catch(e){} VIEW={name}; } }
+
+/* ---------- render + events ---------- */
+function render(){ $('lv').value=st.lv; $('codex').value=st.codex; $('tDay').setAttribute('aria-pressed',!st.night); $('tNight').setAttribute('aria-pressed',st.night);
+  const R=calc(); renderAlbum(R); renderSummary(R); renderCatalog(); renderSaves(); renderView(); save(); }
+function addCard(id){
+  const c=BY[id], R=calc();
+  let i=sel>=0&&st.lv>=SLOTLV[sel]?sel:st.slots.findIndex((x,k)=>!x&&st.lv>=SLOTLV[k]);
+  if(i<0){ toast(SLOTLV.some(l=>st.lv>=l)?'ช่องเต็มแล้ว — กดช่องที่จะสลับก่อน หรือถอดการ์ดออก':'ช่องการ์ดเปิดที่ Lv 12'); return; }
+  const old=st.slots[i]?BY[st.slots[i].id].load:0;
+  if(R.load-old+c.load>R.cap) toast('Load เกิน ('+(R.load-old+c.load)+' / '+R.cap+') — ในเกมใส่ใบนี้ไม่ได้');
+  else toast('ใส่ '+c.n+' ช่อง '+(i+1));
+  st.slots[i]={id,star:filt.star}; sel=-1; render();
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('button,[data-slot]'); if(!b)return;
+  if(b.dataset.add){ addCard(b.dataset.add); return; }
+  if(b.dataset.open){ open[b.dataset.open]=!open[b.dataset.open]; renderCatalog(); return; }
+  if(b.dataset.rm){ e.stopPropagation(); st.slots[+b.dataset.rm]=null; if(sel===+b.dataset.rm)sel=-1; render(); return; }
+  if(b.dataset.star){ e.stopPropagation(); const [i,s]=b.dataset.star.split(':').map(Number); st.slots[i].star=s; render(); return; }
+  if(b.dataset.slot!==undefined){ const i=+b.dataset.slot; sel=sel===i?-1:i; render(); if(sel>=0&&!st.slots[sel]) $('catalog').scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  if(b.dataset.tab){ tab=b.dataset.tab; renderSummary(calc()); return; }
+  if(b.dataset.col){ filt.colors.has(b.dataset.col)?filt.colors.delete(b.dataset.col):filt.colors.add(b.dataset.col); b.setAttribute('aria-pressed',filt.colors.has(b.dataset.col)); shown=24; renderCatalog(); return; }
+  if(b.dataset.reg){ filt.regions.has(b.dataset.reg)?filt.regions.delete(b.dataset.reg):filt.regions.add(b.dataset.reg); b.setAttribute('aria-pressed',filt.regions.has(b.dataset.reg)); shown=24; renderCatalog(); return; }
+  if(b.id==='more'){ shown+=24; renderCatalog(); return; }
+  if(b.id==='tDay'||b.id==='tNight'){ st.night=b.id==='tNight'; render(); return; }
+  if(b.id==='hSave'){ $('saves').scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>$('saveName').focus({preventScroll:true}),350); return; }
+  if(b.id==='hShare'||b.id==='shareCur'){ const n=$('saveName').value.trim(); copyLink(shareUrl(enc(),n),n); return; }
+  if(b.id==='vSave'){ saveCurrent(VIEW.name); VIEW=null; clearHash(); render(); return; }
+  if(b.id==='vBack'){ location.replace(location.pathname+location.search); return; }
+  const a=loadSaves();
+  if(b.dataset.sload){ const x=a[+b.dataset.sload]; if(!x)return; if(VIEW){ VIEW=null; clearHash(); } st=dec(x.code); sel=-1; $('saveName').value=x.name; render(); toast('โหลด "'+x.name+'" แล้ว'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  if(b.dataset.sshare){ const x=a[+b.dataset.sshare]; if(x)copyLink(shareUrl(x.code,x.name),x.name); return; }
+  if(b.dataset.sdel){ if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='ยืนยันลบ'; setTimeout(()=>{ if(b.isConnected){ b.classList.remove('arm'); b.textContent='ลบ'; } },3000); return; }
+    const x=a.splice(+b.dataset.sdel,1)[0]; if(storeSaves(a))toast('ลบ "'+x.name+'" แล้ว'); renderSaves(); }
+});
+document.addEventListener('keydown',e=>{ const s=e.target.closest&&e.target.closest('.slot[role=button]'); if(s&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); s.click(); } });
+$('saveForm').addEventListener('submit',e=>{ e.preventDefault(); saveCurrent($('saveName').value); if(VIEW){ VIEW=null; clearHash(); } render(); });
+$('lv').addEventListener('change',e=>{ st.lv=Math.max(1,Math.min(99,+e.target.value||1)); render(); });
+$('codex').addEventListener('change',e=>{ st.codex=Math.max(0,Math.min(CARDS.length,+e.target.value||0)); render(); });
+$('q').addEventListener('input',e=>{ filt.q=e.target.value.trim(); shown=24; renderCatalog(); });
+$('fMap').addEventListener('change',e=>{ filt.map=e.target.value; shown=24; renderCatalog(); });
+$('fRole').addEventListener('change',e=>{ filt.role=e.target.value; shown=24; renderCatalog(); });
+$('fStar').addEventListener('change',e=>{ filt.star=+e.target.value; renderCatalog(); });
+initFilters(); render();
+})();
+</script>
+</body>
+</html>
