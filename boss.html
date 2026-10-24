@@ -164,7 +164,7 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 
   <div class="cols">
     <section class="panel" aria-labelledby="h-timers">
-      <div class="ph"><h2 id="h-timers">ตารางเกิด</h2><button class="btn primary" id="addBtn">＋ จดเวลาบอส</button></div>
+      <div class="ph"><div><h2 id="h-timers">ตารางเกิด</h2><div class="small syncstat"></div></div><button class="btn primary" id="addBtn">＋ จดเวลาบอส</button></div>
       <div id="timers" class="timers"></div>
     </section>
 
@@ -218,13 +218,30 @@ const DEFAULT_SETTINGS = {
   respawnOverrides: {}, hideSpawnedAfterMinutes: 60, autoResetMinutes: -1, // -1 = สุ่ม 1–5 นาที
 };
 function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }
-const S = { timers: load("bt.timers", []), settings: { ...DEFAULT_SETTINGS, ...load("bt.settings", {}) }, fired: load("bt.fired", {}) };
+const S = {
+  timers: load("bt.timers", []), settings: { ...DEFAULT_SETTINGS, ...load("bt.settings", {}) }, fired: load("bt.fired", {}),
+  tombstones: load("bt.tombstones", {}), // id → เวลาที่ลบ (ใช้ตอนซิงค์ ไม่ให้ของที่ลบแล้วกลับมา)
+  ovm: load("bt.ovm", 0),                // เวลาที่แก้ "นาทีเกิดใหม่" ล่าสุด
+};
+let lastIds = new Set(S.timers.map(t => t.id)), lastOv = JSON.stringify(S.settings.respawnOverrides), lastDigest = null, applyingRemote = false, onDirty = null;
 function save() {
+  if (!applyingRemote) {
+    const now = Date.now(), ids = new Set(S.timers.map(t => t.id));
+    for (const id of lastIds) if (!ids.has(id)) S.tombstones[id] = now;
+    for (const id of ids) delete S.tombstones[id];
+    const ov = JSON.stringify(S.settings.respawnOverrides);
+    if (ov !== lastOv) S.ovm = now;
+    lastIds = ids; lastOv = ov;
+  }
   try {
     localStorage.setItem("bt.timers", JSON.stringify(S.timers));
     localStorage.setItem("bt.settings", JSON.stringify(S.settings));
     localStorage.setItem("bt.fired", JSON.stringify(S.fired));
+    localStorage.setItem("bt.tombstones", JSON.stringify(S.tombstones));
+    localStorage.setItem("bt.ovm", JSON.stringify(S.ovm));
   } catch {}
+  const digest = JSON.stringify([S.timers.map(t => [t.id, t.updatedAt, t.respawnAt, t.notify]), S.tombstones, S.settings.respawnOverrides]);
+  if (digest !== lastDigest) { const first = lastDigest === null; lastDigest = digest; if (!first && onDirty) onDirty(); }
 }
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).toUpperCase();
 const respawnMinutes = b => S.settings.respawnOverrides[b.id] ?? b.respawn;
@@ -427,7 +444,23 @@ function renderSettings() {
   const st = S.settings;
   const leads = [...new Set([1, 2, 3, 5, 10, 15, 20, 30, ...st.leadMinutes])].sort((a, b) => a - b);
   const summary = [...st.leadMinutes].sort((a, b) => b - a).map(m => `ก่อน ${m} นาที`).concat(st.notifyAtSpawn ? ["ตอนเกิด"] : []);
-  $("#settings").innerHTML = `<div class="sgrid">
+  const TOKEN_URL = "https://github.com/settings/tokens/new?scopes=gist&description=Binder%20Town%20Boss%20Timer";
+  $("#settings").innerHTML = `<div class="sbox" style="margin-bottom:12px">
+      <h3>ซิงค์ข้ามเครื่อง (GitHub Gist)</h3>
+      ${Sync.on ? `
+        <div class="srow"><span class="syncstat"></span><span style="display:flex;gap:12px"><button class="link" id="syncNow">ซิงค์ตอนนี้</button><a class="link" href="https://gist.github.com/${esc(Sync.gistId)}" target="_blank" rel="noopener">ดู Gist</a><button class="link red" id="syncOff">เลิกเชื่อมต่อ</button></span></div>
+        <p class="foot">เครื่องอื่น: เปิดหน้านี้ แล้ววางรหัสเดิมในช่องนี้ จะเห็นเวลาบอสเดียวกันทุกเครื่อง · ซิงค์ทุก 15 วินาทีตอนเปิดหน้านี้อยู่</p>`
+      : `
+        <p class="foot" style="font-size:13.5px">ให้ทุกเครื่อง (คอม/มือถือ) เห็นเวลาบอสเดียวกัน — เก็บใน Gist ส่วนตัวของบัญชี GitHub คุณ ฟรี ไม่ต้องสมัครเพิ่ม</p>
+        <ol class="foot" style="font-size:13.5px;margin:0;padding-left:20px">
+          <li><a href="${TOKEN_URL}" target="_blank" rel="noopener">สร้างรหัส (token) ใน GitHub</a> — ช่อง Expiration เลือก <b>No expiration</b> · ติ๊กแค่ <b>gist</b> แล้วกด Generate token</li>
+          <li>ก๊อปรหัสที่ขึ้นต้นด้วย <code>ghp_</code> มาวางด้านล่าง แล้วกดเชื่อมต่อ</li>
+          <li>เครื่องอื่นทำข้อ 2 ด้วยรหัสเดียวกัน (เก็บรหัสไว้ในที่ปลอดภัย อย่าให้คนอื่นเห็น)</li>
+        </ol>
+        <div class="srow" style="gap:8px"><input type="password" id="gistToken" autocomplete="off" placeholder="วางรหัส ghp_…" style="flex:1;min-width:0;border:1px solid var(--rim);background:var(--panel);border-radius:8px;padding:7px 10px"><button class="btn primary" id="syncOn">เชื่อมต่อ</button></div>
+        <div class="small syncstat"></div>`}
+    </div>
+    <div class="sgrid">
     <div class="sbox">
       <h3>แจ้งเตือนก่อนบอสเกิด</h3>
       <div class="chips">${leads.map(m => `<button class="btn ${st.leadMinutes.includes(m) ? "on" : ""}" data-lead="${m}">${m} นาที</button>`).join("")}</div>
@@ -456,6 +489,7 @@ function renderSettings() {
   <div class="respawns">${BOSSES.map(b => `<label><span><img src="${IMG(b.id)}" alt="">${esc(b.name)}</span>
     <input class="numin ${S.settings.respawnOverrides[b.id] ? "changed" : ""}" type="number" min="1" max="1440" data-respawn="${b.id}" value="${respawnMinutes(b)}"></label>`).join("")}</div>
   <p class="foot" style="margin-top:6px">ค่าเริ่มต้นจาก wiki: Field Boss 180 นาที, Mini-boss 30 นาที ${Object.keys(st.respawnOverrides).length ? `· <button class="link" id="resetRespawn">คืนค่าตาม Wiki</button>` : ""}</p>`;
+  renderSyncStatus();
 }
 
 function renderBanner() {
@@ -468,7 +502,7 @@ function renderBanner() {
     : `<span>อนุญาตแจ้งเตือน เพื่อให้เตือนแม้ไม่ได้ดูหน้านี้อยู่</span><button class="btn primary" id="askPerm">อนุญาตแจ้งเตือน</button>`;
 }
 
-function renderAll() { renderTimers(); renderBosses(); renderSettings(); renderBanner(); }
+function renderAll() { renderTimers(); renderBosses(); renderSettings(); renderBanner(); renderSyncStatus(); }
 
 // ---------- หน้าต่างจดเวลา ----------
 const MODES = [["killed", "เวลาที่ล้ม"], ["respawn", "เวลาเกิด"], ["countdown", "นับถอยหลัง"]];
@@ -587,6 +621,9 @@ document.addEventListener("click", e => {
     if (el.id === "chPlus") { R.channel = Math.min(40, R.channel + 1); return renderRecord(); }
   }
   switch (el.id) {
+    case "syncOn": { const v = $("#gistToken").value.trim(); if (v) Sync.connect(v); break; }
+    case "syncNow": Sync.now(); break;
+    case "syncOff": if (confirm("เลิกเชื่อมต่อซิงค์ในเครื่องนี้? (ข้อมูลใน Gist ยังอยู่)")) Sync.disconnect(); break;
     case "askPerm": if (notifSupported()) Notification.requestPermission().finally(renderBanner); break;
     case "addLead": { const v = Math.round(+$("#customLead").value); if (v >= 1 && v <= 120 && !S.settings.leadMinutes.includes(v)) { S.settings.leadMinutes.push(v); save(); renderSettings(); } break; }
     case "sample": speak(speech(bossById("vale_warden"), 10, 3)); break;
@@ -645,6 +682,151 @@ document.addEventListener("keydown", e => { if (e.key === "Enter" && R && e.targ
 $("#record").addEventListener("close", () => { R = null; });
 $("#record").addEventListener("click", e => { if (e.target === $("#record")) closeRecord(); });
 
+// ---------- ซิงค์ข้ามเครื่องผ่าน GitHub Gist (ส่วนตัว) ----------
+// ทุกเครื่องที่ใส่รหัส (token) เดียวกัน อ่าน/เขียน Gist ไฟล์เดียวกัน · รวมข้อมูลโดยถืออันที่แก้ล่าสุด
+const GIST_FILE = "binder-boss-timer.json";
+const GIST_DESC = "Binder Town Boss Timer (sync)";
+const API = (() => { try { return localStorage.getItem("bt.gistApi") || "https://api.github.com"; } catch { return "https://api.github.com"; } })();
+
+/** ข้อมูลที่เก็บใน Gist — เรียงลำดับคงที่ จะได้เทียบได้ว่าเปลี่ยนไหม */
+function syncPayload() {
+  const tomb = {};
+  Object.keys(S.tombstones).sort().forEach(k => (tomb[k] = S.tombstones[k]));
+  return {
+    v: 1,
+    timers: [...S.timers].sort((a, b) => a.id < b.id ? -1 : 1).map(t => ({
+      id: t.id, bossID: t.bossID, channel: t.channel ?? null, killedAt: t.killedAt, respawnAt: t.respawnAt,
+      notify: t.notify !== false, modified: t.updatedAt || t.killedAt,
+    })),
+    tombstones: tomb,
+    overrides: S.settings.respawnOverrides,
+    overridesModified: S.ovm || 0,
+  };
+}
+
+/** รวมข้อมูลจาก Gist เข้ากับในเครื่อง — รายการไหนแก้ล่าสุดชนะ, บอส+แชแนลซ้ำเหลืออันล่าสุด */
+function mergeRemote(r) {
+  if (!r || !Array.isArray(r.timers)) return;
+  const E = new Map(); // id → { t, d }
+  const put = (id, t, d) => { const e = E.get(id); if (!e || e.d < d) E.set(id, { t, d }); };
+  for (const t of S.timers) put(t.id, t, t.updatedAt || t.killedAt);
+  for (const [id, d] of Object.entries(S.tombstones)) put(id, null, d);
+  for (const x of r.timers) {
+    if (!bossById(x.bossID)) continue;
+    put(x.id, { id: x.id, bossID: x.bossID, channel: x.channel ?? null, killedAt: x.killedAt, respawnAt: x.respawnAt, notify: x.notify !== false, updatedAt: x.modified }, x.modified);
+  }
+  for (const [id, d] of Object.entries(r.tombstones || {})) put(id, null, d);
+
+  const best = new Map(); // บอส#แชแนล → id ที่ใหม่สุด
+  for (const [id, e] of E) {
+    if (!e.t) continue;
+    const key = `${e.t.bossID}#${e.t.channel ?? -1}`, b = best.get(key);
+    if (b && E.get(b).d >= e.d) E.set(id, { t: null, d: e.d });
+    else { if (b) E.set(b, { t: null, d: E.get(b).d }); best.set(key, id); }
+  }
+  const cutoff = Date.now() - 14 * DAY, timers = [], tomb = {};
+  for (const [id, e] of E) { if (e.t) timers.push(e.t); else if (e.d > cutoff) tomb[id] = e.d; }
+
+  // ถ้าในเครื่องเปิดหน้าจดเวลาค้างไว้ ข้อมูลยังรวมได้ปกติ
+  applyingRemote = true;
+  S.timers = timers;
+  S.tombstones = tomb;
+  if ((r.overridesModified || 0) > (S.ovm || 0)) { S.settings.respawnOverrides = r.overrides || {}; S.ovm = r.overridesModified; }
+  lastIds = new Set(timers.map(t => t.id)); lastOv = JSON.stringify(S.settings.respawnOverrides);
+  autoAdvance();
+  save();
+  applyingRemote = false;
+}
+
+const Sync = {
+  token: (() => { try { return localStorage.getItem("bt.gistToken") || ""; } catch { return ""; } })(),
+  gistId: (() => { try { return localStorage.getItem("bt.gistId") || ""; } catch { return ""; } })(),
+  state: "", lastOk: 0, busy: false, again: false, pushT: null,
+  get on() { return !!(this.token && this.gistId); },
+
+  async api(path, opts = {}) {
+    const r = await fetch(API + path, {
+      ...opts, cache: "no-store",
+      headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${this.token}`, "X-GitHub-Api-Version": "2022-11-28", ...(opts.body ? { "Content-Type": "application/json" } : {}) },
+    });
+    if (!r.ok) { const e = new Error(String(r.status)); e.status = r.status; throw e; }
+    return r.status === 204 ? null : r.json();
+  },
+
+  /** ใส่รหัสครั้งแรก: หา Gist เดิมของเรา ถ้าไม่มีสร้างใหม่ (แบบส่วนตัว) แล้วซิงค์ */
+  async connect(token) {
+    this.token = token.trim();
+    this.state = "กำลังเชื่อมต่อ…"; renderSyncStatus();
+    try {
+      let found = null;
+      for (let page = 1; page <= 5 && !found; page++) {
+        const list = await this.api(`/gists?per_page=100&page=${page}`);
+        found = list.find(g => g.files && g.files[GIST_FILE]);
+        if (list.length < 100) break;
+      }
+      if (!found) {
+        found = await this.api("/gists", { method: "POST", body: JSON.stringify({ description: GIST_DESC, public: false, files: { [GIST_FILE]: { content: JSON.stringify(syncPayload(), null, 1) } } }) });
+      }
+      this.gistId = found.id;
+      try { localStorage.setItem("bt.gistToken", this.token); localStorage.setItem("bt.gistId", this.gistId); } catch {}
+      await this.now();
+      toast("เชื่อมต่อซิงค์แล้ว", "เครื่องที่ใส่รหัสเดียวกันจะเห็นเวลาบอสเดียวกัน");
+    } catch (e) {
+      this.token = ""; this.gistId = "";
+      this.state = e.status === 401 ? "รหัสไม่ถูกต้อง หรือหมดอายุ" : e.status === 403 || e.status === 404 ? "รหัสนี้ไม่มีสิทธิ์ gist — ตอนสร้างให้ติ๊ก gist" : "เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง";
+    }
+    renderSettings();
+  },
+
+  disconnect() {
+    this.token = ""; this.gistId = ""; this.state = "";
+    try { localStorage.removeItem("bt.gistToken"); localStorage.removeItem("bt.gistId"); } catch {}
+    renderSettings(); renderSyncStatus();
+  },
+
+  dirty() {
+    if (!this.on || applyingRemote) return;
+    clearTimeout(this.pushT);
+    this.pushT = setTimeout(() => this.now(), 1200);
+  },
+
+  /** ดึงจาก Gist → รวม → ถ้าในเครื่องมีของใหม่กว่า เขียนกลับ */
+  async now() {
+    if (!this.on) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true;
+    try {
+      const g = await this.api(`/gists/${this.gistId}`);
+      const f = g.files && g.files[GIST_FILE];
+      let text = f ? f.content : null;
+      if (f && f.truncated) text = await fetch(f.raw_url, { cache: "no-store" }).then(r => r.text());
+      let remote = null; try { remote = text ? JSON.parse(text) : null; } catch {}
+      if (remote) mergeRemote(remote);
+      const mine = syncPayload();
+      if (!remote || JSON.stringify(mine) !== JSON.stringify(remote)) {
+        await this.api(`/gists/${this.gistId}`, { method: "PATCH", body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(mine) } } }) });
+      }
+      this.lastOk = Date.now(); this.state = "";
+      renderTimers(); renderBosses();
+    } catch (e) {
+      this.state = e.status === 401 ? "รหัสหมดอายุหรือถูกยกเลิก — ใส่รหัสใหม่" : e.status === 404 ? "ไม่พบ Gist (อาจถูกลบ) — เชื่อมต่อใหม่" : "ซิงค์ไม่สำเร็จ จะลองใหม่อัตโนมัติ";
+    } finally {
+      this.busy = false;
+      renderSyncStatus();
+      if (this.again) { this.again = false; this.dirty(); }
+    }
+  },
+};
+onDirty = () => Sync.dirty();
+
+function renderSyncStatus() {
+  const txt = !Sync.on ? (Sync.state || "ยังไม่ได้เชื่อมต่อ — ข้อมูลอยู่แค่เครื่องนี้")
+    : Sync.state ? Sync.state
+    : Sync.lastOk ? `ซิงค์แล้ว ${fmtClockSec(Sync.lastOk)}` : "กำลังซิงค์…";
+  const bad = Sync.state && !Sync.state.startsWith("กำลัง");
+  document.querySelectorAll(".syncstat").forEach(el => { el.textContent = (Sync.on && !bad ? "☁ " : "") + txt; el.style.color = bad ? "var(--down)" : ""; });
+}
+
 // ---------- นำเข้าข้อมูล (จากปุ่มนำเข้า หรือจากลิงก์ #import=...) ----------
 /** รวมข้อมูลที่นำเข้า: บอส+แชแนลเดียวกันใช้ของใหม่แทน · ตั้งค่าใช้ตามที่นำเข้า */
 function importData(d) {
@@ -686,6 +868,10 @@ autoAdvance();
 renderAll();
 importFromLink();
 window.addEventListener("hashchange", importFromLink);
+// ซิงค์ตอนเปิดหน้า, ทุก 15 วินาที และตอนกลับมาดูหน้านี้
+Sync.now();
+setInterval(() => Sync.now(), 15000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) Sync.now(); });
 setInterval(tick, 1000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 </script>
