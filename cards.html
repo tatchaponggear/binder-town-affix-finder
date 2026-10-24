@@ -141,6 +141,26 @@ h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
 .card table tr.cur td{background:var(--accent-soft);font-weight:600}
 .more{display:flex;justify-content:center;margin-top:12px}
 
+.advctl{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.advctl label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-family:var(--display)}
+.advctl select{border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:7px 8px;font-family:var(--body);font-size:14px;color:var(--ink);max-width:100%}
+.advtop{margin-bottom:12px;align-items:center}
+.advtop .lbl{font-size:13px;color:var(--muted);margin-right:4px}
+.plan{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px}
+@media (max-width:900px){.plan{grid-template-columns:minmax(0,1fr)}}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pc{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:2px 10px;align-items:center;border:1px solid var(--rim);border-left:4px solid var(--cc);border-radius:10px;padding:6px 10px;background:var(--panel)}
+.pc img{width:40px;height:55px;grid-row:1/3}
+.pc b{font-family:var(--display);font-weight:600}
+.pc .why{font-size:12.5px;grid-column:2/4;color:var(--ink)}
+.pc .why .v{font-weight:700;color:var(--cc)}
+.pc .badge{font-size:11.5px;font-weight:600;border-radius:999px;padding:0 8px;border:1px solid var(--rim);color:var(--muted);white-space:nowrap}
+.pc .badge.res{border-color:var(--ok);color:var(--ok)}
+.pbox{border:1px solid var(--rim);border-radius:12px;padding:10px 12px;background:var(--panel-2);font-size:13.5px;display:flex;flex-direction:column;gap:8px}
+.pbox h4{font-family:var(--display);font-weight:600;font-size:15px;margin:0}
+.pbox .warn{color:var(--warn);font-weight:600}
+.pbox .ok{color:var(--ok);font-weight:600}
+.pbox ul{margin:0;padding-left:18px}
 /* saves */
 .saverow{display:flex;flex-wrap:wrap;gap:8px}
 .saverow input{flex:1 1 220px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
@@ -202,6 +222,19 @@ h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
       <div id="sumBody"></div>
     </section>
   </div>
+
+  <section class="panel" id="advisor" aria-labelledby="advT">
+    <h2 class="sec" id="advT">แนะนำการ์ดตามอาชีพ + Resonance</h2>
+    <p class="sub">เลือกอาชีพ เป้าหมาย และ Resonance ที่อยากเปิด แล้วระบบจะเลือกการ์ดที่เข้าชุดนั้นและเหมาะกับอาชีพที่สุด ให้พอดีกับช่องและ Spirit Load ของ Lv ตัวละครด้านบน · ช่องที่เหลือเติมด้วยการ์ดที่ดีที่สุดสำหรับอาชีพนั้น</p>
+    <div class="advctl">
+      <label>อาชีพ<select id="aJob"></select></label>
+      <label>เป้าหมาย<select id="aGoal"><option value="dmg">ดาเมจ (ฟาร์ม / บอส)</option><option value="tank">ความทน</option><option value="farm">ฟาร์มของ (Gold / ดรอป / Gathering)</option></select></label>
+      <label>Resonance<select id="aRes"></select></label>
+      <label>ดาวการ์ด<select id="aStar"><option value="3">★3</option><option value="4">★4</option><option value="5" selected>★5</option></select></label>
+    </div>
+    <div id="aTop" class="chips advtop"></div>
+    <div id="aOut"></div>
+  </section>
 
   <section class="panel" id="catalog" aria-labelledby="catT">
     <h2 class="sec" id="catT">ค้นหาการ์ด</h2>
@@ -284,11 +317,11 @@ try{ const s=JSON.parse(localStorage.getItem('cardPlanner')||'null'); if(s&&Arra
 function save(){ if(VIEW)return; try{localStorage.setItem('cardPlanner',JSON.stringify(st))}catch(e){} }
 
 /* ---------- engine (mirrors the game's Spirit Album maths) ---------- */
-function calc(){
+function calc(S0){ S0=S0||st;
   const tot={}, src={}, add=(key,v,from)=>{ tot[key]=(tot[key]||0)+v; if(from)(src[key]=src[key]||[]).push(from); };
   const placed=[], seen=new Map();
-  st.slots.forEach((x,i)=>{ if(!x||st.lv<SLOTLV[i])return; const c=BY[x.id]; const n=seen.get(c.id)||0; seen.set(c.id,n+1); placed.push({i,c,star:x.star,echo:PA[Math.min(n,PA.length-1)]}); });
-  for(const p of placed){ if(!p.echo)continue; const m=dayMult(p.c,st.night)*p.echo;
+  S0.slots.forEach((x,i)=>{ if(!x||S0.lv<SLOTLV[i])return; const c=BY[x.id]; const n=seen.get(c.id)||0; seen.set(c.id,n+1); placed.push({i,c,star:x.star,echo:PA[Math.min(n,PA.length-1)]}); });
+  for(const p of placed){ if(!p.echo)continue; const m=dayMult(p.c,S0.night)*p.echo;
     for(const f of p.c.fx){ const v=f.k==='stat'?Math.round(starVal(f,p.star)*m):r1(starVal(f,p.star)*m); add(fkey(f),v,p.c.n+(p.echo<1?' ('+p.echo*100+'%)':'')); } }
   const uniq=[...new Map(placed.map(p=>[p.c.id,p])).values()].map(p=>({c:p.c,star:Math.max(...placed.filter(q=>q.c.id===p.c.id).map(q=>q.star))}));
   const res=[];
@@ -299,14 +332,14 @@ function calc(){
     res.push({kind:'สายมอน',name:R.name,sub:SPN[sp],count:n,need:2,on:n>=2,fx:R.fx,mobs:ms}); if(n>=2)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
   for(const [col,R] of Object.entries(RES_COLOR)){ const ms=uniq.filter(u=>u.c.color===col&&u.star>=COLOR_STAR), n=ms.length;
     res.push({kind:'สี',name:R.name,sub:COLOR[col].n+' ★'+COLOR_STAR+'+',count:n,need:R.need,on:n>=R.need,fx:R.fx,mobs:ms}); if(n>=R.need)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
-  const cx=Math.max(0,Math.min(CARDS.length,st.codex|0));
+  const cx=Math.max(0,Math.min(CARDS.length,S0.codex|0));
   for(const t of CODEX) if(cx>=t.n) t.fx.forEach(f=>add(fkey(f),f.v,'Codex '+t.n));
   const caps={}; const capAt=(k,m)=>{ if(tot[k]>m){ caps[k]=tot[k]; tot[k]=m; } };
   capAt('dmgTaken',25); capAt('wardBoss',30); capAt('wardNight',30);
   for(const k of Object.keys(tot)) if(k.startsWith('ward@')) capAt(k,40);
   for(const k of Object.keys(tot)) tot[k]=r1(tot[k]);
   const load=placed.reduce((a,p)=>a+p.c.load,0);
-  return {tot,src,caps,res,placed,load,cap:loadCap(st.lv)};
+  return {tot,src,caps,res,placed,load,cap:loadCap(S0.lv)};
 }
 
 /* ---------- album ---------- */
@@ -416,9 +449,95 @@ function renderView(){ const v=$('viewBar'); v.hidden=!VIEW; if(!VIEW)return;
 { const m=location.hash.match(/^#c=([0-9a-zA-Z_-]+)(?:~(.*))?$/); const o=m&&dec(m[1]);
   if(o){ st=o; let name=''; try{ name=decodeURIComponent(m[2]||'').slice(0,40) }catch(e){} VIEW={name}; } }
 
+
+/* ---------- advisor: best cards for a class + chosen resonance ---------- */
+const JOBS={knight:'Knight',warrior:'Warrior',scout:'Scout',rogue:'Rogue',mage:'Mage',acolyte:'Acolyte',summoner:'Summoner'};
+const OFF_PHYS={atkPct:3,crit:3,critDmg:2.5,aspd:2.5,armorPen:2,boss:2,elite:1.5,opener:1.5,debuffed:1.5,desperate:1,night:1.2,bleed:1.5,expose:1.5,haste:1.5,echo:1,chain:1,lifesteal:1.5,slayer:.6,judgment:2,storm:1.5,web:1.5,phoenix:1,lotusdrain:1.2};
+const OFF_MAG={matkPct:3,cdr:2.5,armorPen:2,boss:2,elite:1.5,opener:1.2,debuffed:1.5,night:1.2,echo:1.5,chain:1.5,frost:1,nova:1.5,focus:1.5,slayer:.6,judgment:2,storm:1.5,polar:1.5,lotusdrain:1.2,web:1};
+const DEF={maxHpPct:2,dmgTaken:2.5,ward:.8,wardBoss:2,wardNight:1,thorns:1,barrier:1.5,bulwark:1.5,renew:1.2,prism:2,bloom:1.5,phoenix:1.2,gust:.5,moveSpeed:.5};
+const FARM={gold:3,drop:3,gather:2,spirit:2.5,moveSpeed:1.5};
+const JOBW={
+  knight:{off:{...OFF_PHYS,matkPct:1.5,cdr:1},offW:.6,def:1.6,stat:{vit:2,str:1.2,int:1,agi:.6}},
+  warrior:{off:OFF_PHYS,offW:1,def:.7,stat:{str:2,agi:1,vit:1}},
+  scout:{off:OFF_PHYS,offW:1,def:.5,stat:{dex:2,agi:1,luk:1}},
+  rogue:{off:OFF_PHYS,offW:1,def:.5,stat:{agi:2,luk:1.5,dex:1}},
+  mage:{off:OFF_MAG,offW:1,def:.6,stat:{int:2,dex:1.5}},
+  acolyte:{off:{...OFF_MAG,matkPct:2.5,cdr:2.5,focus:2},offW:.8,def:1.2,stat:{int:2,vit:1.2,dex:.8},extra:{renew:2.5,bloom:3,dmgTaken:1}},
+  summoner:{off:OFF_MAG,offW:1,def:.6,stat:{int:2,luk:1,dex:.8}}};
+const KEYMAX=(()=>{ const m={}; for(const c of CARDS) for(const f of c.fx){ const k=f.k==='stat'?'stat':f.k; m[k]=Math.max(m[k]||0,f.v[1]); } return m; })();
+function weightOf(job,goal,f){ const W=JOBW[job]; let w=0;
+  if(f.k==='stat') w=(W.stat[f.stat]||.2);
+  else { w=(W.off[f.k]||0)*W.offW + (DEF[f.k]||0)*W.def + ((W.extra||{})[f.k]||0) + (FARM[f.k]?.3:0); }
+  if(goal==='tank'){ if(DEF[f.k]) w=DEF[f.k]*2.2+((W.extra||{})[f.k]||0); else if(f.k==='stat') w=(f.stat==='vit'?2:w*.5); else w*=.4; }
+  if(goal==='farm'){ if(FARM[f.k]) w=FARM[f.k]*2; else w*=.5; }
+  return w; }
+function cardScore(c,job,goal,star){ let s=0; const why=[];
+  for(const f of c.fx){ const w=weightOf(job,goal,f); if(w<=0) continue; const k=f.k==='stat'?'stat':f.k; const v=starVal(f,star)/(KEYMAX[k]||1); s+=w*v; why.push(f); }
+  return {s:s*dayMult(c,st.night),why}; }
+const RES_OPTS=(()=>{ const o=[];
+  for(const g of ['A','B','C','D']){ o.push({key:'r3:'+g,kind:'region',g,need:3,label:'ภูมิภาค '+RES_REGION[g].name+' I (3 ใบ · '+REGION[g]+')'}); o.push({key:'r5:'+g,kind:'region',g,need:5,label:'ภูมิภาค '+RES_REGION[g].name+' II (5 ใบ · '+REGION[g]+')'}); }
+  for(const [sp,R] of Object.entries(RES_KIN)) o.push({key:'k:'+sp,kind:'kin',sp,need:2,label:'สาย '+SPN[sp]+' · '+R.name+' (2 ใบ)'});
+  for(const [col,R] of Object.entries(RES_COLOR)) o.push({key:'c:'+col,kind:'color',col,need:R.need,label:'สี'+COLOR[col].n+' · '+R.name+' ('+R.need+' ใบ ★3+)'});
+  return o; })();
+const resMatch=(o,c)=>o.kind==='region'?c.rg===o.g:o.kind==='kin'?c.sp===o.sp:c.color===o.col;
+function buildPlan(job,goal,opt,star,lv){
+  const cap=loadCap(lv), open=SLOTLV.filter(l=>lv>=l).length;
+  if(!open) return {err:'ช่องการ์ดเปิดที่ Lv 12'};
+  const st2=opt.kind==='color'?Math.max(star,COLOR_STAR):star;
+  const scored=CARDS.map(c=>({c,...cardScore(c,job,goal,st2)}));
+  const cand=scored.filter(x=>resMatch(opt,x.c)).sort((a,b)=>b.s-a.s||a.c.load-b.c.load);
+  const need=opt.need;
+  if(need>open) return {err:'ต้องใช้ '+need+' ช่อง แต่ Lv '+lv+' เปิด '+open+' ช่อง'};
+  // pick `need` resonance cards within load: try best-by-score, fall back to score per load
+  let pick=null;
+  for(const order of [cand, cand.slice().sort((a,b)=>b.s/b.c.load-a.s/a.c.load||b.s-a.s), cand.slice().sort((a,b)=>a.c.load-b.c.load||b.s-a.s)]){
+    const p=[]; let load=0; for(const x of order){ if(p.length>=need) break; if(load+x.c.load<=cap){ p.push(x); load+=x.c.load; } }
+    if(p.length>=need){ pick=p; break; } }
+  if(!pick){ const minLoad=cand.map(x=>x.c.load).sort((a,b)=>a-b).slice(0,need).reduce((a,b)=>a+b,0);
+    return {err:cand.length<need?'การ์ดที่เข้าชุดนี้มีไม่ถึง '+need+' ใบ':'Load ไม่พอ — ชุดนี้ต้องใช้ Load อย่างน้อย '+minLoad+' แต่ Lv '+lv+' รับได้ '+cap}; }
+  const used=new Set(pick.map(x=>x.c.id)); let load=pick.reduce((a,x)=>a+x.c.load,0);
+  const fill=[]; const rest=scored.filter(x=>!used.has(x.c.id)&&x.s>0).sort((a,b)=>b.s/b.c.load-a.s/a.c.load||b.s-a.s);
+  for(const x of rest){ if(pick.length+fill.length>=open) break; if(load+x.c.load<=cap){ fill.push(x); load+=x.c.load; used.add(x.c.id); } }
+  const all=[...pick.map(x=>({...x,res:true})),...fill];
+  const S0={lv,night:st.night,codex:st.codex,slots:Array(9).fill(null)}; let k=0;
+  SLOTLV.forEach((l,i)=>{ if(lv>=l&&k<all.length) S0.slots[i]={id:all[k++].c.id,star:st2}; });
+  return {all,load,cap,open,S0,star:st2,R:calc(S0),score:all.reduce((a,x)=>a+x.s,0)};
+}
+let lastUndo=null;
+function renderAdvisor(){
+  const job=$('aJob').value, goal=$('aGoal').value, star=+$('aStar').value, opt=RES_OPTS.find(o=>o.key===$('aRes').value)||RES_OPTS[0];
+  try{localStorage.setItem('cardAdvisor',JSON.stringify({job,goal,res:opt.key,star}))}catch(e){}
+  // top resonances for this class
+  const ranked=RES_OPTS.map(o=>({o,p:buildPlan(job,goal,o,star,st.lv)})).filter(x=>!x.p.err).sort((a,b)=>b.p.score-a.p.score).slice(0,5);
+  $('aTop').innerHTML='<span class="lbl">Resonance ที่เหมาะกับ '+JOBS[job]+' ที่ Lv '+st.lv+':</span>'+ranked.map((x,i)=>'<button type="button" class="chip" data-ares="'+x.o.key+'" aria-pressed="'+(x.o.key===opt.key)+'">'+(i+1)+'. '+esc(x.o.label.split(' (')[0])+'</button>').join('');
+  const P=buildPlan(job,goal,opt,star,st.lv);
+  if(P.err){ $('aOut').innerHTML='<div class="empty">'+esc(P.err)+'</div>'; return; }
+  const res=P.R.res.filter(r=>r.on);
+  const keys=sortKeys(Object.keys(P.R.tot).filter(k=>P.R.tot[k]));
+  $('aOut').innerHTML='<div class="plan"><div class="plist">'+P.all.map(x=>{ const c=x.c;
+      return '<div class="pc" style="--cc:var(--c-'+c.color+')"><img src="img/card/'+c.id+'.svg" alt="" loading="lazy"><div><b>'+esc(c.n)+'</b> <small style="color:var(--muted)">'+COLOR[c.color].n+' · '+REGION[c.rg]+' · Load '+c.load+'</small></div>'+
+        '<span class="badge'+(x.res?' res':'')+'">'+(x.res?'เข้าชุด':'เติมช่อง')+'</span><div class="why">★'+P.star+': '+(x.why.length?x.why.map(f=>label(fkey(f),starVal(f,P.star))).join(' · '):fxText(c,P.star))+'</div></div>'; }).join('')+'</div>'+
+    '<div class="pbox"><h4>'+esc(opt.label)+'</h4>'+
+      '<div>ใช้ '+P.all.length+' / '+P.open+' ช่อง · Load '+P.load+' / '+P.cap+' · การ์ด ★'+P.star+(opt.kind==='color'&&star<COLOR_STAR?' <span class="warn">(Resonance สีต้อง ★3 ขึ้นไป จึงคิดที่ ★3)</span>':'')+'</div>'+
+      '<div><b>Resonance ที่เปิด:</b> '+(res.length?res.map(r=>'<span class="ok">'+esc(r.name)+(r.tier===2?' II':'')+'</span>').join(' · '):'—')+'</div>'+
+      '<div><b>สเตตัสรวมที่ได้ (การ์ด + Resonance + Codex '+(st.codex|0)+'):</b><ul>'+keys.map(k=>'<li>'+label(k,P.R.tot[k])+'</li>').join('')+'</ul></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn pri" id="aApply">ใส่ชุดนี้ลงช่องการ์ด</button>'+(lastUndo?'<button type="button" class="btn" id="aUndo">เลิกทำ</button>':'')+'</div>'+
+      '<small style="color:var(--muted)">น้ำหนักการให้คะแนน: อาชีพสายกายภาพเน้น ATK% คริ ดาเมจคริ สปีดตี · สายเวทเน้น MATK% ลดคูลดาวน์ · Knight / ความทนเน้น Max HP ลดดาเมจ · เป็นคำแนะนำเริ่มต้น ปรับต่อได้ในช่องการ์ด</small></div></div>';
+  window._advPlan=P;
+}
+function initAdvisor(){
+  $('aJob').innerHTML=Object.entries(JOBS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('');
+  $('aRes').innerHTML=['region','kin','color'].map(kd=>'<optgroup label="'+({region:'ภูมิภาค',kin:'สายมอน',color:'สีการ์ด'}[kd])+'">'+RES_OPTS.filter(o=>o.kind===kd).map(o=>'<option value="'+o.key+'">'+esc(o.label)+'</option>').join('')+'</optgroup>').join('');
+  try{ const a=JSON.parse(localStorage.getItem('cardAdvisor')||'null'); if(a){ if(JOBS[a.job])$('aJob').value=a.job; $('aGoal').value=a.goal||'dmg'; if(RES_OPTS.some(o=>o.key===a.res))$('aRes').value=a.res; $('aStar').value=a.star||5; } }catch(e){}
+  ['aJob','aGoal','aRes','aStar'].forEach(id=>$(id).addEventListener('change',renderAdvisor));
+  document.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.ares){ $('aRes').value=b.dataset.ares; renderAdvisor(); }
+    else if(b.id==='aApply'&&window._advPlan){ lastUndo=st.slots.slice(); st.slots=window._advPlan.S0.slots.slice(); sel=-1; render(); toast('ใส่ชุดแนะนำแล้ว — กด "เลิกทำ" เพื่อกลับ'); document.getElementById('albT').scrollIntoView({behavior:'smooth'}); }
+    else if(b.id==='aUndo'&&lastUndo){ st.slots=lastUndo; lastUndo=null; render(); toast('กลับไปการ์ดชุดเดิมแล้ว'); } });
+}
 /* ---------- render + events ---------- */
 function render(){ $('lv').value=st.lv; $('codex').value=st.codex; $('tDay').setAttribute('aria-pressed',!st.night); $('tNight').setAttribute('aria-pressed',st.night);
-  const R=calc(); renderAlbum(R); renderSummary(R); renderCatalog(); renderSaves(); renderView(); save(); }
+  const R=calc(); renderAlbum(R); renderSummary(R); renderCatalog(); renderSaves(); renderView(); if($('aJob').options.length) renderAdvisor(); save(); }
 function addCard(id){
   const c=BY[id], R=calc();
   let i=sel>=0&&st.lv>=SLOTLV[sel]?sel:st.slots.findIndex((x,k)=>!x&&st.lv>=SLOTLV[k]);
@@ -457,7 +576,7 @@ $('q').addEventListener('input',e=>{ filt.q=e.target.value.trim(); shown=24; ren
 $('fMap').addEventListener('change',e=>{ filt.map=e.target.value; shown=24; renderCatalog(); });
 $('fRole').addEventListener('change',e=>{ filt.role=e.target.value; shown=24; renderCatalog(); });
 $('fStar').addEventListener('change',e=>{ filt.star=+e.target.value; renderCatalog(); });
-initFilters(); render();
+initFilters(); initAdvisor(); render();
 })();
 </script>
 </body>

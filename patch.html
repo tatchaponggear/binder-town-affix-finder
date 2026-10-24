@@ -75,6 +75,11 @@ table.t th{font-size:12px;color:var(--muted);font-weight:600}
 .count{font-size:13px;color:var(--muted);margin:0 0 8px}
 .band{min-width:900px}
 .band td.n{font-family:var(--display);font-weight:600}
+.band th.atlv,.band td.atlv{background:var(--accent-soft)}
+.band td.atlv b{font-size:15px}
+.band td.atlv small{display:block;font-size:11px;color:var(--muted)}
+.lvl{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:14px}
+.lvl input{width:68px;border:1px solid var(--rim);background:var(--panel-2);border-radius:8px;padding:5px 8px}
 .band td.v{text-align:right;white-space:nowrap}
 .band td.v small{display:block;font-size:11px;color:var(--muted)}
 .band td.up b{color:var(--up)} .band td.down b{color:var(--down)}
@@ -242,9 +247,9 @@ mark{background:var(--code-soft);color:inherit;border-radius:3px;padding:0 2px}
 
   <section class="panel" id="bands" aria-labelledby="bandT">
     <h2 id="bandT">ตัวคูณดาเมจตามเลเวลตัวละคร · เก่า vs ใหม่</h2>
-    <p class="sub">ตัวเลขใหญ่ = ค่าหลังแพทช์ 24 ต.ค. · ตัวเล็ก = ค่าเวอร์ชัน 21 ต.ค. · สีเขียว = แรงขึ้น · สีแดง = เบาลง · ค่าระหว่างจุดอ้างอิงไล่เป็นเส้นตรง · ใช้กับมอนเท่านั้น (แพทช์บอกว่าไม่กระทบ PvP)</p>
-    <div class="filters"><select id="bJob" aria-label="อาชีพ"><option value="">ทุกอาชีพ</option></select><input type="search" id="bQ" placeholder="ค้นหาสกิล" aria-label="ค้นหาสกิล"></div>
-    <div class="scroll"><table class="t band"><thead><tr><th>สกิล</th><th>อาชีพ</th><th id="bHead" colspan="8"></th></tr></thead><tbody id="bRows"></tbody></table></div>
+    <p class="sub">ใส่ Base Lv ตัวละครเพื่อดูตัวคูณที่เลเวลนั้นในคอลัมน์สีฟ้า (เทียบเก่า / ใหม่ เป็น %) · เรียงหาสกิลที่ได้ / เสียมากสุดได้ · ตัวเลขใหญ่ = ค่าหลังแพทช์ 24 ต.ค. · ตัวเล็ก = ค่าเวอร์ชัน 21 ต.ค. · สีเขียว = แรงขึ้น · สีแดง = เบาลง · ค่าระหว่างจุดอ้างอิงไล่เป็นเส้นตรง · ใช้กับมอนเท่านั้น (แพทช์บอกว่าไม่กระทบ PvP)</p>
+    <div class="filters"><label class="lvl" for="bLv">Base Lv <input type="number" id="bLv" min="1" max="99" value="60"></label><select id="bJob" aria-label="อาชีพ"><option value="">ทุกอาชีพ</option></select><select id="bSort" aria-label="เรียง"><option value="">เรียงตามอาชีพ</option><option value="up">เพิ่มขึ้นมากสุดที่ Base Lv นี้</option><option value="down">ลดลงมากสุดที่ Base Lv นี้</option><option value="hi">ตัวคูณสูงสุดที่ Base Lv นี้</option></select><input type="search" id="bQ" placeholder="ค้นหาสกิล" aria-label="ค้นหาสกิล"></div>
+    <div class="scroll"><table class="t band"><thead><tr><th>สกิล</th><th>อาชีพ</th><th class="atlv" id="bAt">ที่ Base Lv</th><th id="bHead" colspan="8"></th></tr></thead><tbody id="bRows"></tbody></table></div>
   </section>
 
   <section class="panel" id="log" aria-labelledby="logT">
@@ -276,13 +281,20 @@ $('sfRows').innerHTML=SF.map((v,i)=>'<tr><td>'+i+'</td><td>'+XP[i].toLocaleStrin
 $('bHead').outerHTML=D.pts.map(p=>'<th style="text-align:right">Lv '+p+'</th>').join('');
 const jobs=[...new Set(D.bands.map(b=>b.j))].filter(Boolean).sort();
 $('bJob').innerHTML+=jobs.map(j=>'<option>'+esc(j)+'</option>').join('');
-function renderBands(){ const j=$('bJob').value, q=$('bQ').value.trim().toLowerCase();
-  const rows=D.bands.filter(b=>(!j||b.j===j)&&(!q||(b.n+' '+b.id).toLowerCase().includes(q)));
-  $('bRows').innerHTML=rows.map(b=>'<tr><td class="n">'+esc(b.n)+(b.o?'':' <span class="tag t-code">ใหม่</span>')+'</td><td>'+esc(b.j)+'</td>'+D.pts.map((p,i)=>{ const n=b.w?b.w[i]:null, o=b.o?b.o[i]:null;
+const interp=(n,lv)=>{ if(!n) return null; const p=D.pts; if(lv<=p[0]) return n[0]; for(let i=1;i<p.length;i++) if(lv<=p[i]) return n[i-1]+(n[i]-n[i-1])*(lv-p[i-1])/(p[i]-p[i-1]); return n[n.length-1]; };
+try{ const v=localStorage.getItem('patchLv'); if(v) $('bLv').value=v; }catch(e){}
+function renderBands(){ const j=$('bJob').value, q=$('bQ').value.trim().toLowerCase(), lv=Math.max(1,Math.min(99,+$('bLv').value||60)), so=$('bSort').value;
+  try{localStorage.setItem('patchLv',lv)}catch(e){}
+  $('bAt').textContent='ที่ Base Lv '+lv;
+  let rows=D.bands.filter(b=>(!j||b.j===j)&&(!q||(b.n+' '+b.id).toLowerCase().includes(q)));
+  const at=b=>({n:interp(b.w,lv),o:interp(b.o,lv)});
+  if(so) rows=rows.slice().sort((x,y)=>{ const a=at(x),c=at(y); if(so==='hi') return (c.n??0)-(a.n??0); const da=(a.n??0)-(a.o??a.n??0), dc=(c.n??0)-(c.o??c.n??0); return so==='up'?dc-da:da-dc; });
+  $('bRows').innerHTML=rows.map(b=>{ const a=at(b), ch=a.n!=null&&a.o!=null?(a.n-a.o)/a.o*100:null, cls=ch==null?'':ch>0.05?'up':ch<-0.05?'down':'';
+    return '<tr><td class="n">'+esc(b.n)+(b.o?'':' <span class="tag t-code">ใหม่</span>')+'</td><td>'+esc(b.j)+'</td><td class="v atlv '+cls+'"><b>'+(a.n!=null?'×'+a.n.toFixed(2):'—')+'</b><small>'+(a.o!=null?'เดิม ×'+a.o.toFixed(2)+(ch!=null?' · '+(ch>0?'+':'')+ch.toFixed(0)+'%':''):'เดิม: ไม่มี')+'</small></td>'+D.pts.map((p,i)=>{ const n=b.w?b.w[i]:null, o=b.o?b.o[i]:null;
       const cls=n!=null&&o!=null?(n>o+1e-9?'up':n<o-1e-9?'down':''):'';
-      return '<td class="v '+cls+'"><b>'+(n!=null?'×'+n.toFixed(2):'—')+'</b><small>'+(o!=null?'เดิม ×'+o.toFixed(2):'เดิม: ไม่มี')+'</small></td>'; }).join('')+'</tr>').join('')||'<tr><td colspan="10">ไม่พบสกิล</td></tr>';
+      return '<td class="v '+cls+'"><b>'+(n!=null?'×'+n.toFixed(2):'—')+'</b><small>'+(o!=null?'เดิม ×'+o.toFixed(2):'เดิม: ไม่มี')+'</small></td>'; }).join('')+'</tr>'; }).join('')||'<tr><td colspan="11">ไม่พบสกิล</td></tr>';
 }
-$('bJob').addEventListener('change',renderBands); $('bQ').addEventListener('input',renderBands); renderBands();
+$('bJob').addEventListener('change',renderBands); $('bLv').addEventListener('input',renderBands); $('bSort').addEventListener('change',renderBands); $('bQ').addEventListener('input',renderBands); renderBands();
 // log
 let kind='', shown=12;
 function hl(t,q){ const e=esc(t); if(!q)return e; const i=e.toLowerCase().indexOf(q.toLowerCase()); return i<0?e:e.slice(0,i)+'<mark>'+e.slice(i,i+q.length)+'</mark>'+e.slice(i+q.length); }
