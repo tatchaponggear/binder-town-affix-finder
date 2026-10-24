@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Binder Town: จับเวลาบอสเกิด แจ้งเตือนก่อนเกิดพร้อมเสียงพูด รีอัตโนมัติ ใช้ได้ทุกอุปกรณ์">
+<title>Boss Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: ตารางเกิด (ซ้าย) + รายชื่อบอสให้กดจด (ขวา) · ตั้งค่าด้านล่าง · หน้าต่างจดเวลาเป็น dialog */
+:root{
+  --bg:#e9eef6; --panel:#ffffff; --panel-2:#f3f6fb; --rim:#d3dcea; --ink:#1c2636; --muted:#5f6d84; --accent:#2f62c8; --accent-soft:#e3ecfb;
+  --soon:#c0571b; --soon-soft:#fdeee4; --code:#7a4fd0; --code-soft:#efe8fd; --live:#23883a; --live-soft:#e3f3e5; --down:#c83a3a;
+  --field:#b07a10; --field-soft:#fbf1dc;
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(20,40,80,.06),0 6px 18px rgba(20,40,80,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --soon:#ffa46b; --soon-soft:#3a2214; --code:#c4a6ff; --code-soft:#2a1f4a; --live:#6fdc8c; --live-soft:#173322; --down:#ff7d7d;
+  --field:#f2c766; --field-soft:#3a2f14;
+  --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --soon:#ffa46b; --soon-soft:#3a2214; --code:#c4a6ff; --code-soft:#2a1f4a; --live:#6fdc8c; --live-soft:#173322; --down:#ff7d7d;
+  --field:#f2c766; --field-soft:#3a2f14;
+  --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+a{color:var(--accent)}
+.sitenav{max-width:1100px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:var(--panel);border:1px solid var(--rim);border-radius:14px;padding:6px;box-shadow:var(--shadow)}
+.sitenav .brand{font-family:var(--display);font-weight:600;font-size:14px;color:var(--muted);padding:0 10px 0 8px}
+.sitenav a{font-family:var(--display);font-weight:500;font-size:14px;color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:10px}
+.sitenav a:hover{background:var(--panel-2)}
+.sitenav a[aria-current]{background:var(--accent);color:var(--panel)}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--display);font-weight:600;font-size:28px;margin:0;line-height:1.15;text-wrap:balance}
+.lead{color:var(--muted);margin:4px 0 0;max-width:72ch}
+.panel{background:var(--panel);border:1px solid var(--rim);border-radius:16px;box-shadow:var(--shadow);padding:16px;min-width:0}
+h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13.5px;margin:2px 0 12px;max-width:80ch}
+.num{font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--rim);border-radius:10px;padding:8px 14px;background:var(--panel-2);font-family:var(--display);font-size:14px;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:600}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{padding:3px 10px;font-size:13px;border-radius:999px}
+.btn.warn{color:var(--down)}
+.btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.link{color:var(--accent);font-family:var(--display);font-size:14px;padding:0}
+.link.red{color:var(--down)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+
+.banner{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-color:var(--accent);background:var(--accent-soft)}
+
+/* ตารางเกิด */
+.timers{display:flex;flex-direction:column;gap:8px}
+.trow{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border:1px solid var(--rim);border-radius:14px;background:var(--panel-2);cursor:pointer}
+.trow:hover{border-color:var(--accent)}
+.trow.soon{border-color:var(--soon);background:var(--soon-soft)}
+.trow.spawned{border-color:var(--live);background:var(--live-soft)}
+.sprite{width:56px;height:56px;image-rendering:pixelated;object-fit:contain;border-radius:50%;background:radial-gradient(circle,var(--field-soft),transparent 70%)}
+.sprite.mini{background:radial-gradient(circle,var(--code-soft),transparent 70%)}
+.tname{font-family:var(--display);font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tmeta{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.tmeta span:last-child{overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-flex;align-items:center;font-family:var(--display);font-weight:600;font-size:11px;border-radius:999px;padding:0 8px;border:1.5px solid var(--c);background:var(--cs);color:var(--c);white-space:nowrap;flex:none}
+.k-field{--c:var(--field);--cs:var(--field-soft)}
+.k-mini{--c:var(--code);--cs:var(--code-soft)}
+.bar{height:5px;border-radius:5px;background:var(--rim);margin-top:6px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:5px;background:var(--accent)}
+.trow.soon .bar>i{background:var(--soon)}
+.trow.spawned .bar>i{background:var(--live)}
+.tright{text-align:right}
+.cd{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.1}
+.trow.soon .cd{color:var(--soon)}
+.trow.spawned .cd{color:var(--live)}
+.small{font-size:12.5px;color:var(--muted)}
+.tacts{grid-column:2 / -1;display:flex;gap:6px;flex-wrap:wrap}
+.empty{text-align:center;padding:40px 12px;color:var(--muted);border:1.5px dashed var(--rim);border-radius:14px}
+.empty b{display:block;color:var(--ink);font-family:var(--display);font-size:18px;margin:6px 0 2px}
+
+/* รายชื่อบอส */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.filters input[type=search]{flex:1 1 180px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.seg{display:flex;border:1px solid var(--rim);border-radius:10px;overflow:hidden}
+.seg button{padding:6px 12px;font-size:13px;font-family:var(--display)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.bosses{display:flex;flex-direction:column;gap:6px}
+.brow{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--rim);border-radius:12px;text-align:left;width:100%;background:var(--panel)}
+.brow:hover{border-color:var(--accent);background:var(--panel-2)}
+.brow .sprite{width:48px;height:48px}
+.brow b{font-family:var(--display);font-weight:600;font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plus{font-family:var(--display);font-weight:600;color:var(--accent);font-size:13px;white-space:nowrap}
+
+/* ตั้งค่า */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.sbox{border:1px solid var(--rim);border-radius:14px;padding:12px 14px;background:var(--panel-2);display:flex;flex-direction:column;gap:8px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:32px}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.chips .btn{padding:6px 0;text-align:center}
+.foot{font-size:12.5px;color:var(--muted);margin:0}
+select,.numin{border:1px solid var(--rim);background:var(--panel);border-radius:8px;padding:5px 8px}
+.numin{width:72px;text-align:right;font-weight:600}
+.respawns{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:6px}
+.respawns label{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:14px;border:1px solid var(--rim);border-radius:10px;padding:4px 8px;background:var(--panel)}
+.respawns label span{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.respawns img{width:26px;height:26px;image-rendering:pixelated}
+.respawns .changed{color:var(--soon)}
+.switch{position:relative;width:44px;height:26px;flex:none;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:var(--rim);border-radius:999px;transition:.2s;cursor:pointer}
+.switch span::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span::after{transform:translateX(18px)}
+
+/* หน้าต่างจดเวลา */
+dialog{border:1px solid var(--rim);padding:0;background:var(--panel);color:var(--ink);width:min(520px,calc(100vw - 24px));max-height:92vh;border-radius:18px;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(5,10,25,.55)}
+@media (max-width:600px){dialog{margin:auto 0 0;width:100vw;max-width:100vw;border-radius:18px 18px 0 0;max-height:94vh}}
+.dh{position:sticky;top:0;z-index:2;background:var(--panel);display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--rim)}
+.dh b{font-family:var(--display);font-size:17px}
+.db{padding:12px 16px 18px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.dbox{border:1px solid var(--rim);border-radius:14px;padding:12px;background:var(--panel-2);display:flex;flex-direction:column;gap:10px}
+.dbox .seg{width:100%}
+.dbox .seg button{flex:1}
+.cdinput{width:100%;text-align:center;font-family:var(--display);font-size:42px;font-weight:600;color:var(--accent);background:transparent;border:0;outline:none;padding:4px 0 0;font-variant-numeric:tabular-nums}
+.cdinput::placeholder{color:var(--rim)}
+.cdhint{text-align:center;color:var(--muted);font-size:14px}
+.timein{border:1px solid var(--rim);background:var(--panel);border-radius:8px;padding:5px 8px;font-size:17px}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick .btn{flex:1}
+.bh{display:flex;gap:12px;align-items:center}
+.bh .sprite{width:52px;height:52px}
+.preview{text-align:center}
+.preview .big{font-family:var(--display);font-size:38px;font-weight:600;color:var(--accent);line-height:1.15}
+
+.toasts{position:fixed;top:12px;right:12px;z-index:50;display:grid;gap:8px;width:min(380px,calc(100vw - 24px))}
+.toast{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--accent);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);animation:drop .25s ease-out;cursor:pointer}
+.toast img{width:40px;height:40px;image-rendering:pixelated}
+.toast b{display:block;font-family:var(--display)}
+@keyframes drop{from{transform:translateY(-12px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}.switch span,.switch span::after{transition:none}}
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="builds.html">บิลด์</a><a href="index.html">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html">Skill Tree</a><a href="cards.html">การ์ด</a><a href="guide.html">ไกด์</a><a href="patch.html">แพทช์</a><a href="boss.html" aria-current="page">เวลาบอส</a></nav>
+<div class="wrap">
+  <header>
+    <h1>เวลาบอสเกิด</h1>
+    <p class="lead">จดเวลาบอสล้ม หรือพิมพ์เวลานับถอยหลังจากหลุมศพบอส แล้วรอแจ้งเตือนก่อนเกิดพร้อมเสียงพูด · รีอัตโนมัติหลังบอสเกิด · ข้อมูลเก็บในเบราว์เซอร์ของเครื่องนี้ · ต้องเปิดหน้านี้ค้างไว้ (ย่อได้) ถึงจะแจ้งเตือน</p>
+  </header>
+
+  <div id="permBanner" class="panel banner" hidden></div>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="h-timers">
+      <div class="ph"><h2 id="h-timers">ตารางเกิด</h2><button class="btn primary" id="addBtn">＋ จดเวลาบอส</button></div>
+      <div id="timers" class="timers"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-bosses">
+      <h2 id="h-bosses">บอส</h2>
+      <p class="sub">กดบอสเพื่อจดเวลา · แมพที่แสดงคือแมพทางเข้า</p>
+      <div class="filters">
+        <div class="seg" id="kindSeg">
+          <button data-filter="all" aria-pressed="true">ทั้งหมด</button><button data-filter="field" aria-pressed="false">Field Boss</button><button data-filter="mini" aria-pressed="false">Mini-boss</button>
+        </div>
+        <input type="search" id="bossSearch" placeholder="ค้นหาชื่อบอสหรือแมพ" aria-label="ค้นหาบอส">
+      </div>
+      <div id="bosses" class="bosses"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-settings">
+    <h2 id="h-settings">ตั้งค่า</h2>
+    <p class="sub">ตั้งครั้งเดียว ใช้กับบอสทุกตัว</p>
+    <div id="settings"></div>
+  </section>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<dialog id="record" aria-label="จดเวลาบอส"></dialog>
+
+<script>
+"use strict";
+// ข้อมูลจาก wiki.bindertowngame.com/bosses — map = แมพทางเข้า, room = ห้องบอสหลังเข้า Portal
+const BOSSES = [
+  { id: "bloom_crowned_stag", name: "Bloom Crowned Stag", map: "Whispering Woods", room: "Bloomcrown Glade", kind: "field", level: 25, respawn: 180 },
+  { id: "prism_shell_sovereign", name: "Prism Shell Sovereign", map: "Ancient Ruins", room: null, kind: "field", level: 25, respawn: 180 },
+  { id: "cinder_plume_roc", name: "Cinder Plume Roc", map: "Ember Hollow", room: "Cinder Eyrie", kind: "field", level: 36, respawn: 180 },
+  { id: "lotus_maw_matriarch", name: "Lotus Maw Matriarch", map: "Mistmire Swamp", room: "Lotus Hollow", kind: "field", level: 40, respawn: 180 },
+  { id: "aurora_antler_regent", name: "Aurora Antler Regent", map: "Frozen Mere", room: "Aurora Hollow", kind: "field", level: 58, respawn: 180 },
+  { id: "tempest_kite_empress", name: "Tempest Kite Empress", map: "Cloudspire Ruins", room: "Tempest Aerie", kind: "field", level: 70, respawn: 180 },
+  { id: "opal_weaver_queen", name: "Opal Weaver Queen", map: "Shattered Vale", room: "Opalweb Grotto", kind: "field", level: 80, respawn: 180 },
+  { id: "vale_warden", name: "Vale Warden", map: "Throne of the Warden", room: "Warden's Seat", kind: "field", level: 99, respawn: 180 },
+  { id: "vale_keeper", name: "Vale Keeper", map: "Ancient Ruins", room: null, kind: "mini", level: 22, respawn: 30 },
+  { id: "dusk_herald", name: "Dusk Herald", map: "Duskgate Pass", room: null, kind: "mini", level: 47, respawn: 30 },
+  { id: "sky_sentinel", name: "Sky Sentinel", map: "Cloudspire Ruins", room: null, kind: "mini", level: 72, respawn: 30 },
+];
+const bossById = id => BOSSES.find(b => b.id === id);
+const KIND_LABEL = { field: "Field Boss", mini: "Mini-boss" };
+const IMG = id => `img/boss/${id}.png`;
+const MIN = 60_000, DAY = 86_400_000;
+
+// ---------- ที่เก็บข้อมูล ----------
+const DEFAULT_SETTINGS = {
+  leadMinutes: [3, 1], notifyAtSpawn: true, sound: true, voice: true,
+  respawnOverrides: {}, hideSpawnedAfterMinutes: 60, autoResetMinutes: -1, // -1 = สุ่ม 1–5 นาที
+};
+function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }
+const S = { timers: load("bt.timers", []), settings: { ...DEFAULT_SETTINGS, ...load("bt.settings", {}) }, fired: load("bt.fired", {}) };
+function save() {
+  try {
+    localStorage.setItem("bt.timers", JSON.stringify(S.timers));
+    localStorage.setItem("bt.settings", JSON.stringify(S.settings));
+    localStorage.setItem("bt.fired", JSON.stringify(S.fired));
+  } catch {}
+}
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).toUpperCase();
+const respawnMinutes = b => S.settings.respawnOverrides[b.id] ?? b.respawn;
+function setRespawnMinutes(b, m) { if (m === b.respawn) delete S.settings.respawnOverrides[b.id]; else S.settings.respawnOverrides[b.id] = m; }
+const duration = t => Math.max(MIN, t.respawnAt - t.killedAt);
+
+/** บันทึก/แทนที่ timer ของบอส+แชแนลเดียวกัน */
+function record(boss, channel, { killedAt, respawnAt, minutes }) {
+  const dur = (minutes ?? respawnMinutes(boss)) * MIN;
+  const kill = killedAt ?? (respawnAt != null ? respawnAt - dur : Date.now());
+  const spawn = respawnAt ?? kill + dur;
+  let t = S.timers.find(x => x.bossID === boss.id && x.channel === channel);
+  if (!t) { t = { id: uuid(), bossID: boss.id, channel, notify: true }; S.timers.push(t); }
+  Object.assign(t, { killedAt: kill, respawnAt: spawn, updatedAt: Date.now() });
+  return t;
+}
+const killedNow = t => { const b = bossById(t.bossID); if (b) record(b, t.channel, { killedAt: Date.now(), minutes: Math.round(duration(t) / MIN) }); };
+
+// ---------- รีอัตโนมัติ ----------
+/** สุ่มแบบคงที่ 1–5 นาทีจาก id + เวลาเกิด → เปิดกี่ครั้งก็ได้ค่าเดิม และแจ้งเตือนรอบถัดไปตรงกับที่รีจริง */
+function randomGrace(id, spawnMs) {
+  let h = 0xcbf29ce484222325n;
+  for (const b of new TextEncoder().encode(`${id}#${Math.trunc(spawnMs / 1000)}`)) { h ^= BigInt(b); h = (h * 0x100000001b3n) & 0xffffffffffffffffn; }
+  return (60 + Number(h % 241n)) * 1000;
+}
+function grace(t, spawnMs) { const m = S.settings.autoResetMinutes; return m < 0 ? randomGrace(t.id, spawnMs) : m * MIN; }
+function autoAdvance(now = Date.now()) {
+  let changed = false;
+  for (const t of S.timers) {
+    const d = duration(t);
+    for (let i = 0; i < 1000; i++) {
+      const g = grace(t, t.respawnAt);
+      if (!(g > 0 && t.respawnAt + g <= now)) break;
+      t.killedAt = t.respawnAt + g; t.respawnAt = t.killedAt + d; changed = true;
+    }
+  }
+  if (changed) save();
+  return changed;
+}
+function projectedSpawns(t, until, max = 8) {
+  const out = [t.respawnAt], d = duration(t);
+  let next = t.respawnAt;
+  while (out.length < max) { const g = grace(t, next); if (!(g > 0)) break; next += g + d; if (next > until) break; out.push(next); }
+  return out;
+}
+
+// ---------- รูปแบบเวลา ----------
+const pad = n => String(n).padStart(2, "0");
+function fmtCountdown(ms) { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h > 0 ? `${h}:${pad(m)}:${pad(x)}` : `${pad(m)}:${pad(x)}`; }
+const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtClockSec = ms => `${fmtClock(ms)}:${pad(new Date(ms).getSeconds())}`;
+function describeSec(sec) { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60, p = []; if (h) p.push(`${h} ชม.`); if (m) p.push(`${m} นาที`); if (s) p.push(`${s} วิ`); return p.join(" "); }
+function describeMin(m) { const h = Math.floor(m / 60), r = m % 60; return !h ? `${r} นาที` : r ? `${h} ชั่วโมง ${r} นาที` : `${h} ชั่วโมง`; }
+/** 30 = 0:30 · 2530 = 25:30 · 14530 = 1:45:30 · หรือพิมพ์ 1:45:30 */
+function parseCountdown(text) {
+  const t = text.trim();
+  if (t.includes(":")) {
+    const parts = t.split(":").map(x => parseInt(x, 10) || 0);
+    if (parts.length > 3) return null;
+    const total = parts.reduce((a, b) => a * 60 + b, 0);
+    return total > 0 ? total : null;
+  }
+  const digits = t.replace(/\D/g, "").slice(-6);
+  if (!digits) return null;
+  const n = parseInt(digits, 10), total = Math.floor(n / 10000) * 3600 + Math.floor(n / 100 % 100) * 60 + n % 100;
+  return total > 0 ? total : null;
+}
+
+// ---------- แจ้งเตือน / เสียง ----------
+const speech = (b, ch, lead) => { const c = ch != null ? ` แชแนล ${ch}` : ""; return lead === 0 ? `บอส ${b.name} แมพ ${b.map}${c} เกิดแล้ว` : `บอส ${b.name} แมพ ${b.map}${c} อีก ${lead} นาทีเกิด`; };
+let audioCtx = null;
+function unlockAudio() { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); } catch {} }
+function beep() {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  [0, 0.22, 0.44].forEach((dt, i) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = "sine"; o.frequency.value = i === 2 ? 1175 : 880;
+    g.gain.setValueAtTime(0.0001, t0 + dt); g.gain.exponentialRampToValueAtTime(0.35, t0 + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.18);
+    o.connect(g).connect(audioCtx.destination); o.start(t0 + dt); o.stop(t0 + dt + 0.2);
+  });
+}
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = "th-TH";
+  const v = speechSynthesis.getVoices().find(v => /^th/i.test(v.lang)); if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => {};
+let swReg = null;
+if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("boss-sw.js").then(r => (swReg = r)).catch(() => {});
+const notifSupported = () => "Notification" in window;
+
+async function alertUser({ title, body, speechText, boss, tag }) {
+  const st = S.settings;
+  if (st.sound) { beep(); if (st.voice) setTimeout(() => speak(speechText), 700); }
+  toast(title, body, boss);
+  if (notifSupported() && Notification.permission === "granted") {
+    const opts = { body, tag, icon: boss ? IMG(boss.id) : undefined, silent: !st.sound, renotify: true };
+    try { if (swReg) await swReg.showNotification(title, opts); else new Notification(title, opts); }
+    catch { try { new Notification(title, opts); } catch {} }
+  }
+}
+
+/** เช็กทุกวินาที: ถึงเวลาแจ้งเตือนอันไหนก็เตือน (อันละครั้ง ถ้าค้างหลายอันเตือนแค่อันล่าสุด) */
+function checkAlerts(now = Date.now()) {
+  const st = S.settings, leads = new Set(st.leadMinutes.filter(x => x > 0));
+  if (st.notifyAtSpawn) leads.add(0);
+  for (const t of S.timers) {
+    if (!t.notify) continue;
+    const b = bossById(t.bossID); if (!b) continue;
+    const ch = t.channel != null ? ` · CH ${t.channel}` : "";
+    for (const spawn of projectedSpawns(t, now + 3 * 3600_000, 3)) {
+      const due = [...leads].filter(lead => {
+        const fire = spawn - lead * MIN;
+        return fire <= now && now - fire <= 5 * MIN && fire >= (t.updatedAt ?? 0) && !S.fired[`${t.id}|${spawn}|${lead}`];
+      });
+      if (!due.length) continue;
+      due.forEach(lead => (S.fired[`${t.id}|${spawn}|${lead}`] = now));
+      const left = spawn - now, mins = Math.max(1, Math.round(left / MIN));
+      const spawned = Math.min(...due) === 0 || left <= 30_000;
+      alertUser({
+        title: spawned ? `${b.name} เกิดแล้ว!` : `${b.name} อีก ${mins} นาทีเกิด`,
+        body: spawned ? `${b.map}${ch} · ${KIND_LABEL[b.kind]} Lv ${b.level}` : `${b.map}${ch} · เกิดเวลา ${fmtClock(spawn)}`,
+        speechText: speech(b, t.channel, spawned ? 0 : mins), boss: b, tag: `${t.id}|${spawn}`,
+      });
+    }
+  }
+  for (const k in S.fired) if (now - S.fired[k] > DAY) delete S.fired[k];
+  save();
+}
+
+// ---------- UI ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const sprite = (b, cls = "") => `<img class="sprite ${b.kind === "mini" ? "mini" : ""} ${cls}" src="${IMG(b.id)}" alt="" loading="lazy">`;
+const tag = b => `<span class="tag k-${b.kind}">${b.kind === "field" ? "FIELD" : "MINI"}</span>`;
+const sw = (id, on) => `<label class="switch"><input type="checkbox" id="${id}" ${on ? "checked" : ""}><span></span></label>`;
+let bossFilter = "all", bossSearch = "";
+
+function toast(title, body, boss) {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `${boss ? `<img src="${IMG(boss.id)}" alt="">` : ""}<div><b>${esc(title)}</b><span class="small">${esc(body)}</span></div>`;
+  $("#toasts").appendChild(el);
+  el.onclick = () => el.remove();
+  setTimeout(() => el.remove(), 8000);
+}
+
+function renderTimers() {
+  const now = Date.now(), hide = S.settings.hideSpawnedAfterMinutes;
+  const list = S.timers.filter(t => hide === 0 || now - t.respawnAt < hide * MIN).sort((a, b) => a.respawnAt - b.respawnAt);
+  const el = $("#timers");
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div style="font-size:34px">⌛</div><b>ยังไม่มีเวลาบอส</b>กดบอสทางขวา หรือปุ่ม "＋ จดเวลาบอส"</div>`;
+    return;
+  }
+  const soonMs = Math.max(3, ...S.settings.leadMinutes) * MIN;
+  el.innerHTML = list.map(t => {
+    const b = bossById(t.bossID); if (!b) return "";
+    const remain = t.respawnAt - now, prog = Math.min(1, Math.max(0, (now - t.killedAt) / duration(t)));
+    const state = remain <= 0 ? "spawned" : remain <= soonMs ? "soon" : "";
+    return `<div class="trow ${state}" data-edit="${t.id}" title="กดเพื่อแก้เวลา">
+      ${sprite(b)}
+      <div style="min-width:0">
+        <div class="tname">${esc(b.name)} ${t.notify ? "" : `<span class="small" title="ปิดเตือน">🔕</span>`}</div>
+        <div class="tmeta">${tag(b)}<span>${esc(b.map)}${t.channel != null ? ` · CH ${t.channel}` : ""}</span></div>
+        <div class="bar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
+      </div>
+      <div class="tright">${remain <= 0
+        ? `<div class="cd">เกิดแล้ว</div><div class="small num">ผ่านมา ${fmtCountdown(-remain)}</div>`
+        : `<div class="cd num">${fmtCountdown(remain)}</div><div class="small num">เกิด ${fmtClock(t.respawnAt)}</div>`}</div>
+      <div class="tacts">
+        <button class="btn sm on" data-killed="${t.id}">ล้มแล้ว</button>
+        <button class="btn sm" data-mute="${t.id}">${t.notify ? "🔔 เตือนอยู่" : "🔕 ปิดเตือน"}</button>
+        <button class="btn sm warn" data-del="${t.id}">ลบ</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderBosses() {
+  const q = bossSearch.toLowerCase(), now = Date.now();
+  document.querySelectorAll("#kindSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filter === bossFilter)));
+  const list = BOSSES.filter(b => (bossFilter === "all" || b.kind === bossFilter) && (!q || [b.name, b.map, b.room || ""].some(s => s.toLowerCase().includes(q))));
+  $("#bosses").innerHTML = list.map(b => {
+    const active = S.timers.some(t => t.bossID === b.id && t.respawnAt > now);
+    return `<button class="brow" data-boss="${b.id}">
+      ${sprite(b)}
+      <span style="min-width:0"><b>${esc(b.name)}</b>
+        <span class="tmeta">${tag(b)}<span>${esc(b.map)}${b.room ? ` → ${esc(b.room)}` : ""}</span></span>
+        <span class="small">Lv ${b.level} · เกิดใหม่ ${respawnMinutes(b)} นาที${active ? " · ⏱ จับเวลาอยู่" : ""}</span></span>
+      <span class="plus">＋ จด</span>
+    </button>`;
+  }).join("") || `<p class="sub">ไม่พบบอส</p>`;
+}
+
+function renderSettings() {
+  const st = S.settings;
+  const leads = [...new Set([1, 2, 3, 5, 10, 15, 20, 30, ...st.leadMinutes])].sort((a, b) => a - b);
+  const summary = [...st.leadMinutes].sort((a, b) => b - a).map(m => `ก่อน ${m} นาที`).concat(st.notifyAtSpawn ? ["ตอนเกิด"] : []);
+  $("#settings").innerHTML = `<div class="sgrid">
+    <div class="sbox">
+      <h3>แจ้งเตือนก่อนบอสเกิด</h3>
+      <div class="chips">${leads.map(m => `<button class="btn ${st.leadMinutes.includes(m) ? "on" : ""}" data-lead="${m}">${m} นาที</button>`).join("")}</div>
+      <div class="srow"><span>เพิ่มเอง</span><span><input class="numin" id="customLead" type="number" min="1" max="120" value="7"> นาที <button class="link" id="addLead">เพิ่ม</button></span></div>
+      <div class="srow"><span>แจ้งตอนบอสเกิด</span>${sw("atSpawn", st.notifyAtSpawn)}</div>
+      <p class="foot">${summary.length ? "จะแจ้งเตือน: " + summary.join(" · ") : "ไม่มีการแจ้งเตือน"}</p>
+    </div>
+    <div class="sbox">
+      <h3>เสียงแจ้งเตือน</h3>
+      <div class="srow"><span>${st.sound ? "🔊 เปิดเสียง" : "🔇 ปิดเสียง"}</span>${sw("sound", st.sound)}</div>
+      ${st.sound ? `<div class="srow"><span>พูดชื่อบอส แมพ และเวลาที่เหลือ</span>${sw("voice", st.voice)}</div>` : ""}
+      <div class="srow">${st.sound && st.voice ? `<button class="link" id="sample">ฟังเสียงพูดตัวอย่าง</button>` : "<span></span>"}<button class="link" id="test">ทดสอบแจ้งเตือน (อีก 5 วินาที)</button></div>
+      <p class="foot">${st.sound ? `แจ้งเตือนพร้อมเสียง${st.voice ? "พูด (ใช้เสียงภาษาไทยของเครื่อง)" : ""}` : "แจ้งเตือนแบบเงียบ — ขึ้นข้อความอย่างเดียว ไม่มีเสียง"}</p>
+    </div>
+    <div class="sbox">
+      <h3>รีอัตโนมัติ & รายการ</h3>
+      <div class="srow"><span>รีหลังบอสเกิด</span><select id="autoReset">${[[0, "ปิด"], [-1, "สุ่ม 1–5 นาที"], ...[1, 2, 3, 5, 10, 15, 30].map(m => [m, `${m} นาที`])]
+        .map(([v, l]) => `<option value="${v}" ${st.autoResetMinutes === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      <div class="srow"><span>ซ่อนบอสที่เกิดแล้วหลัง</span><select id="hide">${[[0, "ไม่ซ่อน"], [15, "15 นาที"], [30, "30 นาที"], [60, "1 ชั่วโมง"], [180, "3 ชั่วโมง"]]
+        .map(([v, l]) => `<option value="${v}" ${st.hideSpawnedAfterMinutes === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      <p class="foot">${st.autoResetMinutes === 0 ? `ปิดอยู่ — ต้องกด "ล้มแล้ว" เองทุกครั้ง` : `บอสเกิดแล้ว${st.autoResetMinutes < 0 ? "ครบเวลาสุ่ม 1–5 นาที" : ` ${st.autoResetMinutes} นาที`}และยังไม่ได้จดใหม่ → ถือว่าตายตอนนั้น แล้วนับรอบใหม่ให้เอง`}</p>
+      <div class="srow"><button class="link" id="export">ส่งออกข้อมูล</button><button class="link" id="import">นำเข้าข้อมูล</button><button class="link red" id="clearAll">ลบเวลาทั้งหมด</button></div>
+    </div>
+  </div>
+  <h3 style="margin-top:14px">เวลาเกิดใหม่ของบอส (นาที)</h3>
+  <div class="respawns">${BOSSES.map(b => `<label><span><img src="${IMG(b.id)}" alt="">${esc(b.name)}</span>
+    <input class="numin ${S.settings.respawnOverrides[b.id] ? "changed" : ""}" type="number" min="1" max="1440" data-respawn="${b.id}" value="${respawnMinutes(b)}"></label>`).join("")}</div>
+  <p class="foot" style="margin-top:6px">ค่าเริ่มต้นจาก wiki: Field Boss 180 นาที, Mini-boss 30 นาที ${Object.keys(st.respawnOverrides).length ? `· <button class="link" id="resetRespawn">คืนค่าตาม Wiki</button>` : ""}</p>`;
+}
+
+function renderBanner() {
+  const el = $("#permBanner");
+  const perm = notifSupported() ? Notification.permission : "unsupported";
+  if (perm === "granted" || perm === "unsupported") { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = perm === "denied"
+    ? `<span>การแจ้งเตือนของเบราว์เซอร์ถูกบล็อก — ยังมีเสียงและป๊อปอัปในหน้านี้ · เปิดได้ที่ไอคอนแม่กุญแจข้างช่อง URL</span>`
+    : `<span>อนุญาตแจ้งเตือน เพื่อให้เตือนแม้ไม่ได้ดูหน้านี้อยู่</span><button class="btn primary" id="askPerm">อนุญาตแจ้งเตือน</button>`;
+}
+
+function renderAll() { renderTimers(); renderBosses(); renderSettings(); renderBanner(); }
+
+// ---------- หน้าต่างจดเวลา ----------
+const MODES = [["killed", "เวลาที่ล้ม"], ["respawn", "เวลาเกิด"], ["countdown", "นับถอยหลัง"]];
+let R = null;
+function openRecord(bossId, existingId) {
+  const ex = existingId ? S.timers.find(t => t.id === existingId) : null;
+  const b = bossById(bossId || ex?.bossID) || BOSSES[0];
+  let last = null; try { last = localStorage.getItem("bt.recordMode"); } catch {}
+  R = {
+    existing: ex, bossId: b.id,
+    mode: ex ? "killed" : (MODES.some(m => m[0] === last) ? last : "countdown"),
+    time: ex ? ex.killedAt : Date.now(),
+    useChannel: ex ? ex.channel != null : b.kind === "field", channel: ex?.channel ?? 10,
+    notify: ex?.notify ?? true, minutes: ex ? Math.round(duration(ex) / MIN) : null, remember: true, cd: "",
+  };
+  renderRecord();
+  $("#record").showModal();
+  focusCountdown();
+}
+const focusCountdown = () => { if (R?.mode === "countdown") setTimeout(() => $("#cdInput")?.focus(), 50); };
+const recBoss = () => bossById(R.bossId);
+const recMinutes = () => R.minutes ?? respawnMinutes(recBoss());
+const cdSeconds = () => parseCountdown(R.cd) ?? 0;
+const canSave = () => R.mode !== "countdown" || cdSeconds() > 0;
+function normalized() {
+  const now = Date.now(), rs = recMinutes() * MIN;
+  let t = R.time;
+  if (R.mode === "killed") { while (t > now + MIN) t -= DAY; while (now - t > DAY) t += DAY; }
+  else if (R.mode === "respawn") { while (t <= now - rs) t += DAY; while (t > now + DAY - rs) t -= DAY; }
+  else t = now + cdSeconds() * 1000;
+  return t;
+}
+const computedRespawn = () => R.mode === "killed" ? normalized() + recMinutes() * MIN : normalized();
+
+function renderRecord() {
+  const b = recBoss(), m = recMinutes();
+  $("#record").innerHTML = `
+    <div class="dh"><button class="link" id="recCancel">ยกเลิก</button><b>${R.existing ? "แก้ไขเวลา" : "จดเวลาบอส"}</b><button class="btn primary" id="recSave" ${canSave() ? "" : "disabled"}>บันทึก</button></div>
+    <div class="db">
+      <div class="dbox">
+        <div class="seg">${MODES.map(([k, l]) => `<button data-mode="${k}" aria-pressed="${R.mode === k}">${l}</button>`).join("")}</div>
+        ${R.mode === "countdown"
+          ? `<input id="cdInput" class="cdinput" inputmode="numeric" enterkeyhint="done" autocomplete="off" placeholder="0:00:00" value="${esc(R.cd)}" aria-label="เวลานับถอยหลัง"><div class="cdhint num" id="cdHint"></div>`
+          : `<div class="srow"><span>${R.mode === "killed" ? "ล้มเวลา" : "เกิดเวลา"}</span><input type="time" class="timein" id="timeIn" value="${fmtClock(R.time)}"></div>
+             ${R.mode === "killed" ? `<div class="quick">${[["ตอนนี้", 0], ["-1 น.", 1], ["-3 น.", 3], ["-5 น.", 5], ["-10 น.", 10]].map(([l, v]) => `<button class="btn sm" data-ago="${v}">${l}</button>`).join("")}</div>` : ""}`}
+        <p class="foot">${R.mode === "killed" ? `เวลาที่คุณเห็นบอสล้ม — บวก ${m} นาทีให้` : R.mode === "respawn" ? "ใส่เวลาเกิดใหม่ (นาฬิกา) ที่เห็นบนหลุมศพบอส" : "พิมพ์ตัวเลขตามที่หลุมศพบอสบอก (ไม่ต้องใส่ :) แล้วกด Enter บันทึกได้เลย"}</p>
+      </div>
+      <div class="dbox">
+        <div class="bh">${sprite(b)}<div style="min-width:0"><b style="font-family:var(--display)">${esc(b.name)}</b>
+          <div class="small">${esc(b.map)}${b.room ? ` → ${esc(b.room)}` : ""} · Lv ${b.level}</div></div></div>
+        <div class="srow"><span>บอส</span><select id="bossSel" style="max-width:65%">${["field", "mini"].map(k => `<optgroup label="${KIND_LABEL[k]}">${BOSSES.filter(x => x.kind === k)
+          .map(x => `<option value="${x.id}" ${x.id === b.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</optgroup>`).join("")}</select></div>
+        <div class="srow"><span>ระบุ Channel</span>${sw("useCh", R.useChannel)}</div>
+        ${R.useChannel ? `<div class="srow"><span>Channel</span><span><button class="btn sm" id="chMinus" aria-label="ลด">−</button>
+          <b class="num" style="display:inline-block;min-width:34px;text-align:center;color:var(--accent)">${R.channel}</b><button class="btn sm" id="chPlus" aria-label="เพิ่ม">＋</button></span></div>` : ""}
+        ${b.kind === "field" ? `<p class="foot">Field Boss เกิดที่ Channel 10 (PvP) เท่านั้น</p>` : ""}
+      </div>
+      <div class="dbox">
+        <div class="srow"><span>เกิดใหม่ทุก</span><span><input class="numin" id="minIn" type="number" min="1" max="1440" value="${m}"> นาที</span></div>
+        <div class="quick">${[30, 60, 90, 120, 180, 240].map(p => `<button class="btn sm ${m === p ? "on" : ""}" data-min="${p}">${p}</button>`).join("")}</div>
+        <div class="srow"><span class="small">${describeMin(m)}</span>${m !== b.respawn ? `<button class="link" data-min="${b.respawn}">คืนค่า Wiki (${b.respawn})</button>` : ""}</div>
+        <div class="srow"><span>จำเป็นค่าประจำของบอสนี้</span>${sw("remember", R.remember)}</div>
+      </div>
+      <div class="dbox">
+        <div class="preview"><div class="small">จะเกิดเวลา</div><div class="big num" id="pvClock"></div><div class="num" id="pvLeft"></div></div>
+        <div class="srow"><span>แจ้งเตือนบอสตัวนี้</span>${sw("recNotify", R.notify)}</div>
+      </div>
+    </div>`;
+  updatePreview();
+}
+function updatePreview() {
+  if (!R || !$("#pvClock")) return;
+  const r = computedRespawn(), now = Date.now();
+  $("#pvClock").textContent = fmtClockSec(r);
+  const left = $("#pvLeft");
+  left.textContent = r > now ? `อีก ${fmtCountdown(r - now)}` : `เกิดแล้ว ${fmtCountdown(now - r)} ที่แล้ว`;
+  left.style.color = r > now ? "" : "var(--live)";
+  const hint = $("#cdHint");
+  if (hint) { const s = cdSeconds(); hint.textContent = s > 0 ? `เหลือ ${fmtCountdown(s * 1000)} (${describeSec(s)})` : "14530 = 1:45:30 · 2530 = 25:30 · 30 = 0:30"; hint.style.color = s > 0 ? "var(--ink)" : ""; }
+  $("#recSave").disabled = !canSave();
+}
+function saveRecord() {
+  if (!R || !canSave()) return;
+  unlockAudio();
+  const b = recBoss(), ch = R.useChannel ? R.channel : null, m = recMinutes();
+  if (!R.existing) { try { localStorage.setItem("bt.recordMode", R.mode); } catch {} }
+  if (R.remember) setRespawnMinutes(b, m);
+  if (R.existing) S.timers = S.timers.filter(t => t.id !== R.existing.id);
+  const t = R.mode === "killed" ? record(b, ch, { killedAt: normalized(), minutes: m }) : record(b, ch, { respawnAt: normalized(), minutes: m });
+  t.notify = R.notify;
+  save(); closeRecord(); renderAll();
+}
+function closeRecord() { R = null; $("#record").close(); }
+
+// ---------- เหตุการณ์ ----------
+document.addEventListener("click", e => {
+  unlockAudio();
+  const el = e.target.closest("button, .trow");
+  if (!el) return;
+  const d = el.dataset;
+  if (el.id === "addBtn") return openRecord();
+  if (d.killed) { const t = S.timers.find(x => x.id === d.killed); if (t) { killedNow(t); save(); renderAll(); } return; }
+  if (d.mute) { const t = S.timers.find(x => x.id === d.mute); if (t) { t.notify = !t.notify; t.updatedAt = Date.now(); save(); renderTimers(); } return; }
+  if (d.del) { const t = S.timers.find(x => x.id === d.del); if (t && confirm(`ลบ ${bossById(t.bossID)?.name ?? ""}?`)) { S.timers = S.timers.filter(x => x !== t); save(); renderAll(); } return; }
+  if (d.edit) return openRecord(null, d.edit);
+  if (d.boss) return openRecord(d.boss);
+  if (d.filter) { bossFilter = d.filter; return renderBosses(); }
+  if (d.lead) { const m = +d.lead, a = S.settings.leadMinutes; S.settings.leadMinutes = a.includes(m) ? a.filter(x => x !== m) : [...a, m]; save(); return renderSettings(); }
+  if (R) {
+    if (el.id === "recCancel") return closeRecord();
+    if (el.id === "recSave") return saveRecord();
+    if (d.mode) { R.mode = d.mode; renderRecord(); return focusCountdown(); }
+    if (d.ago != null) { R.time = Date.now() - +d.ago * MIN; return renderRecord(); }
+    if (d.min) { R.minutes = +d.min; return renderRecord(); }
+    if (el.id === "chMinus") { R.channel = Math.max(1, R.channel - 1); return renderRecord(); }
+    if (el.id === "chPlus") { R.channel = Math.min(40, R.channel + 1); return renderRecord(); }
+  }
+  switch (el.id) {
+    case "askPerm": if (notifSupported()) Notification.requestPermission().finally(renderBanner); break;
+    case "addLead": { const v = Math.round(+$("#customLead").value); if (v >= 1 && v <= 120 && !S.settings.leadMinutes.includes(v)) { S.settings.leadMinutes.push(v); save(); renderSettings(); } break; }
+    case "sample": speak(speech(bossById("vale_warden"), 10, 3)); break;
+    case "test": {
+      const b = bossById("vale_warden");
+      toast("ตั้งทดสอบแล้ว", "จะแจ้งเตือนในอีก 5 วินาที");
+      setTimeout(() => alertUser({ title: `${b.name} อีก 3 นาทีเกิด`, body: `${b.map} · ทดสอบการแจ้งเตือน`, speechText: speech(b, 10, 3), boss: b, tag: "test" }), 5000);
+      break;
+    }
+    case "resetRespawn": S.settings.respawnOverrides = {}; save(); renderSettings(); renderBosses(); break;
+    case "clearAll": if (S.timers.length && confirm("ลบเวลาบอสทั้งหมด?")) { S.timers = []; save(); renderAll(); } break;
+    case "export": {
+      const data = JSON.stringify({ timers: S.timers, settings: S.settings });
+      (navigator.clipboard?.writeText(data) ?? Promise.reject()).then(() => toast("คัดลอกแล้ว", "นำไปวางใน \"นำเข้าข้อมูล\" ของเครื่องอื่น"), () => prompt("คัดลอกข้อความนี้", data));
+      break;
+    }
+    case "import": {
+      const txt = prompt("วางข้อมูลที่ส่งออกมา"); if (!txt) break;
+      try {
+        const d = JSON.parse(txt);
+        if (Array.isArray(d.timers)) S.timers = d.timers.map(t => ({ ...t, updatedAt: Date.now() }));
+        if (d.settings) S.settings = { ...DEFAULT_SETTINGS, ...d.settings };
+        save(); renderAll(); toast("นำเข้าแล้ว", `${S.timers.length} รายการ`);
+      } catch { alert("ข้อมูลไม่ถูกต้อง"); }
+      break;
+    }
+  }
+});
+
+document.addEventListener("change", e => {
+  const el = e.target, st = S.settings;
+  if (R && el.closest("#record")) {
+    if (el.id === "timeIn" && el.value) { const [h, m] = el.value.split(":").map(Number); const d = new Date(); d.setHours(h, m, 0, 0); R.time = d.getTime(); return updatePreview(); }
+    if (el.id === "bossSel") { R.bossId = el.value; R.minutes = null; return renderRecord(); }
+    if (el.id === "useCh") { R.useChannel = el.checked; return renderRecord(); }
+    if (el.id === "remember") { R.remember = el.checked; return; }
+    if (el.id === "recNotify") { R.notify = el.checked; return; }
+    if (el.id === "minIn") { R.minutes = Math.min(1440, Math.max(1, Math.round(+el.value || 1))); return renderRecord(); }
+    return;
+  }
+  if (el.id === "atSpawn") st.notifyAtSpawn = el.checked;
+  else if (el.id === "sound") st.sound = el.checked;
+  else if (el.id === "voice") st.voice = el.checked;
+  else if (el.id === "autoReset") { st.autoResetMinutes = +el.value; autoAdvance(); renderTimers(); }
+  else if (el.id === "hide") { st.hideSpawnedAfterMinutes = +el.value; renderTimers(); }
+  else if (el.dataset.respawn) { const b = bossById(el.dataset.respawn); setRespawnMinutes(b, Math.min(1440, Math.max(1, Math.round(+el.value || b.respawn)))); renderBosses(); }
+  else return;
+  save(); renderSettings();
+});
+
+document.addEventListener("input", e => {
+  if (e.target.id === "bossSearch") { bossSearch = e.target.value; return renderBosses(); }
+  if (e.target.id === "cdInput" && R) {
+    const v = e.target.value.replace(/[^\d:]/g, "").slice(0, 8);
+    if (v !== e.target.value) e.target.value = v;
+    R.cd = v; updatePreview();
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && R && e.target.id === "cdInput") { e.preventDefault(); saveRecord(); } });
+$("#record").addEventListener("close", () => { R = null; });
+$("#record").addEventListener("click", e => { if (e.target === $("#record")) closeRecord(); });
+
+// ---------- วนทุกวินาที ----------
+function tick() {
+  const changed = autoAdvance();
+  checkAlerts();
+  renderTimers();
+  if (changed) renderBosses();
+  updatePreview();
+}
+autoAdvance();
+renderAll();
+setInterval(tick, 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+</script>
+</body>
+</html>
