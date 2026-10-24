@@ -259,7 +259,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   </div>
   <div class="hotbar"><div class="hb-label">ช่องลัด<button id="autoHot">จัดอัตโนมัติ</button></div><div class="slots" id="slots"></div></div>
   <p class="hint">คลิกครั้งแรก = เลือกดูสกิล · คลิกซ้ายซ้ำสกิลที่เลือกอยู่ = อัป +1 (สกิลทางผ่านอัปถึง Lv 3 ให้อัตโนมัติ) · คลิกขวาสกิลที่เลือกอยู่ (มือถือ: กดค้าง) = ลด −1 · ปุ่ม i = ดูรายละเอียด · เลือกสกิลแล้วคลิกช่องลัดเพื่อใส่ · คีย์ + / − อัป/ลดสกิลที่เลือก</p>
-  <p class="hint" id="patchNote">อัปเดตตามแพทช์ 24 ต.ค. 2569: Shield Bash 200% ที่ Lv 1 (416% ที่ Lv 10) · Bulwark Slam และ Spirit Echo ตีได้ 4 ตัว · Requiem ดาเมจลดลง (ค่าโดยประมาณ) · แพทช์นี้ปรับตัวคูณดาเมจตามเลเวลตัวละครของเกือบทุกสกิล (ฟาร์ม Lv 60–99) ซึ่งหน้านี้ยังไม่ได้คิดรวม — ดูตารางเต็มที่หน้า <a href="patch.html#bands">แพทช์</a></p>
+  <p class="hint" id="patchNote">อัปเดตตามแพทช์ 24 ต.ค. 2569: Shield Bash 200% ที่ Lv 1 (416% ที่ Lv 10) · Bulwark Slam และ Spirit Echo ตีได้ 4 ตัว · Requiem ดาเมจลดลง (ค่าโดยประมาณ) · แพทช์นี้ปรับตัวคูณดาเมจตามเลเวลตัวละครของเกือบทุกสกิล (ฟาร์ม Lv 60–99) ใส่ Base Lv ในรายละเอียดสกิลเพื่อดูดาเมจหลังคูณ — ตารางเต็มเก่า / ใหม่ที่หน้า <a href="patch.html#bands">แพทช์</a></p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -268,6 +268,11 @@ window.JOBDATA = {"jobs":[{"id":"knight","name":"Knight","trait":"Shield Block",
 </script>
 <script>
 const JD = window.JOBDATA;
+/* per-skill PvE damage multiplier by character Base Lv (game client table, patch 24 Oct 2026) */
+const LVPTS = [27, 38, 48, 57, 68, 79, 86, 95], LVMULT = {"anchor_arrow":[1.446,1.21,1.503,1.623,1.018,1.117,1.691,1.407],"arrow_rain":[1.0,1.0,1.0,1.0,1.0,1.0,0.996,0.991],"assassinate":[1.558,1.577,1.362,2.42,2.425,1.405,1.532,1.472],"atk_acolyte":[0.784,0.592,0.521,0.508,0.513,0.527,0.524,0.519],"atk_knight":[0.956,0.467,0.509,0.547,0.484,0.436,0.399,0.485],"atk_mage":[0.684,0.884,1.025,1.082,1.143,1.137,1.116,1.102],"atk_rogue":[1.799,1.652,1.379,1.785,1.803,1.975,2.43,2.36],"atk_scout":[2.021,1.755,2.139,1.878,1.077,1.142,1.704,1.411],"atk_summoner":[0.77,1.134,1.287,1.251,1.267,1.418,1.681,2.409],"atk_warrior":[1.441,2.155,1.848,2.322,2.492,2.5,2.467,2.45],"bash":[0.944,0.487,0.578,0.424,0.357,0.419,0.363,0.51],"bind_spirit":[0.78,0.884,0.661,0.593,0.867,0.75,0.763,0.973],"blast_arrow":[1.004,1.013,1.032,1.068,1.136,1.226,1.252,1.103],"bolt":[0.673,0.62,0.515,0.707,0.861,1.344,1.121,1.387],"call_wisp":[1.0,1.0,1.0,1.0,0.997,0.984,0.939,1.0],"cleave":[1.0,1.181,2.051,1.183,1.021,1.001,1.0,1.0],"divine_chain":[0.476,0.478,0.502,0.59,0.535,0.637,0.484,0.417],"echo_wave":[0.475,0.474,0.489,0.459,0.412,0.443,0.384,0.534],"flurry":[2.09,1.767,1.409,2.424,2.448,1.71,2.408,2.36],"frostbind":[1.0,0.977,0.825,0.977,0.999,1.0,1.0,1.0],"guardian_charge":[1.971,1.088,1.116,0.653,0.443,0.624,0.55,0.677],"holy_lance":[0.57,0.766,0.617,0.552,0.497,0.68,0.507,0.417],"ice_lance":[0.994,1.004,1.01,1.048,1.203,1.328,1.135,1.352],"iron_guard":[1.0,1.0,0.994,0.946,0.742,0.946,0.994,1.0],"judgment_blade":[0.411,0.361,0.532,0.471,0.359,0.429,0.368,0.541],"leap_slam":[1.756,2.456,2.498,2.471,2.498,2.5,2.467,2.45],"meteor":[1.058,1.027,0.903,0.836,0.818,1.071,1.054,1.044],"nova":[0.747,0.677,0.555,0.756,0.893,1.363,1.126,1.391],"piercing_shot":[0.996,0.995,0.989,0.981,0.97,0.962,0.958,0.957],"radiant_burst":[1.228,1.441,1.235,0.784,0.46,0.494,0.441,0.447],"rend":[1.756,2.456,2.498,2.471,2.498,2.5,2.467,2.45],"reverb_field":[1.0,1.045,1.233,1.064,1.01,1.0,0.997,0.823],"sanctuary":[0.97,1.108,1.651,1.44,0.92,0.966,0.99,0.997],"shadow_dance":[1.0,1.0,1.0,1.0,1.0,0.998,0.987,1.263],"shadow_strike":[2.09,1.767,1.409,2.424,2.448,1.71,2.408,2.36],"slam":[0.79,0.416,0.511,0.392,0.355,0.412,0.363,0.557],"slash":[1.756,2.456,2.498,2.471,2.498,2.5,2.467,2.45],"smite":[0.807,0.967,0.942,0.698,0.397,0.597,0.48,0.417],"soul_rend":[0.619,1.006,0.848,0.742,1.109,1.148,1.501,2.409],"soul_tether":[1.319,1.773,1.844,1.382,0.766,1.237,1.065,0.904],"spirit_echo":[0.506,0.478,0.511,0.553,0.574,0.587,0.633,0.664],"spirit_flock":[0.653,0.915,0.778,0.71,1.091,1.14,1.499,2.409],"spirit_rune":[0.892,0.669,0.573,0.868,0.977,0.996,1.0,1.0],"spirit_shot":[2.021,1.755,2.139,1.878,1.077,1.142,1.704,1.411],"twin_strafe":[2.088,1.664,1.975,1.712,0.954,0.964,1.444,1.382],"war_horn":[1.842,0.951,1.131,0.812,0.575,0.821,0.682,0.834]};
+function lvMult(id, lv){ const n=LVMULT[id]; if(!n) return 1; if(lv<=LVPTS[0]) return n[0]; for(let i=1;i<LVPTS.length;i++) if(lv<=LVPTS[i]) return n[i-1]+(n[i]-n[i-1])*(lv-LVPTS[i-1])/(LVPTS[i]-LVPTS[i-1]); return n[n.length-1]; }
+const baseLv = () => Math.max(1,Math.min(99,+st.baseLv||60));
+const mx = m => '×'+(Math.round(m*100)/100).toFixed(2);
 const CRIT = p => `สกิลนี้คริได้ — โอกาส ${p}% ของค่าคริคุณ (สูงสุด 35%) · คริแรง 125% ของโบนัสดาเมจคริ`;
 let JOBID, CLASS, LINES, JOBS, S, ORDER, IC;
 function loadJob(id){
@@ -301,7 +306,7 @@ const sample = () => JOBID!=='scout' ? blank() : ({job:50,bonus:0,
   trait:{0:1,1:1,2:1},hot:['spirit_shot','gale_volley','blast_arrow','arrow_rain','focus','backstep']});
 const KEYOF = id => id==='scout'?'bt-scout-sim-v1':'bt-skill-sim-'+id;
 let st, KEY;
-function loadState(){ KEY=KEYOF(JOBID); st={cur:0,builds:[sample(),blank()],atk:2000,sel:LINES[0].skills[0],tab:'skill'};
+function loadState(){ KEY=KEYOF(JOBID); st={cur:0,builds:[sample(),blank()],atk:2000,baseLv:60,sel:LINES[0].skills[0],tab:'skill'};
   try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.builds) st=Object.assign(st,s); }catch(e){}
   if(!S[st.sel] && !/^__/.test(st.sel||'')) st.sel=LINES[0].skills[0]; }
 const HASH = location.hash.slice(1);
@@ -427,11 +432,14 @@ function nextBox(s,n){ if(!s.dmg){ const cdNow=n?s.cd[n-1]:null, cdNext=n<s.max?
     return `<div class="next"><div class="h">${n<s.max?`Lv ${n} → ${n+1}`:'Lv สูงสุด'}</div><div class="row"><span class="k">คูลดาวน์</span><span class="v">${cdNow!=null?cdNow+'s':'—'}${cdNext!=null&&cdNext!==cdNow?` → <em>${cdNext}s</em>`:''}</span></div></div>`; }
   const hits = s.hits?s.hits(Math.max(n,1)):1, hitsN = s.hits&&n<s.max?s.hits(n+1):hits;
   const cur=n?s.dmg[n-1]:null, nx=n<s.max?s.dmg[n]:null, atk=+st.atk||0;
-  const est = p => atk?Math.round(atk*p/100).toLocaleString('en-US'):'';
+  const bl=baseLv(), m=lvMult(s.id,bl), adj=p=>Math.round(p*m);
+  const est = p => atk?Math.round(atk*p*m/100).toLocaleString('en-US'):'';
   return `<div class="next"><div class="h">${n<s.max?`Lv ${n} → ${n+1}`:'Lv สูงสุด'}</div>
    <div class="row"><span class="k">ดาเมจ${hits>1?` ×${hits}`:''}</span><span class="v">${cur!=null?cur+'%':'—'}${nx!=null?` → <em>${nx}%${hitsN!==hits?` ×${hitsN}`:''}</em>`:''}</span></div>
+   <div class="row"><span class="k">ตัวคูณที่ Base Lv ${bl}</span><span class="v">${mx(m)}${LVMULT[s.id]?'':' <small>(ไม่มีในตาราง)</small>'}</span></div>
+   <div class="row"><span class="k">ดาเมจใส่มอน${hits>1?` ×${hits}`:''}</span><span class="v">${cur!=null?adj(cur)+'%':'—'}${nx!=null?` → <em>${adj(nx)}%</em>`:''}</span></div>
    ${atk?`<div class="row"><span class="k">≈ ต่อฮิต</span><span class="v">${cur!=null?est(cur):'—'}${nx!=null?` → <em>${est(nx)}</em>`:''}</span></div>`:''}
-   <div class="row"><span class="note">ประมาณการก่อนหัก DEF เป้า</span><label class="atk">${/MATK/.test(CLASS.dmgType)?'MATK':'ATK'} <input id="atk" type="number" min="0" value="${st.atk||''}" placeholder="ใส่ ATK"></label></div></div>`; }
+   <div class="row"><span class="note">ประมาณการก่อนหัก DEF เป้า · ตัวคูณใช้กับมอนเท่านั้น</span><label class="atk">Base Lv <input id="baseLv" type="number" min="1" max="99" value="${bl}"></label><label class="atk">${/MATK/.test(CLASS.dmgType)?'MATK':'ATK'} <input id="atk" type="number" min="0" value="${st.atk||''}" placeholder="ใส่ ATK"></label></div></div>`; }
 
 function renderDetail(){ const body=$('dbody'), act=$('actions'), why=$('why'); why.textContent=''; act.innerHTML='';
   $('tabSkill').classList.toggle('on',st.tab==='skill'); $('tabSum').classList.toggle('on',st.tab==='sum'); $('tabSave').classList.toggle('on',st.tab==='save');
@@ -440,7 +448,7 @@ function renderDetail(){ const body=$('dbody'), act=$('actions'), why=$('why'); 
   const sel=st.sel;
   if(sel==='__class'){ body.innerHTML=`<div class="dhead"><div class="icon">${IC['_'+JOBID]?`<img src="${IC['_'+JOBID]}" alt="">`:''}</div><div><h3>${CLASS.trait}</h3><div class="meta">Class Trait · ${CLASS.name} · ติดตัวตั้งแต่เลือกอาชีพ ไม่ใช้แต้ม</div></div></div>
     <div class="fx">${CLASS.traitText.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
-    <div class="sect">โบนัสสเตตัสอาชีพ</div><div class="fx"><span>${CLASS.bonus}</span><span>${CLASS.range}</span></div>`; return; }
+    <div class="sect">โบนัสสเตตัสอาชีพ</div><div class="fx"><span>${CLASS.bonus}</span><span>${CLASS.range}</span></div><div class="sect">ตีธรรมดาใส่มอน</div><div class="fx"><span>ที่ Base Lv ${baseLv()}: ${mx(lvMult('atk_'+JOBID,baseLv()))}</span><span>Lv ${LVPTS.join(' / ')}: ${(LVMULT['atk_'+JOBID]||[]).map(v=>'×'+v.toFixed(2)).join(' / ')||'—'}</span></div>`; return; }
   if(sel&&sel.startsWith('__trait')){ const li=+sel.slice(7), L=LINES[li], sp=spent(li), t=B().trait[li];
     body.innerHTML=`<div class="dhead"><div class="icon" style="color:var(--gold);font-size:30px">✧</div><div><h3>Trait · ${L.name}</h3><div class="meta">ลงแต้มในสายนี้ครบ 10 แต้ม เลือกได้ 1 จาก 2 แบบ · เปลี่ยนกฎการเล่น ไม่ได้เพิ่มสเตตัส</div></div></div>
      <div class="dlv">${pips(Math.min(sp,10),10)}<b>${Math.min(sp,10)}/10</b></div>
@@ -480,6 +488,9 @@ function renderSummary(){ const t=totals(), iss=issues(), order=['DEX','AGI','ST
    <div class="issues">${iss.length?iss.map(x=>`<div>⚠ ${x}</div>`).join(''):'<div class="ok">✓ บิลด์นี้ใช้ได้ตามกติกา</div>'}</div>
    <div class="sect">โบนัสจาก Passive + Mastery</div>
    <div class="sumgrid">${[...order.filter(k=>t[k]),...Object.keys(t).filter(k=>t[k]&&!order.includes(k))].map(k=>`<div><span>${k.replace('%','')}</span><b>+${fmt(t[k])}${k.endsWith('%')?'%':''}</b></div>`).join('')||'<div><span>ยังไม่มี</span><b>—</b></div>'}</div>
+   <div class="sect">ตัวคูณดาเมจใส่มอนตาม Base Lv · <label class="atk" style="display:inline-flex">Base Lv <input id="baseLv2" type="number" min="1" max="99" value="${baseLv()}"></label></div>
+   <table class="ptable">${['atk_'+JOBID,...ORDER.filter(id=>S[id].dmg&&lv(id)>0)].map(id=>`<tr><td>${id.startsWith('atk_')?'ตีธรรมดา':S[id].name}</td><td>${mx(lvMult(id,baseLv()))}</td><td style="color:var(--muted-on-frame);font-size:11px">${LVMULT[id]?LVPTS.map((p,i)=>'Lv '+p+' ×'+LVMULT[id][i].toFixed(2)).join(' · '):'ไม่มีในตาราง (×1)'}</td></tr>`).join('')}</table>
+   <div class="scale" style="font-size:12px">ตัวคูณจากตารางในไฟล์เกม (แพทช์ 24 ต.ค. 2569) ใช้กับมอนเท่านั้น ไม่กระทบ PvP · ระหว่างจุดอ้างอิงไล่ค่าเป็นเส้นตรง</div>
    <div class="sect">แต้มต่อสาย</div>
    ${LINES.map((L,i)=>`<div class="linesum"><b>${L.name}</b> ${spent(i)} แต้ม${spent(i)>=20?' · Mastery ✓ '+L.mastery:''}${B().trait[i]!=null?' · Trait '+L.traits[B().trait[i]].n:''}</div>`).join('')}
    <div class="sect">ติดตัวจาก Binder (ไม่ใช้แต้ม ${CLASS.name})</div>
@@ -509,7 +520,7 @@ document.addEventListener('keydown',e=>{ if(e.target.matches('input,select')) re
 $('detail').addEventListener('click',e=>{ const ev=e.target.closest('[data-evo]'), tr=e.target.closest('[data-tr]');
   if(ev&&!ev.disabled){ const b=B(); b.evo[st.sel]= b.evo[st.sel]===ev.dataset.evo?undefined:ev.dataset.evo; if(!b.evo[st.sel]) delete b.evo[st.sel]; render(true); }
   if(tr&&!tr.disabled){ const li=+st.sel.slice(7), b=B(); b.trait[li]= b.trait[li]===+tr.dataset.tr?undefined:+tr.dataset.tr; if(b.trait[li]==null) delete b.trait[li]; render(true); } });
-$('detail').addEventListener('change',e=>{ if(e.target.id==='atk'){ st.atk=Math.max(0,+e.target.value||0); render(true); } });
+$('detail').addEventListener('change',e=>{ if(e.target.id==='atk'){ st.atk=Math.max(0,+e.target.value||0); render(true); } if(e.target.id==='baseLv'||e.target.id==='baseLv2'){ st.baseLv=Math.max(1,Math.min(99,+e.target.value||60)); render(true); } });
 $('tabSkill').onclick=()=>{st.tab='skill';render();}; $('tabSum').onclick=()=>{st.tab='sum';openSheet();render();}; $('tabSave').onclick=()=>{st.tab='save';openSheet();render();};
 $('dclose').onclick=()=>$('detail').classList.remove('open');
 function openSheet(){ $('detail').classList.add('open'); }
