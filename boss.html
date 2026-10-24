@@ -605,12 +605,8 @@ document.addEventListener("click", e => {
     }
     case "import": {
       const txt = prompt("วางข้อมูลที่ส่งออกมา"); if (!txt) break;
-      try {
-        const d = JSON.parse(txt);
-        if (Array.isArray(d.timers)) S.timers = d.timers.map(t => ({ ...t, updatedAt: Date.now() }));
-        if (d.settings) S.settings = { ...DEFAULT_SETTINGS, ...d.settings };
-        save(); renderAll(); toast("นำเข้าแล้ว", `${S.timers.length} รายการ`);
-      } catch { alert("ข้อมูลไม่ถูกต้อง"); }
+      try { const n = importData(JSON.parse(txt)); toast("นำเข้าแล้ว", `${n} รายการ`); }
+      catch { alert("ข้อมูลไม่ถูกต้อง"); }
       break;
     }
   }
@@ -649,6 +645,35 @@ document.addEventListener("keydown", e => { if (e.key === "Enter" && R && e.targ
 $("#record").addEventListener("close", () => { R = null; });
 $("#record").addEventListener("click", e => { if (e.target === $("#record")) closeRecord(); });
 
+// ---------- นำเข้าข้อมูล (จากปุ่มนำเข้า หรือจากลิงก์ #import=...) ----------
+/** รวมข้อมูลที่นำเข้า: บอส+แชแนลเดียวกันใช้ของใหม่แทน · ตั้งค่าใช้ตามที่นำเข้า */
+function importData(d) {
+  let n = 0;
+  if (Array.isArray(d.timers)) {
+    for (const x of d.timers) {
+      if (!bossById(x.bossID) || !(x.respawnAt > 0) || !(x.killedAt > 0)) continue;
+      const ch = x.channel ?? null;
+      S.timers = S.timers.filter(t => t.id !== x.id && !(t.bossID === x.bossID && t.channel === ch));
+      S.timers.push({ id: x.id || uuid(), bossID: x.bossID, channel: ch, killedAt: x.killedAt, respawnAt: x.respawnAt, notify: x.notify !== false, updatedAt: Date.now() });
+      n++;
+    }
+  }
+  if (d.settings && typeof d.settings === "object") S.settings = { ...DEFAULT_SETTINGS, ...S.settings, ...d.settings };
+  autoAdvance(); save(); renderAll();
+  return n;
+}
+function importFromLink() {
+  const m = location.hash.match(/^#import=([A-Za-z0-9_-]+)$/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  try {
+    const b64 = m[1].replace(/-/g, "+").replace(/_/g, "/");
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const n = importData(JSON.parse(new TextDecoder().decode(bytes)));
+    toast("นำเข้าเวลาบอสแล้ว", `${n} รายการ จากแอป`);
+  } catch { toast("นำเข้าไม่สำเร็จ", "ลิงก์ไม่ถูกต้อง"); }
+}
+
 // ---------- วนทุกวินาที ----------
 function tick() {
   const changed = autoAdvance();
@@ -659,6 +684,8 @@ function tick() {
 }
 autoAdvance();
 renderAll();
+importFromLink();
+window.addEventListener("hashchange", importFromLink);
 setInterval(tick, 1000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 </script>
