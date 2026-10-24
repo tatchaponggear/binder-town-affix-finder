@@ -222,7 +222,7 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
     <div>
       <h1>ค้นหาออฟชั่นอุปกรณ์</h1>
       <p>เลือกส่วน → สี → ช่องที่ → ดูว่าช่องนั้นสุ่ม Affix อะไรได้บ้าง · ข้อมูลจาก <a href="https://wiki.bindertowngame.com/affixes" target="_blank" rel="noopener">Binder Town Wiki</a> · ตัวเลขเทียบกับตัวเกมแล้ว ณ 24 ต.ค. 2569</p>
-      <nav class="jump"><a href="#summary">สรุปสเตตัสรวม</a><a href="#saves">ชุดที่บันทึกไว้</a><a href="#sets">Region Set ทั้งหมด</a><a href="#rules">กฎที่ควรรู้</a></nav>
+      <nav class="jump"><a href="#summary">สรุปสเตตัสรวม</a><a href="#saves">ชุดที่บันทึกไว้</a><a href="#inscriptions">Inscription ทั้งหมด</a><a href="#sets">Region Set ทั้งหมด</a><a href="#rules">กฎที่ควรรู้</a></nav>
     </div>
     <label class="lv" for="jobSel"><span style="font-family:var(--display);font-weight:500;font-size:14px">อาชีพ</span><select id="jobSel" class="jobsel"></select></label>
     <div class="lv">
@@ -290,6 +290,20 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
       <div class="scroll" id="sumStats"></div>
       <div><div class="sets" id="sumSets"></div></div>
     </div>
+  </section>
+
+  <section class="panel" id="inscriptions" aria-labelledby="insT">
+    <h2 class="sec" id="insT">Inscription ทั้งหมด (40)</h2>
+    <p class="sub">กติกาพิเศษ 1 บรรทัดบนอุปกรณ์ (ชิ้นละ 1 อัน) · ประจำอาชีพ 35 + ทั่วไป 5 · ค่าตามตัวเกมเวอร์ชัน 24 ต.ค. 2569</p>
+    <div class="counts" style="max-width:820px;gap:6px">
+      <div><span><b>ดรอปจาก</b></span><span>มีติดมากับอุปกรณ์ที่ดรอป: มอนทั่วไป 4% · Elite 12% · Mini-boss 30% · แต่ละแบบดรอปแค่ภูมิภาคเดียว</span></div>
+      <div><span><b>ใช้ได้พร้อมกัน</b></span><span>Lv 1: 1 · Lv 30: 2 · Lv 45: 3 · Lv 60: 4 · Lv 80: 5 · Lv 99: 6 · นับตามลำดับช่องสวมใส่ (อาวุธ → มือรอง → เกราะ → หมวก → หน้า → ปาก → สร้อยคอ → เข็มขัด → รองเท้า → ประดับ 1 → 2) · ชิ้นพัง / อาชีพไม่ตรง / แบบซ้ำ ไม่นับ</span></div>
+      <div><span><b>Smith's Codex</b></span><span>แยกชิ้นที่มี Inscription = บันทึกลง Codex ถาวร · แยกแบบเดิมซ้ำ = ★ ขึ้น (สูงสุด ★5) ค่าสลักถูกลง 10% ต่อ ★</span></div>
+      <div><span><b>สลักเอง</b></span><span>ที่ช่างตีเหล็ก แท็บ Inscription: Scribe's Ink 1 ขวด (คราฟ: สมุนไพร + แร่) + Gold ตาม Tier · สลักทับของเดิมได้ · Affix / ตีบวก / ล็อก ไม่หาย</span></div>
+      <div><span><b>ปิด / เปิด</b></span><span>ปิด Inscription ได้ฟรีจากการ์ดไอเทม แบบที่ปิดไม่นับโควตา · ชิ้น Masterwork ที่ใส่อยู่ = Inscription บนชิ้นนั้นทำงานนอกโควตา (1 ช่อง)</span></div>
+    </div>
+    <div class="tools" style="margin-top:12px"><select id="insJob" aria-label="อาชีพ"></select><select id="insReg" aria-label="ภูมิภาคที่ดรอป"></select><input type="search" id="insQ" placeholder="ค้นหา เช่น Dash, ฮีล, คูลดาวน์"></div>
+    <div class="scroll" style="margin-top:10px"><table class="t" style="min-width:640px"><thead><tr><th>Inscription</th><th>อาชีพ</th><th>ดรอปที่</th><th>กติกา</th></tr></thead><tbody id="insRows"></tbody></table></div>
   </section>
 
   <section class="panel" id="sets" aria-labelledby="setT">
@@ -428,17 +442,35 @@ const ITEM=Object.fromEntries(ITEMS.map(x=>[x.id,x]));
 const JOBS=[['','ทุกอาชีพ'],['k','Knight'],['w','Warrior'],['s','Scout'],['r','Rogue'],['m','Mage'],['a','Acolyte'],['u','Summoner']];
 const jobName=c=>(JOBS.find(j=>j[0]===c)||JOBS[0])[1];
 function itemsFor(slot,job){ return ITEMS.filter(x=>x.slot===slot&&(!job||x.jobs.includes(job))).sort((a,b)=>(a.wt||'').localeCompare(b.wt||'')||a.lv-b.lv||a.n.localeCompare(b.n)); }
-const blank=()=>({rar:'n',picks:{},set:'',item:''});
-const st={pos:'wpn',line:0,build:{},magicWpn:true,q:'',ilv:92,open:{},job:''};
+const INS=[{"id":"ins_snare","n":"Snare Line","job":"scout","rg":"A","t":"Dash ทิ้งบ่วงไว้ที่จุดเริ่ม: มอนตัวแรกที่เดินเข้าใกล้ 1.3 ช่องภายใน 8 วิ ถูกตรึง 2 วิ (บอสไม่ติด แต่ Break Bar ขึ้น)","old":""},{"id":"ins_marked_step","n":"Marked Step","job":"scout","rg":"B","t":"ตีธรรมดาจน Hunter's Mark ของเป้าเต็ม → Dash พร้อมใช้ทันที (ทุก 6 วิ)","old":""},{"id":"ins_rain_walker","n":"Rain Walker","job":"scout","rg":"C","t":"Arrow Rain เดินตามตัวคุณ — ยิงไปเดินไปได้","old":""},{"id":"ins_fallback","n":"Fallback Shot","job":"scout","rg":"D","t":"2 วิ หลัง Dash: ตีธรรมดาแรง ×1.3 (ถอยไปยิงไป)","old":""},{"id":"ins_reload","n":"Free Reload","job":"scout","rg":"A","t":"ฆ่ามอน → สกิลถัดไปที่ร่ายออกไปไม่เสีย MP","old":""},{"id":"ins_shield_charge","n":"Shield Charge","job":"knight","rg":"B","t":"Block สำเร็จทุกครั้งที่ 3 → Dash พร้อมใช้ทันที","old":""},{"id":"ins_grapple","n":"Grappling Oath","job":"knight","rg":"C","t":"Dash จบ → ดึงมอนรอบตัว 3 ช่องเข้าหาคุณ 1.2 ช่อง (ตัวที่ดึงไม่ได้ Break Bar ขึ้น 6)","old":""},{"id":"ins_shatterwall","n":"Shatterwall","job":"knight","rg":"D","t":"เกราะของคุณแตก → ระเบิดใส่มอนรอบตัว 2.5 ช่อง 80% ATK (ทุก 2 วิ)","old":""},{"id":"ins_living_wall","n":"Living Wall","job":"knight","rg":"A","t":"ยืนนิ่ง 2 วิ ขึ้นไป → เพื่อนปาร์ตี้ในระยะ 4 ช่องโดนมอนตีเบาลง 10% · ขยับแล้วหาย","old":""},{"id":"ins_echo_bounce","n":"Echo Bounce","job":"knight","rg":"B","t":"สกิลเวทโดนมอน → เด้งไปโดนมอนที่ใกล้ที่สุดอีก 1 ตัวในระยะ 3 ช่อง 35% (ครั้งเดียวต่อการร่าย)","old":""},{"id":"ins_brimming","n":"Brimming Cleave","job":"warrior","rg":"C","t":"Rage เต็มอยู่: ตีธรรมดาโดน → กระแทกมอนรอบเป้าอีก 3 ตัวในระยะ 1.5 ช่อง 40% ของนัดนั้น","old":""},{"id":"ins_grudge","n":"Grudge","job":"warrior","rg":"D","t":"โดนมอนตีครั้งเดียวเกิน 8% ของ HP → Rage +2","old":""},{"id":"ins_headsman","n":"Headsman","job":"warrior","rg":"A","t":"Execution ปิดชีพมอน → คูลดาวน์ Execution รีทันที (ทุก 10 วิ)","old":""},{"id":"ins_fault_line","n":"Fault Line","job":"warrior","rg":"B","t":"Leap Slam ลงพื้นแล้วพื้นแตก: มอนรอบจุดนั้น 2 ช่องโดน 25% ATK ต่อวิ 3 วิ","old":""},{"id":"ins_unyielding","n":"Defiant Heart","job":"warrior","rg":"C","t":"ดาเมจที่ถึงตาย → HP เหลือ 1 และ HP ลดต่ำกว่า 1 ไม่ได้อีก 3 วิ (ทุก 60 วิ)","old":"Unyielding"},{"id":"ins_fifth_shadow","n":"Fifth Shadow","job":"rogue","rg":"D","t":"Combo เต็ม 5 → มอนทั่วไปและ Elite ที่เล็งคุณหลุดเป้าทันที (ทุก 10 วิ · บอสไม่หลง)","old":""},{"id":"ins_knife_trail","n":"Knife Trail","job":"rogue","rg":"A","t":"ฆ่ามอน → มีดตกอยู่ที่ศพ 6 วิ · เดินไปเก็บ (ระยะ 1 ช่อง) = คูลดาวน์ทุกสกิลลด 1.5 วิ","old":""},{"id":"ins_riposte_edge","n":"Riposte Edge","job":"rogue","rg":"B","t":"หลบการโจมตีได้ (MISS) → การตีโดนครั้งถัดไปของคุณแรงเท่าคริ","old":""},{"id":"ins_choking_smoke","n":"Choking Smoke","job":"rogue","rg":"C","t":"Dash ทิ้งควัน: มอนรอบจุดเริ่ม 2 ช่องงงวิ่งหนี 1.5 วิ (Elite / Mini-boss / บอสไม่ติด แต่ Break Bar ขึ้น)","old":""},{"id":"ins_creeping_venom","n":"Creeping Venom","job":"rogue","rg":"D","t":"ทุก 3 วิ ดาเมจต่อเนื่องของคุณบนเป้าล่าสุดลามไปมอนที่ใกล้ที่สุดในระยะ 2.5 ช่องที่ยังไม่ติด","old":""},{"id":"ins_shard_storm","n":"Shard Storm","job":"mage","rg":"A","t":"Shatter → เศษน้ำแข็งพุ่งใส่มอนรอบ 3 ช่องอีก 3 ตัว 40% MATK","old":""},{"id":"ins_mana_spark","n":"Mana Spark","job":"mage","rg":"B","t":"ใช้ MP ครบ 25% ของหลอด → ยิงประกายเวทใส่มอนที่ใกล้ที่สุดในระยะ 6 ช่อง 60% MATK","old":""},{"id":"ins_frost_glyph","n":"Frost Glyph","job":"mage","rg":"C","t":"ร่ายสกิลที่มี cast bar จบ → มอนรอบตัว 2 ช่องติด Chill 1 สแตก","old":""},{"id":"ins_blink_rune","n":"Blink Rune","job":"mage","rg":"D","t":"Dash ทิ้งรูนที่จุดเริ่ม · 1 วิ ต่อมาระเบิดใส่มอนรอบ 2 ช่อง 80% MATK","old":""},{"id":"ins_brimful","n":"Brimful","job":"mage","rg":"A","t":"ร่ายสกิลตอน MP ≥ 95% → สกิลนั้นแรง ×1.3 (1.5 วิ แรกของการร่าย)","old":""},{"id":"ins_last_light","n":"Last Light","job":"acolyte","rg":"B","t":"ฮีลเพื่อนที่ HP ต่ำกว่า 35% → เขาได้เกราะ 8% ของ HP ด้วย (8 วิ)","old":""},{"id":"ins_falling_star","n":"Falling Star","job":"acolyte","rg":"C","t":"Smite โดนมอน → 1 วิ ต่อมาดาวตกซ้ำที่เดิม 50% ของนัดนั้น","old":""},{"id":"ins_walking_sanctuary","n":"Walking Sanctuary","job":"acolyte","rg":"D","t":"Sanctuary เดินตามตัวคุณ","old":""},{"id":"ins_guardian_grace","n":"Guardian Grace","job":"acolyte","rg":"A","t":"เพื่อนปาร์ตี้ในระยะ 6 ช่องที่จะตาย → รอด เหลือ HP 15% (ทุก 90 วิ)","old":""},{"id":"ins_mend_chain","n":"Mend Chain","job":"acolyte","rg":"B","t":"ร่ายสกิลฮีล → สกิลถัดไปร่ายทันทีไม่มี cast bar (ทุก 8 วิ)","old":""},{"id":"ins_grave_burst","n":"Grave Burst","job":"summoner","rg":"C","t":"ปลุก Thrall → ระเบิดวิญญาณที่ตัว Thrall แต่ละตัว ใส่มอนรอบ 1.5 ช่อง 40% MATK","old":""},{"id":"ins_soul_siphon","n":"Soul Draw","job":"summoner","rg":"D","t":"Thrall ฆ่ามอน → ฮีลคุณ 2% ของ HP","old":"Soul Siphon"},{"id":"ins_champion_aegis","n":"Champion's Aegis","job":"summoner","rg":"A","t":"ปลุก Champion → คุณได้เกราะ 10% ของ HP 8 วิ","old":""},{"id":"ins_bone_wall","n":"Bone Wall","job":"summoner","rg":"B","t":"มี Thrall 3 ตัวขึ้นไปอยู่ใกล้ 4 ช่อง → มอนตีคุณเบาลง 15%","old":""},{"id":"ins_ricochet_soul","n":"Ricochet Soul","job":"summoner","rg":"C","t":"Soul Bolt โดนมอน → เด้งไปโดนมอนอีก 1 ตัวในระยะ 3 ช่อง 50%","old":""},{"id":"ins_decoy","n":"Decoy","job":"","rg":"D","t":"Dash ทิ้งเหยื่อล่อ: มอนที่ไล่คุณในระยะ 5 ช่องหลงเป้า 1.5 วิ (ทุก 12 วิ · บอสไม่หลง)","old":""},{"id":"ins_scavenger","n":"Scavenger","job":"","rg":"A","t":"เก็บของที่ตก → ฮีล 1% ของ HP ต่อชิ้น (ไม่เกิน 5% ต่อวินาที)","old":""},{"id":"ins_breakthrough","n":"Breakthrough","job":"","rg":"B","t":"ทำให้มอน STAGGERED → คูลดาวน์ทุกสกิลลด 3 วิ","old":""},{"id":"ins_night_runner","n":"Night Runner","job":"","rg":"C","t":"ตอนกลางคืน คูลดาวน์ Dash สั้นลง 25%","old":""},{"id":"ins_last_word","n":"Last Word","job":"","rg":"D","t":"ตอนคุณตาย → ระเบิดใส่มอนรอบตัว 3 ช่อง 150% ATK","old":""}];
+const INSBY=Object.fromEntries(INS.map(x=>[x.id,x]));
+const INS_JOB={k:'knight',w:'warrior',s:'scout',r:'rogue',m:'mage',a:'acolyte',u:'summoner'};
+const INS_ORDER=['wpn','off','armor','hat','face','mouth','neck','belt','boots','acc1','acc2'];
+const INS_QUOTA=[[1,1],[30,2],[45,3],[60,4],[80,5],[99,6]];
+const insQuota=lv=>{ let n=0; for(const [l,q] of INS_QUOTA) if(lv>=l) n=q; return n; };
+const JOBTH={knight:'Knight',warrior:'Warrior',scout:'Scout',rogue:'Rogue',mage:'Mage',acolyte:'Acolyte',summoner:'Summoner'};
+const REGNAME={A:'Valebrook',B:'Ashford',C:'Stormwall',D:'Sanctum'};
+function insStatus(){ // which inscriptions work, in the game's slot order
+  const q=insQuota(st.clv), seen=new Set(), out=[]; let used=0;
+  for(const k of INS_ORDER){ const id=st.build[k].ins; if(!id||!INSBY[id]) continue; const x=INSBY[id];
+    let why='';
+    if(x.job&&st.job&&INS_JOB[st.job]!==x.job) why='อาชีพไม่ตรง';
+    else if(seen.has(id)) why='ซ้ำ (ไม่นับ)';
+    else if(used>=q) why='เกินโควตา Lv '+st.clv;
+    if(!why){ used++; seen.add(id); }
+    out.push({k,x,on:!why,why}); }
+  return {out,used,q}; }
+const blank=()=>({rar:'n',picks:{},set:'',item:'',ins:''});
+const st={pos:'wpn',line:0,build:{},magicWpn:true,q:'',ilv:92,open:{},job:'',clv:99};
 for(const p in POS)st.build[p]=blank();
 st.build.wpn.rar='r';
 try{const s=JSON.parse(localStorage.getItem('affixFinder2')||'{}');
-  for(const k of ['pos','ilv','magicWpn','job'])if(s[k]!==undefined)st[k]=s[k];
+  for(const k of ['pos','ilv','magicWpn','job','clv'])if(s[k]!==undefined)st[k]=s[k];
   if(!JOBS.some(j=>j[0]===st.job))st.job='';
-  if(s.build)for(const p in POS)if(s.build[p]){const b=s.build[p];st.build[p]={rar:RAR.some(r=>r.id===b.rar)?b.rar:'n',picks:Object.fromEntries(Object.entries(b.picks||{}).filter(([,id])=>BY[id])),set:SETS.some(x=>x.n===b.set)?b.set:'',item:ITEM[b.item]?b.item:''}}
+  if(s.build)for(const p in POS)if(s.build[p]){const b=s.build[p];st.build[p]={rar:RAR.some(r=>r.id===b.rar)?b.rar:'n',picks:Object.fromEntries(Object.entries(b.picks||{}).filter(([,id])=>BY[id])),set:SETS.some(x=>x.n===b.set)?b.set:'',item:ITEM[b.item]?b.item:'',ins:INSBY[b.ins]?b.ins:''}}
   if(!POS[st.pos])st.pos='wpn';
 }catch(e){}
-function save(){if(VIEW)return;try{localStorage.setItem('affixFinder2',JSON.stringify({pos:st.pos,ilv:st.ilv,magicWpn:st.magicWpn,job:st.job,build:st.build}))}catch(e){}}
+function save(){if(VIEW)return;try{localStorage.setItem('affixFinder2',JSON.stringify({pos:st.pos,ilv:st.ilv,magicWpn:st.magicWpn,job:st.job,clv:st.clv,build:st.build}))}catch(e){}}
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -468,6 +500,14 @@ function check(a,i){
   return '';
 }
 
+function insPicker(p){
+  const cur=st.build[p].ins, j=INS_JOB[st.job]||'';
+  const groups=j?[[JOBTH[j],INS.filter(x=>x.job===j)],['ทุกอาชีพ',INS.filter(x=>!x.job)]]:[...Object.keys(JOBTH).map(k=>[JOBTH[k],INS.filter(x=>x.job===k)]),['ทุกอาชีพ',INS.filter(x=>!x.job)]];
+  const opt=x=>'<option value="'+x.id+'"'+(x.id===cur?' selected':'')+'>'+esc(x.n)+' · '+x.rg+'</option>';
+  let h='<label class="itemsel">Inscription<select id="insSel"><option value="">ไม่มี</option>'+groups.map(([g,xs])=>'<optgroup label="'+g+'">'+xs.map(opt).join('')+'</optgroup>').join('')+(cur&&!groups.some(([,xs])=>xs.some(x=>x.id===cur))?opt(INSBY[cur]):'')+'</select></label>';
+  if(cur&&INSBY[cur]){ const x=INSBY[cur], stx=insStatus().out.find(o=>o.k===p);
+    h+='<div class="iteminfo"><b>✒ '+esc(x.n)+'</b> · '+(x.job?JOBTH[x.job]:'ทุกอาชีพ')+' · ดรอป Region '+x.rg+'<br>'+esc(x.t)+(stx&&!stx.on?'<div class="w">ไม่ทำงาน: '+stx.why+'</div>':'')+'</div>'; }
+  return h; }
 function itemPicker(p){
   const slot=POS[p], list=itemsFor(slot,st.job), cur=st.build[p].item, it=ITEM[cur];
   const groups={}; for(const x of list)(groups[x.wt||'']=groups[x.wt||'']||[]).push(x);
@@ -489,7 +529,7 @@ function renderDoll(){
   $('slotInfo').innerHTML='<h2>'+PNAME(st.pos)+'</h2><div class="en">'+s.en+' · ออฟทั้งหมด '+pool.length+' แบบ</div>'+
     '<div class="counts">'+['P','S','T'].map(k=>'<div><span><i class="dot" style="background:var('+KIND[k].k+')"></i>'+KIND[k].n+'</span><b>'+c[k]+'</b></div>').join('')+'</div>'+
     (slotType()==='wpn'?'<label class="tog"><input type="checkbox" id="mw"'+(st.magicWpn?' checked':'')+'> อาวุธเวท (มี Mana Tide)</label>':'')+
-    itemPicker(st.pos)+
+    itemPicker(st.pos)+insPicker(st.pos)+
     (s.set?'<label class="setsel">Region Set ของชิ้นนี้<select id="setSel"><option value="">ไม่ใช่ชิ้นชุด</option>'+['A','B','C','D'].map(g=>'<optgroup label="'+REGION[g]+'">'+SETS.filter(x=>x.reg===g).map(x=>'<option'+(b.set===x.n?' selected':'')+'>'+x.n+'</option>').join('')+'</optgroup>').join('')+'</select></label>':'')+
     '<div class="warn">'+(s.hard?'ชิ้นนี้ได้สี Magic / Rare / Epic ยากกว่าปกติ 3 เท่า':(slotType()==='acc'?'ใส่ได้ 2 ชิ้น ออฟเหมือนกันทั้งคู่':'โอกาสได้สีตามปกติ'))+(c.T?'':' · ไม่มี Proc ให้สุ่ม')+(s.set?'':' · ส่วนนี้เป็นชิ้นชุดไม่ได้')+'</div>';
 }
@@ -578,6 +618,9 @@ function renderSummary(){
     }
     h+='</tbody></table>';
   }else h='<div class="empty">ยังไม่มีสเตตัสจาก Affix</div>';
+  { const I=insStatus();
+    h+='<div class="gearsum"><h3>Inscription · ทำงาน '+I.used+' / '+I.q+'</h3><p class="sub" style="margin:0 0 6px">Lv ตัวละคร <input type="number" id="clv" min="1" max="99" value="'+st.clv+'" style="width:60px;font:inherit;color:inherit;background:var(--panel-2);border:1px solid var(--rim);border-radius:6px;padding:2px 6px"> · โควตาตามเลเวล: Lv 1 = 1 · 30 = 2 · 45 = 3 · 60 = 4 · 80 = 5 · 99 = 6 · นับตามลำดับช่องสวมใส่</p>'+
+      (I.out.length?'<table class="t stat"><tbody>'+I.out.map(o=>'<tr><td>'+PNAME(o.k)+'</td><td class="val">'+(o.on?'✓ ':'✕ ')+esc(o.x.n)+'</td><td class="src">'+(o.on?esc(o.x.t):'<span style="color:var(--k-proc)">'+o.why+'</span> · '+esc(o.x.t))+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">ยังไม่ได้ใส่ Inscription — เลือกได้ที่ช่องอุปกรณ์ด้านบน</div>')+'</div>'; }
   const worn=PKEYS.filter(k=>ITEM[st.build[k].item]).map(k=>[k,ITEM[st.build[k].item]]);
   if(worn.length){ const tot={atk:0,matk:0,def:0}; worn.forEach(([,it])=>{tot.atk+=it.atk;tot.matk+=it.matk;tot.def+=it.def;});
     h+='<div class="gearsum"><h3>ของสวมใส่ ('+worn.length+' ชิ้น)</h3><table class="t stat"><tbody>'+
@@ -601,25 +644,28 @@ function renderLv(){const t=maxT();$('ilvOut').innerHTML='Lv '+st.ilv+' <small>�
 /* ---------- saved gear sets (this device only) + share links ---------- */
 const AL='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
 const PKEYS=Object.keys(POS), SAVEKEY='affixFinderSaves';
-function encBuild(){ let c='e2'+String(st.ilv).padStart(2,'0')+(st.magicWpn?'1':'0');
+function encBuild(){ let c='e3'+String(st.ilv).padStart(2,'0')+(st.magicWpn?'1':'0');
   for(const p of PKEYS){ const b=st.build[p];
     c+=AL[Math.max(0,RAR.findIndex(r=>r.id===b.rar))]+AL[b.set?SETS.findIndex(x=>x.n===b.set)+1:0];
     for(let i=0;i<4;i++){ const id=b.picks[i]; c+=AL[id?AFX.findIndex(a=>a.id===id)+1:0]; } }
   c+=AL[Math.max(0,JOBS.findIndex(j=>j[0]===st.job))];
   for(const p of PKEYS){ const i=st.build[p].item?ITEMS.findIndex(x=>x.id===st.build[p].item)+1:0; c+=AL[Math.floor(i/64)]+AL[i%64]; }
+  c+=String(st.clv).padStart(2,'0');
+  for(const p of PKEYS){ const i=st.build[p].ins?INS.findIndex(x=>x.id===st.build[p].ins)+1:0; c+=AL[i]; }
   return c; }
-function decBuild(c){ if(!/^e[12]\d\d[01][0-9a-zA-Z_-]{66}([0-9a-zA-Z_-]{23})?$/.test(c||''))return null;
+function decBuild(c){ if(!/^e[123]\d\d[01][0-9a-zA-Z_-]{66}([0-9a-zA-Z_-]{23}(\d\d[0-9a-zA-Z_-]{11})?)?$/.test(c||''))return null;
   let p=5; const ix=()=>AL.indexOf(c[p++]);
   const o={ilv:Math.min(99,Math.max(1,+c.slice(2,4))),magicWpn:c[4]==='1',build:{}};
   for(const k of PKEYS){ const r=RAR[ix()]||RAR[0], si=ix(), b={rar:r.id,picks:{},set:SETS[si-1]?SETS[si-1].n:''};
     for(let i=0;i<4;i++){ const a=AFX[ix()-1]; if(a&&i<r.lines&&poolForType(POS[k],o.magicWpn).includes(a))b.picks[i]=a.id; }
-    b.item=''; o.build[k]=b; }
-  o.job='';
-  if(c[1]==='2'&&c.length>=71+23){ o.job=(JOBS[AL.indexOf(c[p++])]||JOBS[0])[0];
-    for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&it.slot===POS[k]) o.build[k].item=it.id; } }
+    b.item=''; b.ins=''; o.build[k]=b; }
+  o.job=''; o.clv=99;
+  if(c[1]!=='1'&&c.length>=71+23){ o.job=(JOBS[AL.indexOf(c[p++])]||JOBS[0])[0];
+    for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&it.slot===POS[k]) o.build[k].item=it.id; }
+    if(c[1]==='3'&&c.length>=94+13){ o.clv=Math.max(1,Math.min(99,+c.slice(p,p+2))); p+=2; for(const k of PKEYS){ const x=INS[AL.indexOf(c[p++])-1]; if(x) o.build[k].ins=x.id; } } }
   return o; }
 function poolForType(slot,mw){return AFX.filter(a=>a.sl.includes(slot)&&!(a.flag==='magicOnlyWpn'&&slot==='wpn'&&!mw))}
-function applyBuild(o){ st.ilv=o.ilv; st.magicWpn=o.magicWpn; st.build=o.build; st.job=o.job||''; st.line=0; }
+function applyBuild(o){ st.ilv=o.ilv; st.magicWpn=o.magicWpn; st.build=o.build; st.job=o.job||''; st.clv=o.clv||99; st.line=0; }
 function clearHash(){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} }
 function loadSaves(){ try{ const a=JSON.parse(localStorage.getItem(SAVEKEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&decBuild(x.code)):[] }catch(e){ return [] } }
 function storeSaves(a){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(a)); return true }catch(e){ flash('บันทึกไม่ได้ — เบราว์เซอร์นี้ปิดการเก็บข้อมูลไว้'); return false } }
@@ -684,11 +730,19 @@ document.addEventListener('change',e=>{
   if(e.target.id==='mw'){st.magicWpn=e.target.checked;if(!st.magicWpn)for(const l in st.build.wpn.picks)if(st.build.wpn.picks[l]==='manatide')delete st.build.wpn.picks[l];render()}
   else if(e.target.id==='setSel')setSet(e.target.value);
   else if(e.target.id==='itemSel'){ cur().item=e.target.value; render(); }
+  else if(e.target.id==='insSel'){ cur().ins=e.target.value; render(); }
+  else if(e.target.id==='clv'){ st.clv=Math.max(1,Math.min(99,+e.target.value||99)); render(); }
   else if(e.target.id==='jobSel'){ st.job=e.target.value; render(); }
 });
 $('ilv').addEventListener('input',e=>{st.ilv=+e.target.value;renderLv();renderList();renderSummary();save()});
 $('q').addEventListener('input',e=>{st.q=e.target.value;renderList()});
 renderSetTable();
+function renderInsTable(){ const j=$('insJob').value, r=$('insReg').value, q=$('insQ').value.trim().toLowerCase();
+  const rows=INS.filter(x=>(!j||(j==='all'?!x.job:x.job===j))&&(!r||x.rg===r)&&(!q||(x.n+' '+x.t+' '+x.old).toLowerCase().includes(q)));
+  $('insRows').innerHTML=rows.map(x=>'<tr><td><b>✒ '+esc(x.n)+'</b>'+(x.old?'<br><small style="color:var(--muted)">ชื่อเดิม '+esc(x.old)+'</small>':'')+'</td><td>'+(x.job?JOBTH[x.job]:'ทุกอาชีพ')+'</td><td>Region '+x.rg+' · '+REGNAME[x.rg]+'</td><td>'+esc(x.t)+'</td></tr>').join('')||'<tr><td colspan="4">ไม่พบ</td></tr>'; }
+$('insJob').innerHTML='<option value="">ทุกอาชีพ (40)</option>'+Object.entries(JOBTH).map(([k,v])=>'<option value="'+k+'">'+v+' ('+INS.filter(x=>x.job===k).length+')</option>').join('')+'<option value="all">ทั่วไป ('+INS.filter(x=>!x.job).length+')</option>';
+$('insReg').innerHTML='<option value="">ทุกภูมิภาค</option>'+Object.entries(REGNAME).map(([k,v])=>'<option value="'+k+'">Region '+k+' · '+v+'</option>').join('');
+['insJob','insReg'].forEach(id=>$(id).addEventListener('change',renderInsTable)); $('insQ').addEventListener('input',renderInsTable); renderInsTable();
 render();
 })();
 </script>
