@@ -103,6 +103,19 @@ h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
 .res.on .h span{color:var(--ok)}
 .res p{margin:2px 0 0;color:var(--muted)}
 .res.on p{color:var(--ink)}
+.res .resbtn{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;font-family:var(--display);font-weight:600}
+.res .resbtn:hover{color:var(--accent)}
+.resm{display:flex;flex-direction:column;gap:5px;margin-top:8px;border-top:1px dashed var(--rim);padding-top:8px}
+.rm{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--rim);border-left:3px solid var(--cc);border-radius:8px;padding:4px 8px;background:var(--panel);font-size:12.5px}
+.rm.in{background:var(--accent-soft)}
+.rm img{width:30px;height:41px}
+.rm b{font-family:var(--display);font-weight:600;font-size:13px}
+.rm small{color:var(--muted)}
+.rm .v{font-weight:700;color:var(--cc)}
+.btn.sm{padding:4px 10px;font-size:13px;box-shadow:none}
+.btn.sm.add{border-color:var(--accent);color:var(--accent)}
+.btn.arm{background:var(--c-red);border-color:var(--c-red);color:var(--panel)}
+.albtools{display:flex;justify-content:flex-end;gap:6px;margin:-4px 0 10px}
 .empty{padding:16px;text-align:center;color:var(--muted);border:1px dashed var(--rim);border-radius:10px;font-size:14px}
 .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--rim);border-radius:999px;padding:4px 12px;font-size:13px;background:var(--panel-2)}
@@ -211,6 +224,7 @@ h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
     <section class="panel" aria-labelledby="albT">
       <h2 class="sec" id="albT">ทดลองใส่การ์ด</h2>
       <p class="sub">กด "ใส่การ์ด" ในรายการด้านล่าง การ์ดจะเข้าช่องว่างแรก · กดช่องเพื่อเลือก แล้วกดใส่การ์ดอีกใบเพื่อสลับ · ปรับดาวที่ช่องได้</p>
+      <div class="albtools"><button type="button" class="btn sm" id="undoAll" hidden>เลิกทำ</button><button type="button" class="btn sm" id="resetAll">รีเซ็ตการ์ดทั้งหมด</button></div>
       <div class="loadbar" id="loadbar"><span>Spirit Load</span><div class="bar"><i id="loadFill"></i></div><b id="loadTxt"></b></div>
       <div class="album" id="album"></div>
       <p class="hint" id="albumHint"></p>
@@ -326,12 +340,12 @@ function calc(S0){ S0=S0||st;
   const uniq=[...new Map(placed.map(p=>[p.c.id,p])).values()].map(p=>({c:p.c,star:Math.max(...placed.filter(q=>q.c.id===p.c.id).map(q=>q.star))}));
   const res=[];
   for(const g of ['A','B','C','D']){ const ms=uniq.filter(u=>u.c.rg===g), n=ms.length, R=RES_REGION[g];
-    res.push({kind:'ภูมิภาค',name:R.name,sub:REGION[g],count:n,need:n>=3?5:3,on:n>=3,tier:n>=5?2:n>=3?1:0,fx:n>=5?[...R.t3,...R.t5]:R.t3,next:n>=5?null:n>=3?R.t5:R.t3,mobs:ms});
+    res.push({key:'r:'+g,kind:'ภูมิภาค',name:R.name,sub:REGION[g],count:n,need:n>=3?5:3,on:n>=3,tier:n>=5?2:n>=3?1:0,fx:n>=5?[...R.t3,...R.t5]:R.t3,next:n>=5?null:n>=3?R.t5:R.t3,mobs:ms});
     if(n>=3)R.t3.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); if(n>=5)R.t5.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name+' II')); }
   for(const [sp,R] of Object.entries(RES_KIN)){ const ms=uniq.filter(u=>u.c.sp===sp), n=ms.length;
-    res.push({kind:'สายมอน',name:R.name,sub:SPN[sp],count:n,need:2,on:n>=2,fx:R.fx,mobs:ms}); if(n>=2)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
+    res.push({key:'k:'+sp,kind:'สายมอน',name:R.name,sub:SPN[sp],count:n,need:2,on:n>=2,fx:R.fx,mobs:ms}); if(n>=2)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
   for(const [col,R] of Object.entries(RES_COLOR)){ const ms=uniq.filter(u=>u.c.color===col&&u.star>=COLOR_STAR), n=ms.length;
-    res.push({kind:'สี',name:R.name,sub:COLOR[col].n+' ★'+COLOR_STAR+'+',count:n,need:R.need,on:n>=R.need,fx:R.fx,mobs:ms}); if(n>=R.need)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
+    res.push({key:'c:'+col,kind:'สี',name:R.name,sub:COLOR[col].n+' ★'+COLOR_STAR+'+',count:n,need:R.need,on:n>=R.need,fx:R.fx,mobs:ms}); if(n>=R.need)R.fx.forEach(f=>add(fkey(f),f.v,'Resonance '+R.name)); }
   const cx=Math.max(0,Math.min(CARDS.length,S0.codex|0));
   for(const t of CODEX) if(cx>=t.n) t.fx.forEach(f=>add(fkey(f),f.v,'Codex '+t.n));
   const caps={}; const capAt=(k,m)=>{ if(tot[k]>m){ caps[k]=tot[k]; tot[k]=m; } };
@@ -364,6 +378,14 @@ function renderAlbum(R){
 /* ---------- summary ---------- */
 const ORDER=Object.keys(TPL);
 function sortKeys(keys){ return keys.sort((a,b)=>{ const ia=ORDER.indexOf(a.split('@')[0]), ib=ORDER.indexOf(b.split('@')[0]); return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b); }); }
+const openRes={};
+function resMembers(r){
+  const [t,v]=r.key.split(':');
+  const ms=CARDS.filter(c=>t==='r'?c.rg===v:t==='k'?c.sp===v:c.color===v).sort((a,b)=>a.load-b.load||a.n.localeCompare(b.n));
+  const inAlb=id=>st.slots.filter((x,i)=>x&&x.id===id&&st.lv>=SLOTLV[i]);
+  return '<div class="resm">'+(t==='c'?'<p class="sub" style="margin:4px 0">นับเฉพาะการ์ด ★'+COLOR_STAR+' ขึ้นไป</p>':'')+ms.map(c=>{ const on=inAlb(c.id), star=on.length?Math.max(...on.map(x=>x.star)):filt.star, g=cycle(c);
+    return '<div class="rm'+(on.length?' in':'')+'" style="--cc:var(--c-'+c.color+')"><img src="img/card/'+c.id+'.svg" alt="" loading="lazy"><div><b>'+esc(c.n)+'</b> <small>Load '+c.load+' · '+(g==='night'?'☾':g==='day'?'☀':'◐')+(on.length?' · ใส่อยู่ ★'+star:'')+'</small><br><span>'+fxText(c,star)+'</span></div>'+
+      (on.length?'<button type="button" class="btn sm" data-rmcard="'+c.id+'">ถอด</button>':'<button type="button" class="btn sm add" data-add="'+c.id+'">ใส่</button>')+'</div>'; }).join('')+'</div>'; }
 function renderSummary(R){
   const nOn=R.res.filter(r=>r.on).length;
   $('sumSub').textContent=R.placed.length?('การ์ด '+R.placed.length+' ใบ · Resonance เปิด '+nOn+' · '+(st.night?'คิดค่าตอนกลางคืน':'คิดค่าตอนกลางวัน')+' · Lv '+st.lv):'ยังไม่ได้ใส่การ์ด — กด "ใส่การ์ด" ในรายการด้านล่าง';
@@ -372,8 +394,9 @@ function renderSummary(R){
   if(tab==='stats'){ const keys=sortKeys(Object.keys(R.tot).filter(k=>R.tot[k]));
     h=keys.length?'<table class="stat"><tbody>'+keys.map(k=>'<tr><td>'+label(k,R.tot[k])+(R.caps[k]?'<span class="cap">ติดเพดาน (รวมได้ '+r1(R.caps[k])+')</span>':'')+'</td><td class="src">'+esc((R.src[k]||[]).join(', '))+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">ยังไม่มีสเตตัสจากการ์ด</div>'; }
   else if(tab==='res'){ const list=R.res.slice().sort((a,b)=>(b.on-a.on)||(b.count/b.need-a.count/a.need));
-    h='<div class="reslist">'+list.map(r=>'<div class="res'+(r.on?' on':'')+'"><div class="h">'+esc(r.name)+' <span>'+r.kind+' '+esc(r.sub)+' · '+r.count+'/'+r.need+(r.on?' ✓':'')+'</span></div>'+
-      '<p>'+r.fx.map(f=>label(fkey(f),f.v)).join(' · ')+'</p>'+(r.mobs.length?'<p>นับแล้ว: '+r.mobs.map(m=>esc(m.c.n)).join(', ')+'</p>':'')+'</div>').join('')+'</div>'; }
+    h='<p class="sub" style="margin:0 0 8px">กดชื่อชุดเพื่อดูการ์ดทุกใบในชุดนั้น แล้วกดใส่ / ถอดได้เลย</p><div class="reslist">'+list.map(r=>{ const op=openRes[r.key];
+      return '<div class="res'+(r.on?' on':'')+'"><button type="button" class="h resbtn" data-res="'+r.key+'" aria-expanded="'+!!op+'">'+(op?'▾ ':'▸ ')+esc(r.name)+' <span>'+r.kind+' '+esc(r.sub)+' · '+r.count+'/'+r.need+(r.on?' ✓':'')+'</span></button>'+
+      '<p>'+r.fx.map(f=>label(fkey(f),f.v)).join(' · ')+'</p>'+(r.mobs.length?'<p>นับแล้ว: '+r.mobs.map(m=>esc(m.c.n)).join(', ')+'</p>':'')+(op?resMembers(r):'')+'</div>'; }).join('')+'</div>'; }
   else { const cx=st.codex|0;
     h='<p class="sub">Codex = จำนวนมอนที่เคยผูกการ์ด (บันทึกถาวร) · ใส่จำนวนของคุณที่หัวหน้า</p><div class="reslist">'+CODEX.map(t=>'<div class="res'+(cx>=t.n?' on':'')+'"><div class="h">ครบ '+t.n+' ตัว <span>'+Math.min(cx,t.n)+'/'+t.n+(cx>=t.n?' ✓':'')+'</span></div><p>'+t.fx.map(f=>label(fkey(f),f.v)).join(' · ')+'</p></div>').join('')+'</div>'; }
   $('sumBody').innerHTML=h;
@@ -538,6 +561,7 @@ function initAdvisor(){
 /* ---------- render + events ---------- */
 function render(){ $('lv').value=st.lv; $('codex').value=st.codex; $('tDay').setAttribute('aria-pressed',!st.night); $('tNight').setAttribute('aria-pressed',st.night);
   const R=calc(); renderAlbum(R); renderSummary(R); renderCatalog(); renderSaves(); renderView(); if($('aJob').options.length) renderAdvisor(); save(); }
+let resetUndo=null;
 function addCard(id){
   const c=BY[id], R=calc();
   let i=sel>=0&&st.lv>=SLOTLV[sel]?sel:st.slots.findIndex((x,k)=>!x&&st.lv>=SLOTLV[k]);
@@ -549,6 +573,12 @@ function addCard(id){
 }
 document.addEventListener('click',e=>{ const b=e.target.closest('button,[data-slot]'); if(!b)return;
   if(b.dataset.add){ addCard(b.dataset.add); return; }
+  if(b.dataset.res){ openRes[b.dataset.res]=!openRes[b.dataset.res]; renderSummary(calc()); return; }
+  if(b.dataset.rmcard){ const id=b.dataset.rmcard; let k=-1; st.slots.forEach((x,i)=>{ if(x&&x.id===id) k=i; }); if(k>=0){ st.slots[k]=null; if(sel===k)sel=-1; render(); toast('ถอด '+BY[id].n+' แล้ว'); } return; }
+  if(b.id==='resetAll'){ if(!st.slots.some(Boolean)){ toast('ยังไม่มีการ์ดในช่อง'); return; }
+    if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='กดอีกครั้งเพื่อรีเซ็ต'; setTimeout(()=>{ if(b.isConnected){ b.classList.remove('arm'); b.textContent='รีเซ็ตการ์ดทั้งหมด'; } },3000); return; }
+    b.classList.remove('arm'); b.textContent='รีเซ็ตการ์ดทั้งหมด'; resetUndo=st.slots.slice(); st.slots=Array(9).fill(null); sel=-1; $('undoAll').hidden=false; render(); toast('รีเซ็ตการ์ดแล้ว — กด "เลิกทำ" เพื่อกลับ'); return; }
+  if(b.id==='undoAll'&&resetUndo){ st.slots=resetUndo; resetUndo=null; $('undoAll').hidden=true; render(); toast('กลับไปการ์ดชุดเดิมแล้ว'); return; }
   if(b.dataset.open){ open[b.dataset.open]=!open[b.dataset.open]; renderCatalog(); return; }
   if(b.dataset.rm){ e.stopPropagation(); st.slots[+b.dataset.rm]=null; if(sel===+b.dataset.rm)sel=-1; render(); return; }
   if(b.dataset.star){ e.stopPropagation(); const [i,s]=b.dataset.star.split(':').map(Number); st.slots[i].star=s; render(); return; }
