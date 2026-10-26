@@ -150,6 +150,23 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
 .toast b{display:block;font-family:var(--display)}
 @keyframes drop{from{transform:translateY(-12px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}.switch span,.switch span::after{transition:none}}
+
+/* World Boss */
+#worldboss .ph{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wb{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-top:10px}
+@media (max-width:600px){.wb{grid-template-columns:1fr}}
+.wb .now,.wb .next{border:1px solid var(--rim);border-radius:14px;padding:14px;background:var(--panel-2);display:flex;flex-direction:column;gap:4px}
+.wb .lbl{font-size:13px;color:var(--muted);font-family:var(--display)}
+.wb .big{font-family:var(--display);font-size:40px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.wb .at{font-size:14px;color:var(--muted)}
+.wb .now.live{border-color:var(--live);background:var(--live-soft)}
+.wb .now.live .big{color:var(--live)}
+.wb .now.soon .big{color:var(--soon)}
+.wb .sched{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.wb .sched span{border:1px solid var(--rim);border-radius:999px;padding:1px 10px;font-size:13px;font-variant-numeric:tabular-nums}
+.wb .sched span.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.wb .switch{margin-top:2px}
+.wb .remind{display:flex;align-items:center;gap:8px;font-size:14px}
 </style>
 </head>
 <body>
@@ -161,6 +178,11 @@ dialog::backdrop{background:rgba(5,10,25,.55)}
   </header>
 
   <div id="permBanner" class="panel banner" hidden></div>
+
+  <section class="panel" id="worldboss" aria-labelledby="h-wb">
+    <div class="ph"><div><h2 id="h-wb">World Boss · Wraithroot Colossus</h2><div class="small">มาทุกวัน 12:30 และ 19:30 น. (เวลาไทย) ตรงกันทั้งเซิร์ฟเวอร์ — นับถอยหลังสดจากนาฬิกา ไม่ต้องจดเอง</div></div><img class="sprite" src="img/boss/vale_warden.png" alt="" width="52" height="52" style="image-rendering:pixelated"></div>
+    <div id="wbBody" class="wb"></div>
+  </section>
 
   <div class="cols">
     <section class="panel" aria-labelledby="h-timers">
@@ -660,6 +682,7 @@ document.addEventListener("change", e => {
     if (el.id === "minIn") { R.minutes = Math.min(1440, Math.max(1, Math.round(+el.value || 1))); return renderRecord(); }
     return;
   }
+  if (el.id === "wbRemind") { wbRemind = el.checked; try { localStorage.setItem(WB_KEY, wbRemind ? "1" : "0"); } catch (e) {} if (wbRemind && typeof notifSupported === "function" && notifSupported() && Notification.permission === "default") Notification.requestPermission(); renderWorldBoss(); return; }
   if (el.id === "atSpawn") st.notifyAtSpawn = el.checked;
   else if (el.id === "sound") st.sound = el.checked;
   else if (el.id === "voice") st.voice = el.checked;
@@ -856,16 +879,70 @@ function importFromLink() {
   } catch { toast("นำเข้าไม่สำเร็จ", "ลิงก์ไม่ถูกต้อง"); }
 }
 
+// ---------- World Boss (ตารางตายตัวทุกวัน เวลาไทย) ----------
+// แพทช์ 17 ต.ค. 2569: Wraithroot Colossus มาทุกวัน 12:30 และ 19:30 น. · อยู่ครั้งละ 30 นาที
+const WB_TIMES = [[12, 30], [19, 30]], WB_DURATION = 30 * MIN, WB_KEY = "bt-wb-remind";
+// เวลาไทย = UTC+7 คงที่ (ไทยไม่มี DST) คำนวณจากเวลาจริงของผู้ใช้ ไม่ขึ้นกับโซนเครื่อง
+function wbThaiNow() { return Date.now() + 7 * 3600_000; }
+function wbList(fromMs, n) { // คืนรายการเวลาเกิด (เป็น ms เวลาไทยเสมือน) ตั้งแต่เมื่อวานถึงอนาคต
+  const out = [], day = Math.floor(fromMs / DAY);
+  for (let d = day - 1; d <= day + 2 && out.length < n + 4; d++)
+    for (const [h, m] of WB_TIMES) out.push((d * DAY) + (h * 60 + m) * MIN);
+  return out.sort((a, b) => a - b);
+}
+let wbRemind = false;
+try { wbRemind = localStorage.getItem(WB_KEY) === "1"; } catch (e) {}
+let wbLastAnnounced = 0;
+function renderWorldBoss() {
+  const nowT = wbThaiNow(), spawns = wbList(nowT, 6);
+  const active = spawns.find(s => nowT >= s && nowT < s + WB_DURATION);
+  const next = spawns.find(s => s > nowT);
+  const nowBox = document.querySelector("#worldboss .now"), hhmm = ms => { const d = new Date(ms); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+  let nowHtml;
+  if (active) {
+    const left = active + WB_DURATION - nowT;
+    nowHtml = `<div class="now live"><div class="lbl">กำลังมาอยู่ตอนนี้</div><div class="big">${fmtCountdown(left)}</div><div class="at">เหลือเวลาก่อนหาย · เกิดเมื่อ ${hhmm(active)} น.</div></div>`;
+  } else {
+    const left = next - nowT, soon = left <= 10 * MIN;
+    nowHtml = `<div class="now${soon ? " soon" : ""}"><div class="lbl">รอบถัดไปอีก</div><div class="big">${fmtCountdown(left)}</div><div class="at">เกิดเวลา ${hhmm(next)} น. · อยู่ครั้งละ 30 นาที</div></div>`;
+  }
+  const todayStart = Math.floor(nowT / DAY) * DAY;
+  const sched = WB_TIMES.map(([h, m]) => {
+    const t = todayStart + (h * 60 + m) * MIN, on = active && active === t, done = nowT >= t + WB_DURATION;
+    return `<span class="${on ? "on" : ""}" style="${done ? "opacity:.5" : ""}">${pad(h)}:${pad(m)}${done ? " ✓" : ""}</span>`;
+  }).join("");
+  const nextHtml = `<div class="next"><div class="lbl">วันนี้</div><div class="sched">${sched}</div>` +
+    `<label class="remind"><span class="switch"><input type="checkbox" id="wbRemind"${wbRemind ? " checked" : ""}><span></span></span> เตือนก่อนเกิด 5 นาที${notifyReady() ? "" : " (เปิดแจ้งเตือนในหน้าด้านล่างก่อน)"}</label>` +
+    `<div class="small" style="color:var(--muted)">รางวัล: Unique (Affix 4 บรรทัด) · Hone Stone · Spirit Coin — ทั้งเซิร์ฟช่วยกันตี HP ก้อนเดียว</div></div>`;
+  document.getElementById("wbBody").innerHTML = nowHtml + nextHtml;
+}
+// มี Notification พร้อมไหม (ใช้กลไกเดียวกับที่หน้าใช้อยู่)
+function notifyReady() { return typeof Notification !== "undefined" && Notification.permission === "granted"; }
+function wbCheckAlert() {
+  if (!wbRemind) return;
+  const nowT = wbThaiNow(), next = wbList(nowT, 4).find(s => s > nowT), lead = next - nowT;
+  // เตือนครั้งเดียวต่อรอบ เมื่อเหลือ ~5 นาที
+  if (lead <= 5 * MIN && lead > 5 * MIN - 1500 && next !== wbLastAnnounced) {
+    wbLastAnnounced = next;
+    const d = new Date(next), when = pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+    if (notifyReady()) { try { new Notification("World Boss กำลังจะมา", { body: `Wraithroot Colossus เกิด ${when} น. (อีก 5 นาที)`, icon: IMG("vale_warden") }); } catch (e) {} }
+    if (typeof toast === "function") toast("World Boss อีก 5 นาที", `Wraithroot Colossus · ${when} น.`, { id: "vale_warden" });
+  }
+}
+
 // ---------- วนทุกวินาที ----------
 function tick() {
   const changed = autoAdvance();
   checkAlerts();
   renderTimers();
+  renderWorldBoss();
+  wbCheckAlert();
   if (changed) renderBosses();
   updatePreview();
 }
 autoAdvance();
 renderAll();
+renderWorldBoss();
 importFromLink();
 window.addEventListener("hashchange", importFromLink);
 // ซิงค์ตอนเปิดหน้า, ทุก 15 วินาที และตอนกลับมาดูหน้านี้
