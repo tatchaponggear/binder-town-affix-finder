@@ -193,7 +193,7 @@ function gearDec(c){ if(!/^e[123]\d\d[01][0-9a-zA-Z_-]{66}([0-9a-zA-Z_-]{23}(\d\
   for(const k of PKEYS){ const r=RAR[ix()]||RAR[0], si=ix(), lines=[]; for(let i=0;i<4;i++){ const a=AFX[ix()-1]; if(a&&i<r.lines) lines.push(a); }
     o.slots[k]={rar:r,set:SETS[si-1]?SETS[si-1].n:'',lines,item:null,ins:null}; }
   o.clv=99;
-  if(c[1]!=='1'&&c.length>=94){ p++; for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&(it.slot===POS[k]||(k==='off'&&it.slot==='wpn'&&/ถือคู่ได้/.test(it.hand||'')))) o.slots[k].item=it; }
+  if(c[1]!=='1'&&c.length>=94){ p++; for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&(it.slot===POS[k]||(k==='off'&&it.slot==='wpn'))) o.slots[k].item=it; }
     if(c[1]==='3'&&c.length>=107){ o.clv=+c.slice(p,p+2); p+=2; for(const k of PKEYS){ const x=INS[AL.indexOf(c[p++])-1]; if(x) o.slots[k].ins=x; } } }
   return o; }
 const tierAt=lv=>{ let t=0; TLV.forEach((l,i)=>{ if(lv>=l)t=i; }); return t; };
