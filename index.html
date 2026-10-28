@@ -136,6 +136,14 @@ h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 4px}
 table.t{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
 table.t th,table.t td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--rim);vertical-align:top}
 table.t th{font-weight:600;color:var(--muted);font-size:12px}
+.wbtab td{vertical-align:middle}
+.wbnm b{font-weight:700}
+.wbnm small{display:block;color:var(--muted);font-size:11px}
+.wbafs{line-height:1.9}
+.wbaf{display:inline-block;background:var(--chip,var(--rim));border:1px solid var(--rim);border-radius:999px;padding:1px 9px;font-size:12px;margin:0 3px 3px 0;white-space:nowrap}
+.wbperk{color:var(--accent);font-size:12.5px}
+.wbpd{font-size:12px;color:var(--ink);display:inline-block;margin-top:2px}
+.wbidea{font-size:12px;color:var(--muted);max-width:220px}
 .tiers table{min-width:360px}
 .tiers tr.cur td{background:var(--accent-soft);font-weight:700}
 .tiers tr.lock td{color:var(--muted)}
@@ -316,6 +324,24 @@ table.t th{font-weight:600;color:var(--muted);font-size:12px}
       <div><span><b>Affix บนชิ้นชุด</b></span><span>ไม่เกิน 2 แถว (ปกติ / เขียว / ฟ้า)</span></div>
     </div>
     <div id="setTable"></div>
+  </section>
+
+  <section class="panel" id="worldboss" aria-labelledby="wbT">
+    <h2 class="sec" id="wbT">ของ World Boss</h2>
+    <p class="sub">ของ Unique ทั้งหมด (11 ชิ้น) — <b>ดรอปจาก World Boss ทางเดียว</b> · มี <b>ออฟชั่นติดตัวค่าคงที่</b> (ตามตาราง) + Affix สุ่มอีก 2–4 บรรทัด · Reforge ขึ้น Tier ได้ · แต่ละชิ้นมี <b>เพิร์คพิเศษ (✦)</b> ที่หาจากที่อื่นไม่ได้</p>
+    <div class="scroll" style="margin-top:10px"><table class="t wbtab" style="min-width:860px"><thead><tr><th>ของ</th><th>ประเภท</th><th class="num">Lv</th><th>ออฟชั่นติดตัว (คงที่)</th><th>เพิร์คพิเศษ</th><th>แนะนำสำหรับ</th></tr></thead><tbody>
+<tr><td class="wbnm"><b>Ashen Oath</b><small>ดาบ</small></td><td>อาวุธ (มือเดียว)</td><td class="num">30</td><td class="wbafs"><span class="wbaf">Block +6%</span> <span class="wbaf">ร่ายไว +8%</span> <span class="wbaf">ลดคูลดาวน์ +5%</span></td><td><b class="wbperk">✦ Oathfire</b><br><span class="wbpd">ร่ายสกิลครบทุก 4 ครั้ง → สกิลนั้นรีคูลดาวน์ตัวเองทันที</span></td><td class="wbidea">ดาบที่บล็อกได้และร่ายไว — สาย Spellblade / สายถือดาบมือเดียวไม่มีโล่</td></tr>
+<tr><td class="wbnm"><b>Viper's Kiss</b><small>กริช</small></td><td>อาวุธ (มือเดียว · ถือคู่ได้)</td><td class="num">44</td><td class="wbafs"><span class="wbaf">สปีดวิ่ง +10%</span> <span class="wbaf">ลดคูลดาวน์ +5%</span> <span class="wbaf">Max HP +6%</span></td><td><b class="wbperk">✦ Viper Venom</b><br><span class="wbpd">โจมตีธรรมดาติดพิษ 6% ATK/วิ นาน 4 วิ (ซ้อนได้ 5 สแตก)</span></td><td class="wbidea">มีดของสายวิ่งวน — เร็ว คูลดาวน์สั้น เลือดหนาขึ้น</td></tr>
+<tr><td class="wbnm"><b>Starlit Thorn</b><small>ไม้กายสิทธิ์</small></td><td>อาวุธเวท (มือเดียว)</td><td class="num">44</td><td class="wbafs"><span class="wbaf">ร่ายไว +8%</span> <span class="wbaf">สปีดวิ่ง +8%</span> <span class="wbaf">Max HP +10%</span></td><td><b class="wbperk">✦ Constellation</b><br><span class="wbpd">ร่ายสกิลไม่ซ้ำกัน 3 สกิลติด → สกิลถัดไปร่ายทันที ไม่เสีย MP</span></td><td class="wbidea">ไม้กายสิทธิ์ของสายร่ายรัว — ร่ายไว ขยับตัวไว เลือดหนาขึ้น</td></tr>
+<tr><td class="wbnm"><b>Skyfall</b><small>ธนู</small></td><td>อาวุธ (สองมือ)</td><td class="num">58</td><td class="wbafs"><span class="wbaf">ลดคูลดาวน์ +6%</span> <span class="wbaf">สปีดวิ่ง +6%</span> <span class="wbaf">Max HP +6%</span></td><td><b class="wbperk">✦ Skyfall</b><br><span class="wbpd">ฆ่ามอน → ฝนธนูตกใส่จุดที่มันตาย โดนทุกตัวรอบ 2 ช่อง (80% ATK)</span></td><td class="wbidea">ธนูของสายกดสกิลแล้วถอย — คูลดาวน์สั้น วิ่งไว ทนขึ้น</td></tr>
+<tr><td class="wbnm"><b>Tearstone Pendant</b><small>สร้อยคอ</small></td><td>เครื่องประดับ</td><td class="num">58</td><td class="wbafs"><span class="wbaf">Mana Tide +90%</span> <span class="wbaf">ร่ายไว +8%</span> <span class="wbaf">Max HP +10%</span></td><td><b class="wbperk">✦ Tearstone Veil</b><br><span class="wbpd">ดื่มยา HP → ได้เกราะ 10% ของ HP นาน 6 วิ</span></td><td class="wbidea">Mana Tide บนสร้อย — สายเวททุกอาชีพฟื้นเลือดจาก MP ได้โดยไม่ต้องพึ่งอาวุธ</td></tr>
+<tr><td class="wbnm"><b>Bellbreaker</b><small>กระบอง</small></td><td>อาวุธ (มือเดียว)</td><td class="num">70</td><td class="wbafs"><span class="wbaf">Block +6%</span> <span class="wbaf">ลดดาเมจจากบอส +6%</span> <span class="wbaf">Max HP +12%</span></td><td><b class="wbperk">✦ Toll</b><br><span class="wbpd">โจมตีธรรมดาทุก 5 ครั้ง → สตันเป้า 0.8 วิ (บอสไม่ติดสตันแต่ขึ้น Break Bar)</span></td><td class="wbidea">กระบองของแนวหน้า — บล็อก ทนบอส เลือดหนา</td></tr>
+<tr><td class="wbnm"><b>Bulwark of Dawn</b><small>โล่</small></td><td>มือรอง</td><td class="num">70</td><td class="wbafs"><span class="wbaf">Max HP +14%</span> <span class="wbaf">ลดคูลดาวน์ +5%</span> <span class="wbaf">สปีดวิ่ง +8%</span></td><td><b class="wbperk">✦ Dawn Guard</b><br><span class="wbpd">ทุก 8 วิ → กันการโจมตีธรรมดามอนครั้งถัดไปทั้งหมด (ไม่กันสกิลบอส)</span></td><td class="wbidea">โล่ที่ไม่ถ่วง — เลือดหนา คูลดาวน์สั้น เดินไว</td></tr>
+<tr><td class="wbnm"><b>Cinder Girdle</b><small>เข็มขัด</small></td><td>อุปกรณ์</td><td class="num">70</td><td class="wbafs"><span class="wbaf">สปีดตี +3%</span> <span class="wbaf">คริ +2%</span> <span class="wbaf">ดูดเลือด +3%</span></td><td><b class="wbperk">✦ Cinderstep</b><br><span class="wbpd">Dash → มอนรอบจุดเริ่ม/จบ 2 ช่องติดไฟ 5% ATK/วิ นาน 3 วิ</span></td><td class="wbidea">เข็มขัดสายตีธรรมดา — สปีดตี คริ ดูดเลือด ในช่องที่ปกติมีแต่ค่าป้องกัน</td></tr>
+<tr><td class="wbnm"><b>Wyrmsunder</b><small>ดาบสองมือ</small></td><td>อาวุธ (สองมือ)</td><td class="num">72</td><td class="wbafs"><span class="wbaf">ลดดาเมจจากบอส +8%</span> <span class="wbaf">ลดคูลดาวน์ +6%</span> <span class="wbaf">ร่ายไว +8%</span></td><td><b class="wbperk">✦ Wyrmbreaker</b><br><span class="wbpd">สกิลเติม Break Bar แรงขึ้น 30% · STAGGER ที่คุณทำนานขึ้น 1.5 วิ</span></td><td class="wbidea">ดาบสองมือล่าบอส — ทนบอสโดยไม่ต้องมีโล่ สกิลออกถี่</td></tr>
+<tr><td class="wbnm"><b>Ember Tides</b><small>ลูกแก้วเวท</small></td><td>อาวุธเวท (มือเดียว)</td><td class="num">72</td><td class="wbafs"><span class="wbaf">ลดคูลดาวน์ +6%</span> <span class="wbaf">Max HP +12%</span> <span class="wbaf">สปีดวิ่ง +8%</span></td><td><b class="wbperk">✦ High Tide</b><br><span class="wbpd">MP ต่ำกว่า 10% ตอนสู้ → ฟื้น MP 50% ทันที (ทุก 45 วิ)</span></td><td class="wbidea">Orb ของจอมเวทยืนระยะ — คูลดาวน์สั้น เลือดหนา ขยับตัวไว</td></tr>
+<tr><td class="wbnm"><b>Oathbound Band</b><small>แหวน</small></td><td>เครื่องประดับ</td><td class="num">85</td><td class="wbafs"><span class="wbaf">ATK +10%</span> <span class="wbaf">MATK +10%</span> <span class="wbaf">Block +5%</span></td><td><b class="wbperk">✦ Twin Oath</b><br><span class="wbpd">โจมตีธรรมดา→สกิลถัดไปแรงขึ้น 12% · ใช้สกิล→โจมตีธรรมดาถัดไปแรงขึ้น 12%</span></td><td class="wbidea">แหวนสายลูกผสม — ATK% และ MATK% พร้อมกันบนเครื่องประดับ</td></tr>
+    </tbody></table></div>
   </section>
 
   <section class="panel notes" id="rules">
