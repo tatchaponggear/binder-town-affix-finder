@@ -49,6 +49,8 @@ nav.jump a{font-size:13px;color:var(--accent);text-decoration:none;border:1px so
 .iteminfo{font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--rim);border-radius:8px;padding:5px 7px}
 .iteminfo b{font-family:var(--display);font-weight:600}
 .iteminfo .w{color:var(--k-proc)}
+.iteminfo .ok2{color:var(--ok,#2ea043);font-weight:600}
+.itemnote{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
 .slot .inm{font-size:9.5px;line-height:1.1;color:var(--muted);max-width:66px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .gearsum{margin-top:12px}
 .gearsum h3{font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 6px}
@@ -534,14 +536,22 @@ function insPicker(p){
   if(cur&&INSBY[cur]){ const x=INSBY[cur], stx=insStatus().out.find(o=>o.k===p);
     h+='<div class="iteminfo"><b>✒ '+esc(x.n)+'</b> · '+(x.job?JOBTH[x.job]:'ทุกอาชีพ')+' · ดรอป Region '+x.rg+'<br>'+esc(x.t)+(stx&&!stx.on?'<div class="w">ไม่ทำงาน: '+stx.why+'</div>':'')+'</div>'; }
   return h; }
+const isDual=x=>x.slot==='wpn'&&/ถือคู่ได้/.test(x.hand||'');
 function itemPicker(p){
   const slot=POS[p], list=itemsFor(slot,st.job), cur=st.build[p].item, it=ITEM[cur];
+  // offhand can also take a dual-wieldable weapon (ถือคู่ได้); default when empty = basic shield
+  const dual=p==='off'?ITEMS.filter(x=>isDual(x)&&(!st.job||x.jobs.includes(st.job))).sort((a,b)=>(a.wt||'').localeCompare(b.wt||'')||a.lv-b.lv||a.n.localeCompare(b.n)):[];
   const groups={}; for(const x of list)(groups[x.wt||'']=groups[x.wt||'']||[]).push(x);
   const opt=x=>'<option value="'+x.id+'"'+(x.id===cur?' selected':'')+'>'+esc(x.n)+' · Lv '+x.lv+(x.atk?' · ATK '+x.atk:'')+(x.matk?' · MATK '+x.matk:'')+(x.def?' · DEF '+x.def:'')+'</option>';
-  let h='<label class="itemsel">ของสวมใส่<select id="itemSel"><option value="">ไม่ระบุ</option>'+Object.entries(groups).map(([g,xs])=>g?'<optgroup label="'+esc(g)+'">'+xs.map(opt).join('')+'</optgroup>':xs.map(opt).join('')).join('')+(it&&!list.includes(it)?opt(it):'')+'</select></label>';
+  const dft=p==='off'?'โล่ (ค่าเริ่มต้น)':'ไม่ระบุ';
+  let h='<label class="itemsel">ของสวมใส่<select id="itemSel"><option value="">'+dft+'</option>'+Object.entries(groups).map(([g,xs])=>g?'<optgroup label="'+esc(g)+'">'+xs.map(opt).join('')+'</optgroup>':xs.map(opt).join('')).join('')+(dual.length?'<optgroup label="⚔ อาวุธคู่ (ถือคู่ได้)">'+dual.map(opt).join('')+'</optgroup>':'')+(it&&!list.includes(it)&&!dual.includes(it)?opt(it):'')+'</select></label>';
+  if(p==='off') h+='<div class="itemnote">ปล่อยว่าง = <b>โล่พื้นฐาน</b> · เลือก “อาวุธคู่” ได้เมื่ออาวุธหลักเป็น <b>มือเดียว · ถือคู่ได้</b> (ขวาน · กริช · มีดสั้น · สนับมือ)</div>';
   if(it){ const warn=st.job&&!it.jobs.includes(st.job)?'<div class="w">อาชีพ '+jobName(st.job)+' ใส่ชิ้นนี้ไม่ได้</div>':'';
-    const off=p==='off'&&ITEM[st.build.wpn.item]&&ITEM[st.build.wpn.item].hand==='สองมือ'&&!/Quiver/.test(it.wt)?'<div class="w">อาวุธสองมือใส่ของมือรองไม่ได้ (ยกเว้นซองธนูข้างธนู / หน้าไม้)</div>':'';
-    h+='<div class="iteminfo"><b>'+esc(it.n)+'</b>'+(it.uq?' · Unique':'')+'<br>'+[it.wt,it.hand,'Lv '+it.lv,'T'+it.t].filter(Boolean).join(' · ')+'<br>'+[it.atk?'ATK '+it.atk:'',it.matk?'MATK '+it.matk:'',it.def?'DEF '+it.def:'',it.fx].filter(Boolean).map(esc).join(' · ')+warn+off+'</div>'; }
+    const mh=ITEM[st.build.wpn.item]&&ITEM[st.build.wpn.item].hand, dualPick=isDual(it); let off='';
+    if(p==='off'&&mh==='สองมือ'&&!/Quiver/.test(it.wt)) off='<div class="w">อาวุธสองมือใช้ช่องมือรองอยู่แล้ว ใส่'+(dualPick?'อาวุธคู่':'ของมือรอง')+'ไม่ได้ (ยกเว้นซองธนูข้างธนู / หน้าไม้)</div>';
+    else if(p==='off'&&dualPick&&mh&&!/ถือคู่ได้/.test(mh)) off='<div class="w">ถืออาวุธคู่ได้เฉพาะเมื่ออาวุธหลักเป็น “มือเดียว · ถือคู่ได้”</div>';
+    else if(p==='off'&&dualPick) off='<div class="ok2">ถืออาวุธคู่ (Dual-wield) — ได้ ATK จากอาวุธรองเพิ่ม</div>';
+    h+='<div class="iteminfo"><b>'+esc(it.n)+'</b>'+(it.uq?' · Unique':'')+(dualPick?' · ⚔ อาวุธคู่':'')+'<br>'+[it.wt,it.hand,'Lv '+it.lv,'T'+it.t].filter(Boolean).join(' · ')+'<br>'+[it.atk?'ATK '+it.atk:'',it.matk?'MATK '+it.matk:'',it.def?'DEF '+it.def:'',it.fx].filter(Boolean).map(esc).join(' · ')+warn+off+'</div>'; }
   return h; }
 function renderDoll(){
   const btn=p=>{const s=SLOTS[POS[p]],b=st.build[p],r=rarOf(b),n=Object.keys(b.picks).length;
@@ -687,7 +697,7 @@ function decBuild(c){ if(!/^e[123]\d\d[01][0-9a-zA-Z_-]{66}([0-9a-zA-Z_-]{23}(\d
     b.item=''; b.ins=''; o.build[k]=b; }
   o.job=''; o.clv=99;
   if(c[1]!=='1'&&c.length>=71+23){ o.job=(JOBS[AL.indexOf(c[p++])]||JOBS[0])[0];
-    for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&it.slot===POS[k]) o.build[k].item=it.id; }
+    for(const k of PKEYS){ const n=AL.indexOf(c[p++])*64+AL.indexOf(c[p++]); const it=ITEMS[n-1]; if(it&&(it.slot===POS[k]||(k==='off'&&isDual(it)))) o.build[k].item=it.id; }
     if(c[1]==='3'&&c.length>=94+13){ o.clv=Math.max(1,Math.min(99,+c.slice(p,p+2))); p+=2; for(const k of PKEYS){ const x=INS[AL.indexOf(c[p++])-1]; if(x) o.build[k].ins=x.id; } } }
   return o; }
 function poolForType(slot,mw){return AFX.filter(a=>a.sl.includes(slot)&&!(a.flag==='magicOnlyWpn'&&slot==='wpn'&&!mw))}
