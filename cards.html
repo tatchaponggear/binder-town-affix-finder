@@ -335,7 +335,7 @@ const fxText=(c,s)=>c.fx.map(f=>label(fkey(f),starVal(f,s))).join(' · ');
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-const blank=()=>({lv:60,night:false,codex:0,slots:Array(9).fill(null)});
+const blank=()=>({lv:99,night:false,codex:0,slots:Array(9).fill(null)});
 let st=blank(), sel=-1, tab='stats', VIEW=null, shown=24;
 const filt={q:'',map:'',role:'',star:5,colors:new Set(),regions:new Set()};
 try{ const s=JSON.parse(localStorage.getItem('cardPlanner')||'null'); if(s&&Array.isArray(s.slots)) st=Object.assign(blank(),s,{slots:s.slots.slice(0,9).map(x=>x&&BY[x.id]?{id:x.id,star:Math.min(5,Math.max(1,x.star|0))}:null)}); }catch(e){}
