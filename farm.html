@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="แนะนำการ์ดฟาร์มมอนทวีป Nacreon — เลือกมอนแล้วได้ชุดการ์ดตีเผ่า ธาตุที่แพ้ทาง และการ์ดเสริมดาเมจ/ทอง พร้อมส่งเข้าหน้าการ์ด">
+<title>Nacreon Farm Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: in-game Spirit Album — 3×3 slot board + load meter on the left, build summary/resonance on the right, searchable card catalogue below; stacks on phone. */
+:root{
+  --bg:#e9eef6; --panel:#ffffff; --panel-2:#f3f6fb; --rim:#d3dcea; --ink:#1c2636; --muted:#5f6d84; --accent:#2f62c8; --accent-soft:#e3ecfb;
+  --c-red:#d0463c; --c-blue:#2f6fe0; --c-green:#3f8f3a; --c-purple:#8a4fe8; --c-legend:#d99a1e;
+  --c-red-soft:#fbe5e3; --c-blue-soft:#e2ebfd; --c-green-soft:#e5f2e1; --c-purple-soft:#efe6fd; --c-legend-soft:#fbf0d9;
+  --ok:#23883a; --warn:#c0571b;
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(20,40,80,.06),0 6px 18px rgba(20,40,80,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --c-red:#ff7b6f; --c-blue:#78a8ff; --c-green:#8fcf6a; --c-purple:#c4a6ff; --c-legend:#f2bd4e;
+  --c-red-soft:#3d1a1d; --c-blue-soft:#172a52; --c-green-soft:#1d3220; --c-purple-soft:#2a1f4a; --c-legend-soft:#3a2d12;
+  --ok:#6fdc8c; --warn:#ffa46b; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1426; --panel:#131f3a; --panel-2:#0f1930; --rim:#26375c; --ink:#e7edf8; --muted:#9daac2; --accent:#8cb8ff; --accent-soft:#1a2b52;
+  --c-red:#ff7b6f; --c-blue:#78a8ff; --c-green:#8fcf6a; --c-purple:#c4a6ff; --c-legend:#f2bd4e;
+  --c-red-soft:#3d1a1d; --c-blue-soft:#172a52; --c-green-soft:#1d3220; --c-purple-soft:#2a1f4a; --c-legend-soft:#3a2d12;
+  --ok:#6fdc8c; --warn:#ffa46b; --shadow:0 10px 26px rgba(2,6,18,.45); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.sitenav{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:var(--panel);border:1px solid var(--rim);border-radius:14px;padding:6px;box-shadow:var(--shadow)}
+.sitenav .brand{font-family:var(--display);font-weight:600;font-size:14px;color:var(--muted);padding:0 10px 0 8px}
+.sitenav a{font-family:var(--display);font-weight:500;font-size:14px;color:var(--ink);text-decoration:none;padding:6px 14px;border-radius:10px}
+.sitenav a:hover{background:var(--panel-2)}
+.sitenav a[aria-current]{background:var(--accent);color:var(--panel)}
+.viewbar{max-width:1180px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--c-legend-soft);border:2px solid var(--c-legend);border-radius:14px;padding:10px 14px;font-size:14px}
+.viewbar b{font-family:var(--display)}
+.viewbar .sp{flex:1 1 auto}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px}
+header h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0;line-height:1.15;text-wrap:balance}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
+header a{color:var(--muted)}
+.hctl{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--rim);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow);font-family:var(--display);font-size:14px}
+.ctl input[type=number]{width:64px;border:1px solid var(--rim);border-radius:8px;background:var(--panel-2);padding:3px 6px;font-variant-numeric:tabular-nums}
+.seg{display:flex;border:1px solid var(--rim);border-radius:9px;overflow:hidden}
+.seg button{padding:3px 10px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.btn{border:1px solid var(--rim);border-radius:10px;padding:8px 13px;background:var(--panel);font-size:14px;font-family:var(--display);box-shadow:var(--shadow)}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.btn .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;text-align:center}
+.btn .cnt:empty{display:none}
+.panel{background:var(--panel);border:1px solid var(--rim);border-radius:16px;box-shadow:var(--shadow);padding:14px;min-width:0}
+h2.sec{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* album */
+.loadbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-family:var(--display);font-size:14px}
+.loadbar .bar{flex:1;height:10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--rim);overflow:hidden}
+.loadbar .bar i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.loadbar.over .bar i{background:var(--c-red)}
+.loadbar b{font-variant-numeric:tabular-nums}
+.album{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.slot{position:relative;border:2px dashed var(--rim);border-radius:12px;background:var(--panel-2);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;text-align:center;font-size:12px;color:var(--muted)}
+.slot.lock{opacity:.55}
+.slot.fill{border-style:solid;border-color:var(--cc);background:var(--ccs);color:var(--ink)}
+.slot.sel{box-shadow:0 0 0 3px var(--accent)}
+.slot img{width:52px;height:72px;image-rendering:auto}
+.slot .nm{font-family:var(--display);font-weight:600;font-size:13px;line-height:1.15}
+.slot .meta{font-size:11px;color:var(--muted)}
+.slot .echo{font-size:11px;font-weight:600;color:var(--warn)}
+.slot .no{position:absolute;top:4px;left:7px;font-size:11px;font-weight:600;color:var(--muted)}
+.slot .x{position:absolute;top:2px;right:4px;width:24px;height:24px;border-radius:50%;font-size:14px;line-height:24px;color:var(--muted)}
+.slot .x:hover{background:var(--panel);color:var(--c-red)}
+.stars{display:flex;gap:1px}
+.stars button{font-size:15px;line-height:1;padding:0 1px;color:var(--rim)}
+.stars button.on{color:var(--c-legend)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+
+/* summary */
+.stat{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.stat td{padding:5px 6px;border-bottom:1px solid var(--rim);vertical-align:top}
+.stat .v{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.res .v{font-weight:700;color:var(--ok)}
+.stat td.src{font-size:12px;color:var(--muted)}
+.cap{display:block;font-size:11px;color:var(--warn);font-weight:600}
+.maps{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.mm{margin:0;display:flex;flex-direction:column;gap:3px;width:112px}
+.mm svg{width:112px;height:auto;border-radius:6px;display:block}
+.mmbg{fill:var(--panel-2);stroke:var(--rim);stroke-width:1}
+.spawn{fill:var(--cc);fill-opacity:.35;stroke:var(--cc);stroke-width:1.5}
+.mm figcaption{font-size:11px;line-height:1.2}
+.mm figcaption b{font-family:var(--display)}
+.mm figcaption small{color:var(--muted)}
+.mmnote{grid-column:1/-1;font-size:12px;color:var(--muted);margin:2px 0 0}
+.reslist{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.res{border:1px solid var(--rim);border-radius:10px;padding:7px 10px;font-size:13px;background:var(--panel-2)}
+.res.on{border-color:var(--ok);background:var(--panel)}
+.res .h{display:flex;justify-content:space-between;gap:8px;font-family:var(--display);font-weight:600}
+.res .h span{font-family:var(--body);font-weight:600;font-size:12px;color:var(--muted);white-space:nowrap}
+.res.on .h span{color:var(--ok)}
+.res p{margin:2px 0 0;color:var(--muted)}
+.res.on p{color:var(--ink)}
+.res .resbtn{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;font-family:var(--display);font-weight:600}
+.res .resbtn:hover{color:var(--accent)}
+.resm{display:flex;flex-direction:column;gap:5px;margin-top:8px;border-top:1px dashed var(--rim);padding-top:8px}
+.rm{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--rim);border-left:3px solid var(--cc);border-radius:8px;padding:4px 8px;background:var(--panel);font-size:12.5px}
+.rm.in{background:var(--accent-soft)}
+.rm img{width:30px;height:41px}
+.rm b{font-family:var(--display);font-weight:600;font-size:13px}
+.rm small{color:var(--muted)}
+.rm .v{font-weight:700;color:var(--cc)}
+.btn.sm{padding:4px 10px;font-size:13px;box-shadow:none}
+.btn.sm.add{border-color:var(--accent);color:var(--accent)}
+.btn.arm{background:var(--c-red);border-color:var(--c-red);color:var(--panel)}
+.albtools{display:flex;justify-content:flex-end;gap:6px;margin:-4px 0 10px}
+.empty{padding:16px;text-align:center;color:var(--muted);border:1px dashed var(--rim);border-radius:10px;font-size:14px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--rim);border-radius:999px;padding:4px 12px;font-size:13px;background:var(--panel-2)}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+
+/* catalogue */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filters input[type=search]{flex:1 1 240px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.filters select{border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:7px 8px;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--rim);border-radius:999px;padding:3px 10px;font-size:13px;background:var(--panel-2)}
+.chip i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--cc);margin-right:5px;vertical-align:0}
+.chip[aria-pressed="true"]{border-color:var(--cc,var(--accent));background:var(--ccs,var(--accent-soft));font-weight:600}
+.count{font-size:13px;color:var(--muted);margin:0 0 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:10px}
+.card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:4px 12px;border:1px solid var(--rim);border-left:4px solid var(--cc);border-radius:12px;padding:10px;background:var(--panel)}
+.card img{width:58px;height:80px;grid-row:1/4}
+.card .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline;min-width:0}
+.card .t b{font-family:var(--display);font-weight:600;font-size:15.5px;overflow-wrap:anywhere}
+.card .t small{color:var(--muted);font-size:12px;white-space:nowrap}
+.card .tags{display:flex;flex-wrap:wrap;gap:4px;font-size:11.5px}
+.card .tags span{border-radius:6px;padding:0 6px;background:var(--panel-2);border:1px solid var(--rim);color:var(--muted)}
+.card .tags span.col{background:var(--ccs);border-color:var(--cc);color:var(--ink);font-weight:600}
+.card .fx{font-size:13.5px;min-width:0}
+.card .fx .v{font-weight:700;color:var(--cc);font-variant-numeric:tabular-nums}
+.card .ln{font-family:var(--display);font-weight:600;color:var(--c-legend)}
+.card .where{grid-column:1/-1;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--rim);padding-top:6px;display:flex;flex-direction:column;gap:2px}
+.card .where b{color:var(--ink);font-weight:600}
+.card .where a{color:var(--accent)}
+.card .act{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.card .act button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel-2)}
+.card .act button.add{border-color:var(--accent);color:var(--accent);font-weight:600}
+.card .act button:disabled{opacity:.5;cursor:not-allowed}
+.card table{grid-column:1/-1;width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.card table td{padding:3px 6px;border-bottom:1px solid var(--rim);vertical-align:top}
+.card table tr.cur td{background:var(--accent-soft);font-weight:600}
+.more{display:flex;justify-content:center;margin-top:12px}
+
+.advctl{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.advctl label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-family:var(--display)}
+.advctl select{border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:7px 8px;font-family:var(--body);font-size:14px;color:var(--ink);max-width:100%}
+.advtop{margin-bottom:12px;align-items:center}
+.advtop .lbl{font-size:13px;color:var(--muted);margin-right:4px}
+.plan{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px}
+@media (max-width:900px){.plan{grid-template-columns:minmax(0,1fr)}}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pc{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:2px 10px;align-items:center;border:1px solid var(--rim);border-left:4px solid var(--cc);border-radius:10px;padding:6px 10px;background:var(--panel)}
+.pc img{width:40px;height:55px;grid-row:1/3}
+.pc b{font-family:var(--display);font-weight:600}
+.pc .why{font-size:12.5px;grid-column:2/4;color:var(--ink)}
+.pc .why .v{font-weight:700;color:var(--cc)}
+.pc .badge{font-size:11.5px;font-weight:600;border-radius:999px;padding:0 8px;border:1px solid var(--rim);color:var(--muted);white-space:nowrap}
+.pc .badge.res{border-color:var(--ok);color:var(--ok)}
+.pbox{border:1px solid var(--rim);border-radius:12px;padding:10px 12px;background:var(--panel-2);font-size:13.5px;display:flex;flex-direction:column;gap:8px}
+.pbox h4{font-family:var(--display);font-weight:600;font-size:15px;margin:0}
+.pbox .warn{color:var(--warn);font-weight:600}
+.pbox .ok{color:var(--ok);font-weight:600}
+.pbox ul{margin:0;padding-left:18px}
+/* saves */
+.saverow{display:flex;flex-wrap:wrap;gap:8px}
+.saverow input{flex:1 1 220px;min-width:0;border:1px solid var(--rim);background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.shareout{margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.shareout input{width:100%;border:1px solid var(--rim);background:var(--panel-2);border-radius:8px;padding:6px 10px;font-size:13px}
+.savelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:8px;margin-top:12px}
+.si{border:1px solid var(--rim);border-radius:12px;padding:10px 12px;background:var(--panel-2);display:flex;flex-direction:column;gap:6px;min-width:0}
+.si.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.si b{font-family:var(--display);font-weight:600;overflow-wrap:anywhere}
+.si small{color:var(--muted);font-size:12px}
+.si .bt{display:flex;gap:6px;flex-wrap:wrap}
+.si .bt button{border:1px solid var(--rim);border-radius:8px;padding:4px 10px;font-size:13px;background:var(--panel)}
+.si .bt button.arm{background:var(--c-red);border-color:var(--c-red);color:var(--panel)}
+.notes{font-size:13.5px;color:var(--muted)}
+.notes h3{font-family:var(--display);font-weight:600;color:var(--ink);font-size:16px;margin:0 0 6px}
+.notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;max-width:900px}
+.notes b{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--ink);color:var(--panel);border-radius:12px;padding:9px 16px;font-size:14px;max-width:calc(100% - 32px);transition:opacity .2s,transform .2s;z-index:10}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:520px){
+  .album{gap:6px}
+  .slot{min-height:136px;padding:6px 3px}
+  .slot img{width:44px;height:61px}
+  .hctl{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){.toast,.loadbar .bar i{transition:none}}
+</style>
+
+<style>
+.advctl{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.advctl label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600;flex:1;min-width:150px}
+.advctl select{font-family:var(--body);font-size:15px;padding:8px 10px;border:1px solid var(--rim);border-radius:10px;background:var(--panel);color:var(--ink)}
+.mhead{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--cc);border-radius:14px;padding:12px 14px;background:var(--panel-2)}
+.mhead img{width:56px;height:56px;image-rendering:pixelated;flex:none}
+.mhead h3{margin:0;font-family:var(--display);font-size:20px}
+.msub{margin:2px 0;color:var(--muted)}
+.elem{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.ech{border:1.5px solid var(--e);color:var(--e);border-radius:999px;padding:2px 12px;font-size:13px;font-weight:600}
+.plan{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:12px}
+@media (max-width:720px){.plan{grid-template-columns:1fr}}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pc{display:flex;gap:10px;align-items:center;border:1px solid var(--rim);border-left:4px solid var(--cc);border-radius:10px;padding:7px 10px;background:var(--panel)}
+.pc img{width:34px;height:34px;image-rendering:pixelated;flex:none}
+.pcm{flex:1;min-width:0}
+.pcm b{font-family:var(--display)}
+.pcm small{color:var(--muted)}
+.pc .why{font-size:13px;color:var(--ink);margin-top:1px}
+.pc .dup{color:var(--warn);font-size:12px;font-weight:600}
+.btag{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;flex:none}
+.t-slay{background:var(--c-red-soft);color:var(--c-red)}
+.t-set{background:var(--c-purple-soft);color:var(--c-purple)}
+.t-dmg{background:var(--accent-soft);color:var(--accent)}
+.t-gold{background:var(--c-legend-soft);color:var(--c-legend)}
+.pbox{border:1px solid var(--rim);border-radius:14px;padding:12px 14px;background:var(--panel-2);align-self:start}
+.pbox h4{margin:0 0 8px;font-family:var(--display)}
+.pbox>div{margin-bottom:8px;font-size:14px}
+.pbox ul{margin:4px 0 0;padding-left:18px}
+.pbox .ok{color:var(--ok);font-weight:600}
+.pbox .v{font-weight:700;color:var(--accent)}
+.why .v{font-weight:700;color:var(--cc)}
+.btn{font-family:var(--body);font-size:15px;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--rim);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sh{margin:14px 0 6px;font-family:var(--display)}
+.maps{display:flex;flex-wrap:wrap;gap:10px}
+.mm{margin:0;width:120px}
+.mm svg{width:120px;height:auto;border-radius:6px;display:block}
+.mmbg{fill:var(--panel-2);stroke:var(--rim);stroke-width:1}
+.spawn{fill:var(--cc);fill-opacity:.4;stroke:var(--cc);stroke-width:1.5}
+.mm figcaption{font-size:11px;line-height:1.2;margin-top:3px}
+.mm figcaption b{font-family:var(--display)}
+.mm figcaption small{color:var(--muted)}
+.notes .bul{margin:4px 0;padding-left:20px}
+.notes .bul li{margin:4px 0}
+.warn{color:var(--warn);font-weight:600}
+.toasts{position:fixed;top:12px;right:12px;z-index:50;display:grid;gap:8px;width:min(360px,calc(100vw - 24px))}
+.toast{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="เมนู"><span class="brand">Binder Town Tools</span><a href="builds.html">บิลด์</a><a href="index.html">ออฟชั่นอุปกรณ์</a><a href="skill-tree.html">Skill Tree</a><a href="cards.html">การ์ด</a><a href="farm.html" aria-current="page">ฟาร์ม Nacreon</a><a href="guide.html">ไกด์</a><a href="patch.html">แพทช์</a><a href="boss.html">เวลาบอส</a></nav>
+<div class="wrap">
+  <header>
+    <h1>แนะนำฟาร์ม Nacreon</h1>
+    <p class="lead">เลือกอาชีพและมอนในทวีปใหม่ Nacreon ระบบจะจัดชุดการ์ด 9 ช่องให้ที่ Lv 99 — ใช้ <b>การ์ดตีเผ่า (slayer)</b> ของมอนตัวนั้นเป็นหลัก บอก <b>ธาตุที่มอนแพ้ทาง</b> (ใส่ Infusion ที่อาวุธ) แล้วเสริมตามเป้าหมาย: ดาเมจสูงสุด หรือ เพิ่มทอง</p>
+  </header>
+  <section class="panel">
+    <div class="advctl">
+      <label>อาชีพ<select id="fJob"></select></label>
+      <label>แมพ Nacreon<select id="fMap"></select></label>
+      <label>มอน<select id="fMon"></select></label>
+      <label>เป้าหมายเสริม<select id="fGoal"><option value="dmg">ดาเมจสูงสุด</option><option value="gold">เพิ่มทอง (ใส่การ์ดทองซ้ำ)</option></select></label>
+    </div>
+    <div id="fOut"></div>
+  </section>
+  <section class="panel notes">
+    <h2 class="sec">วิธีคิด</h2>
+    <ul class="bul">
+      <li><b>การ์ดตีเผ่า (slayer)</b> เพิ่มดาเมจเฉพาะกับมอนสายนั้น การ์ดคนละใบทับกันได้ (ไม่โดน Echo) ยิ่งใส่หลายใบยิ่งแรงกับเผ่านั้น</li>
+      <li><b>ธาตุแพ้ทาง</b> เอา Core ธาตุนั้นไปใส่ Infusion ที่อาวุธ (ช่างตีเหล็ก ถอดฟรี) ตีแรงขึ้น <b>×1.25</b> · เลี่ยงธาตุที่มอน<b>ต้าน</b> (×0.6)</li>
+      <li><b>ดาเมจสูงสุด</b> เติมการ์ดดาเมจของอาชีพต่อจากการ์ดเผ่า ให้ครบเซต Resonance (เช่น Crimson Mastery สีแดง 3 ใบ = ATK%/MATK%)</li>
+      <li><b>เพิ่มทอง</b> ใส่การ์ดเพิ่มทอง การ์ดใบซ้ำได้แต่โดน Echo (ใบ 2 = 50% · ใบ 3 = 25%) จึงใส่ใบที่แรงสุดซ้ำ 2–3 ใบคุ้มสุด</li>
+      <li>มอน Nacreon เผ่า <b>harpy / horror</b> ยังไม่มีการ์ด slayer — ระบบจะเน้นการ์ดดาเมจ/ธาตุแทน</li>
+    </ul>
+    <p class="m" id="fver"></p>
+  </section>
+</div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<script>
+"use strict";
+window.CARDDATA = {"cards":[{"id":"skitter","n":"Skitter","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"crit","v":[1,4]}],"ln":"","maps":[]},{"id":"gloom_skitter","n":"Gloom Skitter","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"night","v":[2.9,12]}],"ln":"","maps":[]},{"id":"rock_skitter","n":"Rock Skitter","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"brute"}],"ln":"","maps":[]},{"id":"plains_skitter","n":"Plains Skitter","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"atkPct","v":[1,4.7]}],"ln":"","maps":[]},{"id":"dusk_skitter","n":"Dusk Skitter","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"bleed","v":[13,47]}],"ln":"","maps":[]},{"id":"frost_skitter","n":"Frost Skitter","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"slayer","v":[6,28],"species":"crab"}],"ln":"","maps":[]},{"id":"umbral_skitter","n":"Umbral Skitter","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"expose","v":[4,14]}],"ln":"","maps":[]},{"id":"acorn_skitter","n":"Acorn Skitter","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[6,28],"species":"sprout"}],"ln":"","maps":[]},{"id":"reed_skipper","n":"Reed Skipper","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"opener","v":[3.6,16]}],"ln":"","maps":[]},{"id":"ash_hound","n":"Ash Hound","color":"red","load":1,"rg":"B","sp":"hound","fx":[{"k":"haste","v":[4,17]}],"ln":"","maps":[]},{"id":"ember_hound","n":"Ember Hound","color":"red","load":1,"rg":"B","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"remnant"}],"ln":"","maps":[]},{"id":"frost_fang","n":"Frost Fang","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"wisp"}],"ln":"","maps":[]},{"id":"steppe_hound","n":"Steppe Hound","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"skitter"}],"ln":"","maps":[]},{"id":"ice_otter","n":"Ice Otter","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"echo","v":[10,40]}],"ln":"","maps":[]},{"id":"storm_harpy","n":"Storm Harpy","color":"red","load":1,"rg":"C","sp":"harpy","fx":[{"k":"chain","v":[6.4,23]}],"ln":"","maps":[]},{"id":"thornling","n":"Thornling","color":"red","load":1,"rg":"A","sp":"thornling","fx":[{"k":"debuffed","v":[2.1,9.4]}],"ln":"","maps":[]},{"id":"corrupt_thornling","n":"Corrupt Thornling","color":"red","load":1,"rg":"B","sp":"thornling","fx":[{"k":"lifesteal","v":[0.5,2.5]}],"ln":"","maps":[]},{"id":"shard_thornling","n":"Shard Thornling","color":"red","load":1,"rg":"D","sp":"thornling","fx":[{"k":"critDmg","v":[2.3,12]}],"ln":"","maps":[]},{"id":"umbral_horror","n":"Umbral Horror","color":"red","load":2,"rg":"D","sp":"horror","fx":[{"k":"desperate","v":[8,30]},{"k":"crit","v":[1,3]},{"k":"armorPen","v":[1.5,4]}],"ln":"","maps":[]},{"id":"hive_skitter","n":"Hive Skitter","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"thornling"}],"ln":"","maps":[]},{"id":"fern_thornling","n":"Fern Thornling","color":"red","load":1,"rg":"A","sp":"thornling","fx":[{"k":"bleed","v":[10,38]}],"ln":"","maps":[]},{"id":"burrow_skitter","n":"Burrow Skitter","color":"red","load":1,"rg":"A","sp":"skitter","fx":[{"k":"opener","v":[3,14]}],"ln":"","maps":[]},{"id":"hill_hound","n":"Hill Hound","color":"red","load":1,"rg":"A","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"pebblit"}],"ln":"","maps":[]},{"id":"tar_thornling","n":"Tar Thornling","color":"red","load":1,"rg":"B","sp":"thornling","fx":[{"k":"slayer","v":[5,25],"species":"hound"}],"ln":"","maps":[]},{"id":"sulfur_skitter","n":"Sulfur Skitter","color":"red","load":1,"rg":"B","sp":"skitter","fx":[{"k":"slayer","v":[5,25],"species":"crab"}],"ln":"","maps":[]},{"id":"drift_skitter","n":"Drift Skitter","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"critDmg","v":[2,10]}],"ln":"","maps":[]},{"id":"tusk_fang","n":"Tusk Fang","color":"red","load":1,"rg":"C","sp":"hound","fx":[{"k":"slayer","v":[5,25],"species":"lurker"}],"ln":"","maps":[]},{"id":"kite_harpy","n":"Kite Harpy","color":"red","load":1,"rg":"C","sp":"harpy","fx":[{"k":"aspd","v":[1.5,6.7]}],"ln":"","maps":[]},{"id":"terrace_skitter","n":"Terrace Skitter","color":"red","load":1,"rg":"C","sp":"skitter","fx":[{"k":"opener","v":[3.3,15]}],"ln":"","maps":[]},{"id":"wrack_skitter","n":"Wrack Skitter","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"expose","v":[3.6,13.2]}],"ln":"","maps":[]},{"id":"marrow_skitter","n":"Marrow Skitter","color":"red","load":1,"rg":"D","sp":"skitter","fx":[{"k":"bleed","v":[12,44]}],"ln":"","maps":[]},{"id":"marrow_horror","n":"Marrow Horror","color":"red","load":2,"rg":"D","sp":"horror","fx":[{"k":"desperate","v":[8,30]},{"k":"crit","v":[1.4,4.4]},{"k":"armorPen","v":[1,3]}],"ln":"","maps":[]},{"id":"muster_hound","n":"Muster Hound","color":"red","load":1,"rg":"D","sp":"hound","fx":[{"k":"atkPct","v":[1.1,5]}],"ln":"","maps":[]},{"id":"snipcrab","n":"Snipcrab","color":"blue","load":1,"rg":"A","sp":"crab","fx":[{"k":"thorns","v":[8,35]}],"ln":"","maps":[]},{"id":"bog_crab","n":"Bog Crab","color":"blue","load":1,"rg":"B","sp":"crab","fx":[{"k":"ward","v":[6.5,29],"species":"brute"}],"ln":"","maps":[]},{"id":"frost_crab","n":"Frost Crab","color":"blue","load":1,"rg":"C","sp":"crab","fx":[{"k":"wardNight","v":[3.6,13]}],"ln":"","maps":[]},{"id":"pebblit","n":"Pebblit","color":"blue","load":1,"rg":"A","sp":"pebblit","fx":[{"k":"dmgTaken","v":[1,5]}],"ln":"","maps":[]},{"id":"magma_pebblit","n":"Magma Pebblit","color":"blue","load":1,"rg":"B","sp":"pebblit","fx":[{"k":"barrier","v":[7.9,29]}],"ln":"","maps":[]},{"id":"tide_brute","n":"Tide Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[3.7,16]}],"ln":"","maps":[]},{"id":"brute","n":"Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"bulwark","v":[8,26]}],"ln":"","maps":[]},{"id":"quarry_brute","n":"Quarry Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"dmgTaken","v":[1.5,6.5]},{"k":"wardBoss","v":[2,8]}],"ln":"","maps":[]},{"id":"field_brute","n":"Field Brute","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"thorns","v":[15,60]},{"k":"dmgTaken","v":[0.5,1.9]}],"ln":"","maps":[]},{"id":"corrupt_treant","n":"Corrupt Treant","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"renew","v":[0.7,3.5]},{"k":"dmgTaken","v":[1.1,4.4]}],"ln":"","maps":[]},{"id":"cinder_brute","n":"Cinder Brute","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"wardBoss","v":[5.3,20]},{"k":"dmgTaken","v":[0.5,1.9]}],"ln":"","maps":[]},{"id":"gate_brute","n":"Gate Brute","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"hound"},{"k":"dmgTaken","v":[1,3.9]}],"ln":"","maps":[]},{"id":"rime_brute","n":"Rime Brute","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"wisp"},{"k":"dmgTaken","v":[1,3.9]}],"ln":"","maps":[]},{"id":"cloud_brute","n":"Cloud Brute","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"remnant"},{"k":"dmgTaken","v":[1,3.9]}],"ln":"","maps":[]},{"id":"shard_brute","n":"Shard Brute","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"dmgTaken","v":[1.2,4.9]},{"k":"thorns","v":[7.3,30]}],"ln":"","maps":[]},{"id":"depth_brute","n":"Depth Brute","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"barrier","v":[11,38]},{"k":"wardBoss","v":[4.1,14]}],"ln":"","maps":[]},{"id":"thicket_stag","n":"Thicket Stag","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[2.8,13]},{"k":"moveSpeed","v":[1.4,5.6]}],"ln":"","maps":[]},{"id":"moss_crab","n":"Moss Crab","color":"blue","load":1,"rg":"A","sp":"crab","fx":[{"k":"ward","v":[6.5,29],"species":"skitter"}],"ln":"","maps":[]},{"id":"copper_pebblit","n":"Copper Pebblit","color":"blue","load":1,"rg":"A","sp":"pebblit","fx":[{"k":"wardNight","v":[3.2,12]}],"ln":"","maps":[]},{"id":"willow_brute","n":"Willow Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"maxHpPct","v":[3,13]},{"k":"renew","v":[0.4,1.6]}],"ln":"","maps":[]},{"id":"moss_brute","n":"Moss Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"barrier","v":[9,34]},{"k":"dmgTaken","v":[1.1,4.4]}],"ln":"","maps":[]},{"id":"copper_brute","n":"Copper Brute","color":"blue","load":2,"rg":"A","sp":"brute","fx":[{"k":"wardBoss","v":[4.5,17]},{"k":"dmgTaken","v":[0.6,2.4]}],"ln":"","maps":[]},{"id":"pitch_brute","n":"Pitch Brute","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"thorns","v":[14,56]},{"k":"maxHpPct","v":[0.8,3.2]},{"k":"armorPen","v":[1.5,4]}],"ln":"","maps":[]},{"id":"salt_pebblit","n":"Salt Pebblit","color":"blue","load":1,"rg":"B","sp":"pebblit","fx":[{"k":"ward","v":[6.5,29],"species":"wisp"}],"ln":"","maps":[]},{"id":"salt_brute","n":"Salt Brute","color":"blue","load":2,"rg":"B","sp":"brute","fx":[{"k":"wardNight","v":[4,15]},{"k":"dmgTaken","v":[1,3.9]}],"ln":"","maps":[]},{"id":"peat_crab","n":"Peat Crab","color":"blue","load":1,"rg":"B","sp":"crab","fx":[{"k":"dmgTaken","v":[1.1,4.8]}],"ln":"","maps":[]},{"id":"scree_pebblit","n":"Scree Pebblit","color":"blue","load":1,"rg":"C","sp":"pebblit","fx":[{"k":"thorns","v":[9,38]}],"ln":"","maps":[]},{"id":"gully_brute","n":"Gully Brute","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"ward","v":[9.2,40],"species":"skitter"},{"k":"dmgTaken","v":[1,3.9]}],"ln":"","maps":[]},{"id":"brine_crab","n":"Brine Crab","color":"blue","load":1,"rg":"C","sp":"crab","fx":[{"k":"maxHpPct","v":[1.5,7]}],"ln":"","maps":[]},{"id":"floe_brute","n":"Floe Brute","color":"blue","load":2,"rg":"C","sp":"brute","fx":[{"k":"barrier","v":[11,40]},{"k":"thorns","v":[8,32]}],"ln":"","maps":[]},{"id":"glass_crab","n":"Glass Crab","color":"blue","load":1,"rg":"D","sp":"crab","fx":[{"k":"wardBoss","v":[2.5,10]}],"ln":"","maps":[]},{"id":"wrack_brute","n":"Wrack Brute","color":"blue","load":2,"rg":"D","sp":"brute","fx":[{"k":"maxHpPct","v":[2.8,13]},{"k":"thorns","v":[6,24]}],"ln":"","maps":[]},{"id":"sprout","n":"Sprout","color":"green","load":1,"rg":"A","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"vit"}],"ln":"","maps":[]},{"id":"field_sprout","n":"Field Sprout","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"str"}],"ln":"","maps":[]},{"id":"gloom_sprout","n":"Gloom Sprout","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"int"}],"ln":"","maps":[]},{"id":"vale_sprout","n":"Vale Sprout","color":"green","load":1,"rg":"D","sp":"sprout","fx":[{"k":"stat","v":[1,8],"stat":"dex"}],"ln":"","maps":[]},{"id":"elder_sprout","n":"Elder Sprout","color":"green","load":2,"rg":"A","sp":"sprout","fx":[{"k":"gather","v":[4.5,15]},{"k":"stat","v":[2,9],"stat":"vit"},{"k":"maxHpPct","v":[0.4,1.7]}],"ln":"","maps":[]},{"id":"mire_lurker","n":"Mire Lurker","color":"green","load":1,"rg":"B","sp":"lurker","fx":[{"k":"stat","v":[1,8],"stat":"agi"}],"ln":"","maps":[]},{"id":"mire_elder","n":"Mire Elder","color":"green","load":2,"rg":"B","sp":"lurker","fx":[{"k":"drop","v":[3,15]},{"k":"maxHpPct","v":[1,3.8]}],"ln":"","maps":[]},{"id":"mere_lurker","n":"Mere Lurker","color":"green","load":2,"rg":"C","sp":"lurker","fx":[{"k":"spirit","v":[9.4,50]}],"ln":"","maps":[]},{"id":"lantern_moth","n":"Lantern Moth","color":"green","load":1,"rg":"D","sp":"wisp","fx":[{"k":"stat","v":[1,8],"stat":"luk"}],"ln":"","maps":[]},{"id":"shrine_firefly","n":"Shrine Firefly","color":"green","load":1,"rg":"A","sp":"wisp","fx":[{"k":"gold","v":[3,15]}],"ln":"","maps":[]},{"id":"spore_lantern","n":"Spore Lantern","color":"green","load":1,"rg":"B","sp":"wisp","fx":[{"k":"moveSpeed","v":[2.4,9.6]}],"ln":"","maps":[]},{"id":"abyss_jelly","n":"Abyss Jelly","color":"green","load":1,"rg":"D","sp":"wisp","fx":[{"k":"gust","v":[13,40]},{"k":"maxHpPct","v":[0.4,1.8]}],"ln":"","maps":[]},{"id":"clover_sprout","n":"Clover Sprout","color":"green","load":1,"rg":"A","sp":"sprout","fx":[{"k":"gather","v":[3,12]}],"ln":"","maps":[]},{"id":"resin_sprout","n":"Resin Sprout","color":"green","load":1,"rg":"B","sp":"sprout","fx":[{"k":"stat","v":[1,7],"stat":"luk"}],"ln":"","maps":[]},{"id":"reed_lurker","n":"Reed Lurker","color":"green","load":1,"rg":"B","sp":"lurker","fx":[{"k":"drop","v":[2,10]}],"ln":"","maps":[]},{"id":"peat_elder","n":"Peat Elder","color":"green","load":2,"rg":"B","sp":"lurker","fx":[{"k":"gather","v":[4.5,15]},{"k":"maxHpPct","v":[1,3.8]},{"k":"drop","v":[1.2,5]}],"ln":"","maps":[]},{"id":"crust_lurker","n":"Crust Lurker","color":"green","load":1,"rg":"C","sp":"lurker","fx":[{"k":"stat","v":[1,7],"stat":"vit"}],"ln":"","maps":[]},{"id":"glass_sprout","n":"Glass Sprout","color":"green","load":1,"rg":"D","sp":"sprout","fx":[{"k":"stat","v":[1,7],"stat":"int"}],"ln":"","maps":[]},{"id":"pit_lurker","n":"Pit Lurker","color":"green","load":1,"rg":"D","sp":"lurker","fx":[{"k":"moveSpeed","v":[2.2,9]}],"ln":"","maps":[]},{"id":"wisp","n":"Wisp","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"matkPct","v":[1,4.7]}],"ln":"","maps":[]},{"id":"gloom_wisp","n":"Gloom Wisp","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"focus","v":[0.8,4]}],"ln":"","maps":[]},{"id":"river_wisp","n":"River Wisp","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"echo","v":[8,32]}],"ln":"","maps":[]},{"id":"ember_wisp","n":"Ember Wisp","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"nova","v":[1,3.9]}],"ln":"","maps":[]},{"id":"bog_wisp","n":"Bog Wisp","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"lurker"}],"ln":"","maps":[]},{"id":"frost_wisp","n":"Frost Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"frost","v":[10,30]}],"ln":"","maps":[]},{"id":"ice_wisp","n":"Ice Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"cdr","v":[1,5]}],"ln":"","maps":[]},{"id":"gale_wisp","n":"Gale Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"aspd","v":[1.5,6.7]}],"ln":"","maps":[]},{"id":"sky_wisp","n":"Sky Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"elite","v":[3,13]}],"ln":"","maps":[]},{"id":"void_wisp","n":"Void Wisp","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"boss","v":[3.5,16]}],"ln":"","maps":[]},{"id":"pollen_wisp","n":"Pollen Wisp","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"renew","v":[0.8,3.6]}],"ln":"","maps":[]},{"id":"dust_wisp","n":"Dust Wisp","color":"purple","load":1,"rg":"A","sp":"wisp","fx":[{"k":"focus","v":[1,4.6]}],"ln":"","maps":[]},{"id":"sap_wisp","n":"Sap Wisp","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"thornling"}],"ln":"","maps":[]},{"id":"vent_wisp","n":"Vent Wisp","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"nova","v":[1.1,4.2]}],"ln":"","maps":[]},{"id":"peat_wisp","n":"Peat Wisp","color":"purple","load":1,"rg":"B","sp":"wisp","fx":[{"k":"slayer","v":[6,28],"species":"crab"}],"ln":"","maps":[]},{"id":"floe_wisp","n":"Floe Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"matkPct","v":[1.1,5]}],"ln":"","maps":[]},{"id":"chime_wisp","n":"Chime Wisp","color":"purple","load":1,"rg":"C","sp":"wisp","fx":[{"k":"echo","v":[9,34]}],"ln":"","maps":[]},{"id":"terrace_sentinel","n":"Terrace Sentinel","color":"purple","load":2,"rg":"C","sp":"remnant","fx":[{"k":"elite","v":[6,21]},{"k":"cdr","v":[0.8,2.4]}],"ln":"","maps":[]},{"id":"tallow_wisp","n":"Tallow Wisp","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"night","v":[2.9,12]}],"ln":"","maps":[]},{"id":"rust_remnant","n":"Rust Remnant","color":"purple","load":1,"rg":"D","sp":"remnant","fx":[{"k":"matkPct","v":[1,4.4]}],"ln":"","maps":[]},{"id":"lamp_wisp","n":"Lamp Wisp","color":"purple","load":1,"rg":"D","sp":"wisp","fx":[{"k":"gold","v":[3,15]}],"ln":"","maps":[]},{"id":"rust_captain","n":"Rust Captain","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"boss","v":[6,21]},{"k":"dmgTaken","v":[1,3.5]}],"ln":"","maps":[]},{"id":"remnant","n":"Remnant","color":"purple","load":2,"rg":"A","sp":"remnant","fx":[{"k":"matkPct","v":[2,8]},{"k":"cdr","v":[1,3]}],"ln":"","maps":[]},{"id":"dusk_remnant","n":"Dusk Remnant","color":"purple","load":2,"rg":"B","sp":"remnant","fx":[{"k":"night","v":[5,20]},{"k":"expose","v":[3,10]}],"ln":"","maps":[]},{"id":"storm_remnant","n":"Storm Remnant","color":"purple","load":2,"rg":"C","sp":"remnant","fx":[{"k":"chain","v":[11,38]},{"k":"aspd","v":[0.8,3.8]}],"ln":"","maps":[]},{"id":"vale_remnant","n":"Vale Remnant","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"renew","v":[0.5,2.1]},{"k":"matkPct","v":[1.2,5.8]}],"ln":"","maps":[]},{"id":"throne_guard","n":"Throne Guard","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"dmgTaken","v":[1.2,4.9]},{"k":"thorns","v":[7.3,30]}],"ln":"","maps":[]},{"id":"golden_sentinel","n":"Golden Sentinel","color":"purple","load":2,"rg":"D","sp":"remnant","fx":[{"k":"gold","v":[4,16]},{"k":"drop","v":[2,8]}],"ln":"","maps":[]},{"id":"vale_keeper","n":"Vale Keeper","color":"purple","load":3,"rg":"A","sp":"remnant","fx":[{"k":"elite","v":[7.5,30]},{"k":"renew","v":[0.6,2.5]}],"ln":"","maps":[]},{"id":"dusk_herald","n":"Dusk Herald","color":"purple","load":3,"rg":"B","sp":"remnant","fx":[{"k":"night","v":[6,24]},{"k":"nova","v":[2,7]}],"ln":"","maps":[]},{"id":"sky_sentinel","n":"Sky Sentinel","color":"purple","load":3,"rg":"C","sp":"remnant","fx":[{"k":"boss","v":[7.6,28]},{"k":"crit","v":[1.3,5.1]},{"k":"armorPen","v":[2,5]}],"ln":"","maps":[]},{"id":"vale_warden","n":"Vale Warden","color":"legend","load":5,"rg":"D","sp":"warden","fx":[{"k":"judgment","v":[40,100]},{"k":"maxHpPct","v":[4,15]}],"ln":"Warden's Judgment","maps":[]},{"id":"bloom_crowned_stag","n":"Bloom Crowned Stag","color":"legend","load":5,"rg":"A","sp":"warden","fx":[{"k":"bloom","v":[6,15]},{"k":"moveSpeed","v":[3,10]}],"ln":"Spring Bloom","maps":[]},{"id":"prism_shell_sovereign","n":"Prism Shell Sovereign","color":"legend","load":5,"rg":"A","sp":"warden","fx":[{"k":"prism","v":[10,25]},{"k":"dmgTaken","v":[2,8]}],"ln":"Prism Ward","maps":[]},{"id":"cinder_plume_roc","n":"Cinder Plume Roc","color":"legend","load":5,"rg":"B","sp":"warden","fx":[{"k":"phoenix","v":[15,40]},{"k":"atkPct","v":[2,8]}],"ln":"Phoenix Flame","maps":[]},{"id":"lotus_maw_matriarch","n":"Lotus Maw Matriarch","color":"legend","load":5,"rg":"B","sp":"warden","fx":[{"k":"lotusdrain","v":[1.5,4]},{"k":"lifesteal","v":[1,4]}],"ln":"Lotus Drain","maps":[]},{"id":"aurora_antler_regent","n":"Aurora Antler Regent","color":"legend","load":5,"rg":"C","sp":"warden","fx":[{"k":"polar","v":[20,40]},{"k":"matkPct","v":[2,9]}],"ln":"Polar Night","maps":[]},{"id":"tempest_kite_empress","n":"Tempest Kite Empress","color":"legend","load":5,"rg":"C","sp":"warden","fx":[{"k":"storm","v":[60,150]},{"k":"aspd","v":[3,12]}],"ln":"Storm Call","maps":[]},{"id":"opal_weaver_queen","n":"Opal Weaver Queen","color":"legend","load":5,"rg":"D","sp":"warden","fx":[{"k":"web","v":[8,20]},{"k":"debuffed","v":[6,24]}],"ln":"Web of Fate","maps":[]},{"id":"barnacle_remnant","n":"Barnacle Remnant","role":"trash","color":"blue","load":1,"rg":"E","sp":"remnant","fx":[{"k":"dmgTaken","v":[1,4]}],"cost":null,"chance":"","lv":[99,99],"maps":[]},{"id":"anchor_crab","n":"Anchor Crab","role":"tank","color":"blue","load":1,"rg":"E","sp":"crab","fx":[{"k":"ward","v":[9,38],"species":"remnant"}],"cost":null,"chance":"","lv":[100,100],"maps":[]},{"id":"gull_harpy","n":"Gull Harpy","role":"pack","color":"red","load":1,"rg":"E","sp":"harpy","fx":[{"k":"aspd","v":[1.6,7]}],"cost":null,"chance":"","lv":[100,100],"maps":[]},{"id":"drowned_bosun","n":"Drowned Bosun","role":"elite","color":"blue","load":2,"rg":"E","sp":"remnant","fx":[{"k":"elite","v":[6,22]},{"k":"maxHpPct","v":[1,3.5]}],"cost":null,"chance":"","lv":[101,101],"maps":[]},{"id":"straw_thornling","n":"Straw Thornling","role":"ambush","color":"red","load":1,"rg":"E","sp":"thornling","fx":[{"k":"opener","v":[3.4,15]}],"cost":null,"chance":"","lv":[101,101],"maps":[]},{"id":"lantern_skitter","n":"Lantern Skitter","role":"pack","color":"purple","load":1,"rg":"E","sp":"skitter","fx":[{"k":"night","v":[3,12.5]}],"cost":null,"chance":"","lv":[102,102],"maps":[]},{"id":"reed_crane","n":"Reed Crane","role":"trash","color":"red","load":1,"rg":"E","sp":"harpy","fx":[{"k":"slayer","v":[6,28],"species":"skitter"}],"cost":null,"chance":"","lv":[103,103],"maps":[]},{"id":"paddy_brute","n":"Paddy Brute","role":"elite","color":"blue","load":2,"rg":"E","sp":"brute","fx":[{"k":"barrier","v":[11,38]},{"k":"wardBoss","v":[4.3,15]}],"cost":null,"chance":"","lv":[104,104],"maps":[]},{"id":"coral_pebblit","n":"Coral Pebblit","role":"tank","color":"blue","load":1,"rg":"E","sp":"pebblit","fx":[{"k":"thorns","v":[11,42]}],"cost":null,"chance":"","lv":[103,103],"maps":[]},{"id":"shell_remnant","n":"Shell Remnant","role":"trash","color":"blue","load":1,"rg":"E","sp":"remnant","fx":[{"k":"wardBoss","v":[4.2,15]}],"cost":null,"chance":"","lv":[104,104],"maps":[]},{"id":"pearl_wisp","n":"Pearl Wisp","role":"trash","color":"purple","load":1,"rg":"E","sp":"wisp","fx":[{"k":"matkPct","v":[1.15,4.3]},{"k":"spellAmp","v":[0.75,2.9]}],"cost":null,"chance":"","lv":[104,104],"maps":[]},{"id":"coral_brute","n":"Coral Brute","role":"elite","color":"red","load":2,"rg":"E","sp":"brute","fx":[{"k":"maxHpPct","v":[1.8,6.4]},{"k":"desperate","v":[9,32]}],"cost":null,"chance":"","lv":[106,106],"maps":[]},{"id":"bronze_remnant","n":"Bronze Remnant","role":"trash","color":"blue","load":1,"rg":"E","sp":"remnant","fx":[{"k":"wardNight","v":[3.8,13.8]}],"cost":null,"chance":"","lv":[106,106],"maps":[]},{"id":"mirror_merchant","n":"Mirror Merchant","role":"trash","color":"purple","load":1,"rg":"E","sp":"horror","fx":[{"k":"gold","v":[3.2,16]}],"cost":null,"chance":"","lv":[107,107],"maps":[]},{"id":"vase_lurker","n":"Vase Lurker","role":"ambush","color":"red","load":1,"rg":"E","sp":"lurker","fx":[{"k":"expose","v":[3.8,14]}],"cost":null,"chance":"","lv":[107,107],"maps":[]},{"id":"forum_sentinel","n":"Forum Sentinel","role":"elite","color":"purple","load":2,"rg":"E","sp":"remnant","fx":[{"k":"elite","v":[6.2,22]},{"k":"cdr","v":[0.8,2.6]}],"cost":null,"chance":"","lv":[109,109],"maps":[]},{"id":"compass_wisp","n":"Compass Wisp","role":"trash","color":"purple","load":1,"rg":"E","sp":"wisp","fx":[{"k":"moveSpeed","v":[1.8,7.5]},{"k":"drop","v":[0.8,3]}],"cost":null,"chance":"","lv":[108,108],"maps":[]},{"id":"thunder_harpy","n":"Thunder Harpy","role":"pack","color":"red","load":1,"rg":"E","sp":"harpy","fx":[{"k":"chain","v":[6.6,24]}],"cost":null,"chance":"","lv":[109,109],"maps":[]},{"id":"tram_remnant","n":"Tram Remnant","role":"tank","color":"purple","load":1,"rg":"E","sp":"remnant","fx":[{"k":"focus","v":[1.4,6]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"brass_mimic","n":"Brass Mimic","role":"elite","color":"purple","load":2,"rg":"E","sp":"crab","fx":[{"k":"gold","v":[4.4,22]},{"k":"drop","v":[1.3,5.2]}],"cost":null,"chance":"","lv":[102,102],"maps":[]},{"id":"paddy_ox","n":"Paddy Ox","role":"elite","color":"blue","load":2,"rg":"E","sp":"brute","fx":[{"k":"maxHpPct","v":[1.4,5]},{"k":"renew","v":[0.5,1.8]},{"k":"dmgTaken","v":[1,4.4]}],"cost":null,"chance":"","lv":[105,105],"maps":[]},{"id":"ammonite_crawler","n":"Ammonite Crawler","role":"elite","color":"red","load":2,"rg":"E","sp":"lurker","fx":[{"k":"armorPen","v":[1.6,4.4]},{"k":"crit","v":[1,3]},{"k":"opener","v":[2.4,10]}],"cost":null,"chance":"","lv":[107,107],"maps":[]},{"id":"drowned_senator","n":"Drowned Senator","role":"elite","color":"purple","load":2,"rg":"E","sp":"remnant","fx":[{"k":"matkPct","v":[1.6,6]},{"k":"cdr","v":[0.8,2.6]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"spark_eel","n":"Spark Eel","role":"elite","color":"red","load":2,"rg":"E","sp":"wisp","fx":[{"k":"nova","v":[1.4,5]},{"k":"aspd","v":[1,3.6]}],"cost":null,"chance":"","lv":[112,112],"maps":[]},{"id":"hullbreaker_kraken","n":"Hullbreaker Kraken","role":"mini-boss","color":"blue","load":3,"rg":"E","sp":"lurker","fx":[{"k":"wardBoss","v":[7,23]},{"k":"maxHpPct","v":[1.7,6]},{"k":"thorns","v":[12,42]}],"cost":null,"chance":"","lv":[103,103],"maps":[]},{"id":"kite_drake","n":"Kite Drake","role":"mini-boss","color":"red","load":3,"rg":"E","sp":"harpy","fx":[{"k":"atkPct","v":[2,7]},{"k":"matkPct","v":[2,7]},{"k":"night","v":[3,10]}],"cost":null,"chance":"","lv":[106,106],"maps":[]},{"id":"coralback_tortoise","n":"Coralback Tortoise","role":"mini-boss","color":"blue","load":3,"rg":"E","sp":"pebblit","fx":[{"k":"dmgTaken","v":[1.9,7]},{"k":"barrier","v":[14,46]},{"k":"renew","v":[0.6,2.1]}],"cost":null,"chance":"","lv":[107,107],"maps":[]},{"id":"fountain_serpent","n":"Fountain Serpent","role":"mini-boss","color":"purple","load":3,"rg":"E","sp":"lurker","fx":[{"k":"matkPct","v":[2.2,8]},{"k":"renew","v":[0.7,2.4]},{"k":"spirit","v":[4.4,16]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"stationmaster_automaton","n":"Stationmaster Automaton","role":"mini-boss","color":"purple","load":3,"rg":"E","sp":"brute","fx":[{"k":"cdr","v":[1.2,4]},{"k":"aspd","v":[1.2,4]},{"k":"boss","v":[5,18]}],"cost":null,"chance":"","lv":[113,113],"maps":[]},{"id":"rail_brute","n":"Rail Brute","role":"elite","color":"red","load":2,"rg":"E","sp":"brute","fx":[{"k":"boss","v":[6.2,22]},{"k":"crit","v":[1,3.2]}],"cost":null,"chance":"","lv":[111,111],"maps":[]},{"id":"slag_skitter","n":"Slag Skitter","role":"pack","color":"red","load":1,"rg":"E","sp":"skitter","fx":[{"k":"debuffed","v":[2,7.6]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"rivet_golem","n":"Rivet Golem","role":"tank","color":"blue","load":1,"rg":"E","sp":"pebblit","fx":[{"k":"dmgTaken","v":[1,3.9]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"plate_turtle","n":"Plate Turtle","role":"tank","color":"blue","load":1,"rg":"E","sp":"crab","fx":[{"k":"barrier","v":[11,38]}],"cost":null,"chance":"","lv":[110,110],"maps":[]},{"id":"hollow_caster","n":"Hollow Caster","role":"trash","color":"purple","load":1,"rg":"E","sp":"remnant","fx":[{"k":"matkPct","v":[1.2,4.3]},{"k":"spellAmp","v":[0.8,2.9]}],"cost":null,"chance":"","lv":[111,111],"maps":[]},{"id":"furnace_warden","n":"Furnace Warden","role":"elite","color":"red","load":2,"rg":"E","sp":"brute","fx":[{"k":"atkPct","v":[1.6,6]},{"k":"thorns","v":[10,36]}],"cost":null,"chance":"","lv":[113,113],"maps":[]},{"id":"crucible_hound","n":"Crucible Hound","role":"elite","color":"red","load":2,"rg":"E","sp":"hound","fx":[{"k":"crit","v":[1,3]},{"k":"critDmg","v":[2,10]},{"k":"opener","v":[2.4,10]}],"cost":null,"chance":"","lv":[114,114],"maps":[]},{"id":"forge_hermit","n":"Forge Hermit","role":"mini-boss","color":"purple","load":3,"rg":"E","sp":"crab","fx":[{"k":"armorPen","v":[2,5.5]},{"k":"maxHpPct","v":[1.7,6]},{"k":"atkPct","v":[2,7]}],"cost":null,"chance":"","lv":[115,115],"maps":[]}],"tpl":{"crit":"โอกาสคริ +{x}%","night":"ช่วงกลางคืน: ดาเมจ +{x}%","slayer":"ดาเมจใส่สาย {sp} +{x}%","atkPct":"ATK +{x}%","bleed":"เมื่อคริ (35%): เลือดไหล {x}% ของดาเมจใน 3 วิ","expose":"เมื่อโจมตีโดน (10%): เป้าโดนดาเมจแรงขึ้น +{x}% นาน 4 วิ","opener":"ดาเมจใส่มอนที่ HP > 90% +{x}%","haste":"เมื่อคริ (30%): สปีดตี +{x}% นาน 5 วิ","echo":"เมื่อโจมตีโดน (12%): วิญญาณตีซ้ำ {x}% ของดาเมจ (เวท)","chain":"เมื่อโจมตีโดน (10%): สายฟ้าเชนใส่มอนข้างๆ 3 เด้ง {x}% ของดาเมจ ลดลงทุกเด้ง","debuffed":"ดาเมจใส่มอนที่ติดดีบัฟ +{x}%","lifesteal":"ดูดเลือด {x}% ของดาเมจกายภาพ","critDmg":"ดาเมจคริ +{x}%","desperate":"ขณะ HP < 35%: ดาเมจ +{x}%","aspd":"สปีดตี +{x}%","thorns":"เมื่อโดนดาเมจจากมอน: สะท้อนดาเมจกลับ {x}%","ward":"ลดดาเมจที่ได้รับจากสาย {sp} {x}%","wardNight":"ช่วงกลางคืน: ลดดาเมจที่ได้รับ {x}%","dmgTaken":"ลดดาเมจที่ได้รับ {x}%","barrier":"เมื่อโดนดาเมจขณะ HP < 40%: ฮีล {x}% ทันที (ทุก 45 วิ)","maxHpPct":"Max HP +{x}%","bulwark":"เมื่อโดนดาเมจ (12%): ลดดาเมจที่ได้รับ {x}% นาน 4 วิ","wardBoss":"ลดดาเมจที่ได้รับจาก Boss / Mini-boss {x}%","renew":"เมื่อสังหารมอน: ฮีล {x}% Max HP","moveSpeed":"สปีดวิ่ง +{x}%","stat:vit":"VIT +{x}","stat:str":"STR +{x}","stat:int":"INT +{x}","stat:dex":"DEX +{x}","gather":"เวลา Gathering / ตกปลา −{x}%","stat:agi":"AGI +{x}","drop":"เรทดรอป +{x}%","spirit":"เรทดรอปวิญญาณมอน +{x}%","stat:luk":"LUK +{x}","gold":"Gold จากมอน +{x}%","gust":"เมื่อสังหารมอน: สปีดวิ่ง +{x}% นาน 3 วิ","matkPct":"MATK +{x}%","focus":"เมื่อสังหารมอน: ฟื้น MP {x}% Max MP","nova":"เมื่อสังหารมอน: ศพระเบิดตีหมู่รอบๆ {x}% ของ Max HP ตัวที่ตาย","frost":"เมื่อโจมตีโดน (8%): สโลว์เป้า {x}% นาน 2 วิ","cdr":"คูลดาวน์สกิล −{x}%","elite":"ดาเมจใส่ Elite / Mini-boss +{x}%","boss":"ดาเมจใส่ Field Boss +{x}%","judgment":"เมื่อสังหารมอน: สกิลดาเมจครั้งถัดไปแรงขึ้น +{x}% (ทุก 20 วิ)","bloom":"เมื่อสังหารมอน: ฮีลตัวเองและปาร์ตี้ในระยะ 8 ช่อง {x}% Max HP (ทุก 15 วิ)","prism":"เมื่อโดนดาเมจ: ได้โล่ {x}% Max HP นาน 8 วิ (ทุก 25 วิ)","phoenix":"เมื่อโดนดาเมจขณะ HP < 25%: ฟื้น {x}% Max HP + ระเบิดไฟใส่มอนรอบตัว (ทุก 2 นาที)","lotusdrain":"เมื่อสังหารมอน: ดูด HP และ MP {x}%","polar":"เมื่อโจมตีโดน (15%): แช่แข็งเป้า 1.2 วิ + สโลว์มอนรอบเป้า {x}% (ไม่ใช้กับ Boss / Mini-boss)","storm":"เมื่อโจมตีโดน (20%): ฟ้าผ่ามอนรอบเป้าสูงสุด 4 ตัว {x}% ของดาเมจ (เวท)","web":"เมื่อคริ (50%): ตรึงเป้า 2 วิ + เป้าโดนดาเมจแรงขึ้น +{x}% นาน 4 วิ","armorPen":"Armor Pierce +{x}% (เมิน DEF เป้า)","spellAmp":"Spell Amp +{x}% (ดาเมจสกิลเวท)"}};
+window.SPAWNS = {"spawns":{"shard_brute":[{"m":"shattered_vale","r":[25,39,31,44],"n":1}],"willow_brute":[{"m":"honeyrill","r":[44,36,50,42],"n":1}],"vale_remnant":[{"m":"shattered_vale","r":[23,6,31,10],"n":2},{"m":"shattered_vale","r":[30,14,37,18],"n":2},{"m":"throne_of_warden","r":[9,14,17,21],"n":2}],"plate_turtle":[{"m":"shellforge_basin","r":[6,22,16,36],"n":4}],"magma_pebblit":[{"m":"ember_hollow","r":[30,16,38,22],"n":3},{"m":"ember_hollow","r":[32,40,40,48],"n":3}],"copper_brute":[{"m":"verdigris_rise","r":[12,40,20,47],"n":1}],"plains_skitter":[{"m":"sunfield_plains","r":[36,8,50,17],"n":5},{"m":"sunfield_plains","r":[31,22,41,27],"n":3}],"void_wisp":[{"m":"shattered_vale","r":[12,16,22,23],"n":3},{"m":"shattered_vale","r":[3,25,11,30],"n":3},{"m":"umbral_depths","r":[34,9,42,14],"n":3},{"m":"umbral_depths","r":[22,13,28,18],"n":3},{"m":"umbral_depths","r":[10,15,16,20],"n":2},{"m":"umbral_depths","r":[34,31,40,35],"n":2}],"skitter":[{"m":"southvale_field","r":[13,23,24,32],"n":5},{"m":"southvale_field","r":[29,21,37,29],"n":3},{"m":"whispering_woods","r":[22,26,34,36],"n":5},{"m":"whispering_woods","r":[20,37,28,44],"n":3},{"m":"riverside","r":[8,37,24,48],"n":5}],"drowned_bosun":[{"m":"wreckwake_coast","r":[26,26,34,34],"n":1}],"coral_brute":[{"m":"coralstep_plateau","r":[42,46,50,52],"n":1}],"crust_lurker":[{"m":"brinecrust_shoals","r":[42,24,50,36],"n":4}],"gate_brute":[{"m":"duskgate_pass","r":[32,4,40,10],"n":1},{"m":"duskgate_pass","r":[14,4,20,10],"n":1}],"corrupt_treant":[{"m":"gloomroot_forest","r":[42,18,48,24],"n":1}],"glass_crab":[{"m":"glasswrack","r":[34,36,44,46],"n":4}],"sprout":[{"m":"southvale_field","r":[16,36,27,43],"n":5},{"m":"southvale_field","r":[32,34,43,43],"n":5}],"slag_skitter":[{"m":"shellforge_basin","r":[18,38,30,47],"n":5}],"thunder_harpy":[{"m":"stormrail_causeway","r":[30,30,44,38],"n":5},{"m":"stormrail_causeway","r":[44,18,52,24],"n":3}],"sap_wisp":[{"m":"pitchwood","r":[36,10,48,22],"n":4}],"chime_wisp":[{"m":"kitewind_terraces","r":[40,8,50,20],"n":4},{"m":"kitewind_terraces","r":[24,42,36,50],"n":3}],"floe_wisp":[{"m":"brinecrust_shoals","r":[34,6,46,18],"n":4},{"m":"brinecrust_shoals","r":[14,10,22,20],"n":3}],"tide_brute":[{"m":"riverside","r":[40,37,47,44],"n":1}],"gale_wisp":[{"m":"howling_steppes","r":[32,31,42,38],"n":5},{"m":"howling_steppes","r":[36,43,44,50],"n":3}],"wrack_brute":[{"m":"glasswrack","r":[6,4,14,10],"n":1}],"gloom_wisp":[{"m":"whispering_woods","r":[8,7,18,15],"n":4},{"m":"whispering_woods","r":[36,39,45,47],"n":3},{"m":"ancient_ruins","r":[8,30,20,37],"n":5},{"m":"ancient_ruins","r":[15,16,23,23],"n":4},{"m":"ancient_ruins","r":[39,14,46,21],"n":3},{"m":"gloomroot_forest","r":[38,40,50,50],"n":3},{"m":"gloomroot_forest","r":[40,13,49,17],"n":3}],"anchor_crab":[{"m":"wreckwake_coast","r":[34,28,44,38],"n":4},{"m":"wreckwake_coast","r":[38,6,48,14],"n":3}],"mere_lurker":[{"m":"frozen_mere","r":[26,34,32,37],"n":1}],"lantern_skitter":[{"m":"lanternrice_delta","r":[28,32,38,44],"n":5},{"m":"lanternrice_delta","r":[8,30,20,40],"n":4}],"fern_thornling":[{"m":"bracken_sink","r":[14,24,28,36],"n":5},{"m":"bracken_sink","r":[30,40,44,50],"n":3}],"frost_skitter":[{"m":"frostpeak_slopes","r":[38,37,48,43],"n":5},{"m":"frostpeak_slopes","r":[20,38,30,43],"n":3}],"hullbreaker_kraken":[{"m":"wreckwake_coast","r":[36,36,42,42],"n":1}],"stationmaster_automaton":[{"m":"stormrail_causeway","r":[36,8,44,12],"n":1}],"field_brute":[{"m":"sunfield_plains","r":[41,41,48,47],"n":1}],"thornling":[{"m":"whispering_woods","r":[10,26,20,36],"n":5}],"paddy_ox":[{"m":"lanternrice_delta","r":[14,38,22,44],"n":1}],"snipcrab":[{"m":"riverside","r":[8,25,24,31],"n":4},{"m":"riverside","r":[26,27,40,33],"n":4}],"crucible_hound":[{"m":"shellforge_basin","r":[36,42,44,46],"n":1}],"frost_wisp":[{"m":"frostpeak_slopes","r":[18,7,26,13],"n":3},{"m":"frostpeak_slopes","r":[4,44,12,50],"n":3}],"ember_wisp":[{"m":"ember_hollow","r":[8,16,20,22],"n":3},{"m":"ember_hollow","r":[30,28,38,36],"n":3}],"tusk_fang":[{"m":"sledrun_gully","r":[30,28,40,40],"n":4},{"m":"sledrun_gully","r":[16,4,26,12],"n":3}],"marrow_skitter":[{"m":"marrowdeep","r":[26,26,40,36],"n":5},{"m":"marrowdeep","r":[10,34,20,44],"n":4}],"furnace_warden":[{"m":"shellforge_basin","r":[24,13,32,16],"n":1}],"wrack_skitter":[{"m":"glasswrack","r":[16,30,30,40],"n":5},{"m":"glasswrack","r":[22,4,32,12],"n":3}],"steppe_hound":[{"m":"howling_steppes","r":[14,35,26,42],"n":5},{"m":"howling_steppes","r":[3,15,11,22],"n":3}],"dusk_herald":[{"m":"duskgate_pass","r":[25,10,31,15],"n":1}],"bronze_remnant":[{"m":"drowned_forum","r":[14,4,40,12],"n":5},{"m":"drowned_forum","r":[40,36,50,46],"n":4}],"mirror_merchant":[{"m":"drowned_forum","r":[8,18,18,44],"n":4},{"m":"drowned_forum","r":[42,12,50,22],"n":3}],"elder_sprout":[{"m":"southvale_field","r":[43,36,49,43],"n":1},{"m":"whispering_woods","r":[36,30,44,38],"n":1}],"gull_harpy":[{"m":"wreckwake_coast","r":[6,30,20,40],"n":5}],"moss_crab":[{"m":"bracken_sink","r":[27,19,37,28],"n":4}],"reed_lurker":[{"m":"peatcut_bog","r":[10,8,26,22],"n":4},{"m":"peatcut_bog","r":[4,28,14,38],"n":3}],"terrace_skitter":[{"m":"kitewind_terraces","r":[12,16,26,26],"n":5}],"river_wisp":[{"m":"riverside","r":[18,6,40,14],"n":5},{"m":"riverside","r":[40,7,51,15],"n":3}],"glass_sprout":[{"m":"glasswrack","r":[28,20,40,30],"n":5},{"m":"glasswrack","r":[8,24,18,34],"n":3}],"shell_remnant":[{"m":"coralstep_plateau","r":[14,28,26,40],"n":5},{"m":"coralstep_plateau","r":[26,44,36,52],"n":3}],"drift_skitter":[{"m":"sledrun_gully","r":[16,34,28,44],"n":5},{"m":"sledrun_gully","r":[30,12,40,20],"n":4}],"coralback_tortoise":[{"m":"coralstep_plateau","r":[40,40,46,46],"n":1}],"tallow_wisp":[{"m":"marrowdeep","r":[36,6,48,16],"n":4}],"corrupt_thornling":[{"m":"gloomroot_forest","r":[33,28,42,34],"n":5},{"m":"gloomroot_forest","r":[26,17,36,22],"n":3}],"storm_remnant":[{"m":"cloudspire_ruins","r":[10,25,19,31],"n":2},{"m":"cloudspire_ruins","r":[4,39,13,43],"n":2},{"m":"throne_of_warden","r":[31,14,39,21],"n":2}],"shard_thornling":[{"m":"shattered_vale","r":[8,31,17,40],"n":4},{"m":"shattered_vale","r":[18,40,25,45],"n":3}],"floe_brute":[{"m":"brinecrust_shoals","r":[44,42,52,50],"n":1}],"umbral_horror":[{"m":"umbral_depths","r":[5,21,13,30],"n":2}],"lantern_moth":[{"m":"throne_of_warden","r":[30,26,40,34],"n":4}],"rime_brute":[{"m":"frostpeak_slopes","r":[28,4,32,8],"n":1}],"pit_lurker":[{"m":"marrowdeep","r":[22,10,34,20],"n":4},{"m":"marrowdeep","r":[34,36,44,44],"n":3}],"hollow_caster":[{"m":"shellforge_basin","r":[32,32,44,38],"n":5}],"rust_remnant":[{"m":"rustbell_barracks","r":[16,12,30,24],"n":5},{"m":"rustbell_barracks","r":[28,34,40,46],"n":4}],"reed_crane":[{"m":"lanternrice_delta","r":[36,14,48,22],"n":5},{"m":"lanternrice_delta","r":[14,42,26,50],"n":3}],"pollen_wisp":[{"m":"honeyrill","r":[8,22,22,32],"n":4},{"m":"honeyrill","r":[30,5,42,15],"n":3}],"salt_pebblit":[{"m":"yellowlick_flats","r":[30,6,44,18],"n":4}],"mire_lurker":[{"m":"mistmire_swamp","r":[30,46,38,51],"n":2},{"m":"mistmire_swamp","r":[34,27,44,32],"n":2}],"rivet_golem":[{"m":"shellforge_basin","r":[14,14,30,22],"n":5},{"m":"shellforge_basin","r":[40,18,50,24],"n":3}],"ammonite_crawler":[{"m":"coralstep_plateau","r":[14,40,22,46],"n":1}],"depth_brute":[{"m":"umbral_depths","r":[41,22,46,26],"n":1},{"m":"umbral_depths","r":[43,30,48,34],"n":1}],"scree_pebblit":[{"m":"sledrun_gully","r":[14,18,24,28],"n":4}],"sky_wisp":[{"m":"cloudspire_ruins","r":[32,22,40,27],"n":4},{"m":"cloudspire_ruins","r":[34,32,42,38],"n":4},{"m":"cloudspire_ruins","r":[16,32,24,40],"n":4},{"m":"cloudspire_ruins","r":[20,46,27,51],"n":3},{"m":"cloudspire_ruins","r":[8,32,14,38],"n":3}],"muster_hound":[{"m":"rustbell_barracks","r":[30,20,42,30],"n":5},{"m":"rustbell_barracks","r":[40,6,50,16],"n":3}],"spark_eel":[{"m":"stormrail_causeway","r":[6,40,14,46],"n":1}],"marrow_horror":[{"m":"marrowdeep","r":[16,4,24,10],"n":1}],"moss_brute":[{"m":"bracken_sink","r":[42,7,50,16],"n":1}],"fountain_serpent":[{"m":"drowned_forum","r":[26,28,30,32],"n":1}],"vase_lurker":[{"m":"drowned_forum","r":[18,42,40,50],"n":4}],"sky_sentinel":[{"m":"cloudspire_ruins","r":[44,15,50,21],"n":1}],"gloom_skitter":[{"m":"throne_of_warden","r":[8,26,18,34],"n":5},{"m":"throne_of_warden","r":[18,30,30,35],"n":3}],"dusk_skitter":[{"m":"duskgate_pass","r":[6,32,18,40],"n":5},{"m":"duskgate_pass","r":[24,38,36,48],"n":5},{"m":"duskgate_pass","r":[36,24,46,30],"n":4},{"m":"duskgate_pass","r":[16,42,24,50],"n":4},{"m":"duskgate_pass","r":[4,18,12,24],"n":3}],"kite_harpy":[{"m":"kitewind_terraces","r":[28,20,42,30],"n":5},{"m":"kitewind_terraces","r":[6,28,18,40],"n":3}],"pebblit":[{"m":"old_quarry","r":[30,32,42,41],"n":5},{"m":"old_quarry","r":[10,39,20,45],"n":3}],"dust_wisp":[{"m":"verdigris_rise","r":[12,14,24,24],"n":4},{"m":"verdigris_rise","r":[40,8,50,17],"n":3}],"barnacle_remnant":[{"m":"wreckwake_coast","r":[18,12,34,22],"n":5},{"m":"wreckwake_coast","r":[20,40,34,50],"n":4}],"brute":[{"m":"old_quarry","r":[13,5,23,11],"n":3}],"hive_skitter":[{"m":"honeyrill","r":[38,11,50,19],"n":5}],"mire_elder":[{"m":"mistmire_swamp","r":[43,5,49,9],"n":1}],"kite_drake":[{"m":"lanternrice_delta","r":[8,8,16,14],"n":1}],"ash_hound":[{"m":"sunfield_plains","r":[33,33,45,41],"n":3},{"m":"sunfield_plains","r":[14,46,24,51],"n":3}],"gully_brute":[{"m":"sledrun_gully","r":[22,2,32,7],"n":1}],"cloud_brute":[{"m":"cloudspire_ruins","r":[16,38,24,44],"n":1},{"m":"cloudspire_ruins","r":[36,13,42,19],"n":1}],"tram_remnant":[{"m":"stormrail_causeway","r":[34,4,48,14],"n":4}],"compass_wisp":[{"m":"stormrail_causeway","r":[16,16,30,22],"n":5},{"m":"stormrail_causeway","r":[4,30,14,40],"n":3}],"peat_crab":[{"m":"peatcut_bog","r":[22,26,36,36],"n":5},{"m":"peatcut_bog","r":[36,4,46,14],"n":3}],"forum_sentinel":[{"m":"drowned_forum","r":[25,25,31,31],"n":1}],"rock_skitter":[{"m":"old_quarry","r":[14,23,30,35],"n":6},{"m":"old_quarry","r":[28,7,38,13],"n":4}],"umbral_skitter":[{"m":"umbral_depths","r":[14,33,23,40],"n":4},{"m":"umbral_depths","r":[30,41,40,46],"n":4},{"m":"umbral_depths","r":[42,38,50,43],"n":3}],"frost_fang":[{"m":"frostpeak_slopes","r":[8,20,16,30],"n":5},{"m":"frostpeak_slopes","r":[38,18,46,24],"n":3},{"m":"frozen_mere","r":[4,38,12,46],"n":3},{"m":"frozen_mere","r":[30,47,40,51],"n":3}],"pitch_brute":[{"m":"pitchwood","r":[10,4,20,10],"n":1}],"resin_sprout":[{"m":"pitchwood","r":[20,36,34,46],"n":5},{"m":"pitchwood","r":[36,28,48,38],"n":4}],"quarry_brute":[{"m":"old_quarry","r":[36,15,44,20],"n":1}],"rail_brute":[{"m":"stormrail_causeway","r":[22,40,32,46],"n":1}],"copper_pebblit":[{"m":"verdigris_rise","r":[25,6,37,16],"n":5},{"m":"verdigris_rise","r":[40,39,50,46],"n":3}],"frost_crab":[{"m":"frozen_mere","r":[15,18,21,29],"n":4},{"m":"frozen_mere","r":[36,26,42,33],"n":3}],"brine_crab":[{"m":"brinecrust_shoals","r":[28,34,40,46],"n":5},{"m":"brinecrust_shoals","r":[8,36,18,46],"n":3}],"terrace_sentinel":[{"m":"kitewind_terraces","r":[40,42,48,48],"n":1}],"hill_hound":[{"m":"verdigris_rise","r":[28,36,40,46],"n":5}],"vent_wisp":[{"m":"yellowlick_flats","r":[10,4,24,18],"n":4},{"m":"yellowlick_flats","r":[40,20,50,30],"n":3}],"coral_pebblit":[{"m":"coralstep_plateau","r":[30,16,42,26],"n":5},{"m":"coralstep_plateau","r":[8,14,18,22],"n":3}],"rust_captain":[{"m":"rustbell_barracks","r":[42,44,50,50],"n":1}],"tar_thornling":[{"m":"pitchwood","r":[14,20,26,32],"n":5},{"m":"pitchwood","r":[6,34,18,44],"n":3}],"sulfur_skitter":[{"m":"yellowlick_flats","r":[18,30,30,40],"n":5},{"m":"yellowlick_flats","r":[36,36,48,46],"n":4}],"lamp_wisp":[{"m":"rustbell_barracks","r":[14,30,24,42],"n":4}],"dusk_remnant":[{"m":"duskgate_pass","r":[30,18,40,26],"n":2},{"m":"duskgate_pass","r":[14,18,22,24],"n":2}],"ember_hound":[{"m":"ember_hollow","r":[6,29,18,38],"n":4},{"m":"ember_hollow","r":[18,30,28,36],"n":3}],"burrow_skitter":[{"m":"bracken_sink","r":[34,26,46,36],"n":5},{"m":"bracken_sink","r":[8,36,18,46],"n":3}],"vale_sprout":[{"m":"shattered_vale","r":[34,28,44,33],"n":4},{"m":"shattered_vale","r":[43,15,50,21],"n":3}],"drowned_senator":[{"m":"drowned_forum","r":[14,18,20,24],"n":1}],"ice_wisp":[{"m":"frozen_mere","r":[31,4,42,10],"n":4},{"m":"frozen_mere","r":[12,5,22,10],"n":3}],"paddy_brute":[{"m":"lanternrice_delta","r":[40,38,48,44],"n":1}],"forge_hermit":[{"m":"shellforge_basin","r":[24,32,32,36],"n":1}],"wisp":[{"m":"southvale_field","r":[16,12,28,21],"n":4}],"peat_wisp":[{"m":"peatcut_bog","r":[28,36,42,46],"n":4}],"peat_elder":[{"m":"peatcut_bog","r":[14,44,22,50],"n":1}],"pearl_wisp":[{"m":"coralstep_plateau","r":[36,34,48,44],"n":4}],"brass_mimic":[{"m":"wreckwake_coast","r":[10,40,18,48],"n":1}],"storm_harpy":[{"m":"howling_steppes","r":[42,12,50,20],"n":3},{"m":"howling_steppes","r":[26,13,34,21],"n":3}],"gloom_sprout":[{"m":"gloomroot_forest","r":[14,23,25,31],"n":5},{"m":"gloomroot_forest","r":[8,41,19,48],"n":3}],"straw_thornling":[{"m":"lanternrice_delta","r":[8,8,20,17],"n":4}],"bog_crab":[{"m":"mistmire_swamp","r":[6,26,20,34],"n":4},{"m":"mistmire_swamp","r":[18,36,24,44],"n":2}],"field_sprout":[{"m":"sunfield_plains","r":[6,9,22,25],"n":5},{"m":"sunfield_plains","r":[9,32,20,39],"n":3}],"clover_sprout":[{"m":"honeyrill","r":[16,40,26,48],"n":5},{"m":"honeyrill","r":[33,36,42,44],"n":4}],"bog_wisp":[{"m":"mistmire_swamp","r":[28,6,46,10],"n":4},{"m":"mistmire_swamp","r":[16,14,26,19],"n":2}],"vale_keeper":[{"m":"ancient_ruins","r":[45,32,51,37],"n":1}],"salt_brute":[{"m":"yellowlick_flats","r":[20,44,28,50],"n":1}],"cinder_brute":[{"m":"ember_hollow","r":[22,42,28,48],"n":1}],"remnant":[{"m":"ancient_ruins","r":[32,31,46,38],"n":5},{"m":"ancient_ruins","r":[25,39,33,46],"n":3}]},"maps":{"old_quarry":{"n":"Old Quarry","rg":"A","w":56,"h":56,"lv":[10,16]},"sunfield_plains":{"n":"Sunfield Plains","rg":"B","w":56,"h":56,"lv":[18,24]},"lanternrice_delta":{"n":"Lanternrice Delta","rg":"E","w":56,"h":56,"lv":[101,104]},"frostpeak_slopes":{"n":"Frostpeak Slopes","rg":"C","w":56,"h":56,"lv":[45,52]},"ember_hollow":{"n":"Ember Hollow","rg":"B","w":56,"h":56,"lv":[28,36]},"stormrail_causeway":{"n":"Stormrail Causeway","rg":"E","w":56,"h":56,"lv":[107,110]},"cloudspire_ruins":{"n":"Cloudspire Ruins","rg":"C","w":56,"h":56,"lv":[64,70]},"duskgate_pass":{"n":"Duskgate Pass","rg":"B","w":56,"h":56,"lv":[40,45]},"ancient_ruins":{"n":"Ancient Ruins","rg":"A","w":56,"h":56,"lv":[14,20]},"yellowlick_flats":{"n":"Yellowlick Flats","rg":"B","w":56,"h":56,"lv":[30,36]},"howling_steppes":{"n":"Howling Steppes","rg":"C","w":56,"h":56,"lv":[58,64]},"gloomroot_forest":{"n":"Gloomroot Forest","rg":"B","w":56,"h":56,"lv":[24,30]},"pitchwood":{"n":"Pitchwood","rg":"B","w":56,"h":56,"lv":[24,30]},"verdigris_rise":{"n":"Verdigris Rise","rg":"A","w":56,"h":56,"lv":[14,20]},"kitewind_terraces":{"n":"Kitewind Terraces","rg":"C","w":56,"h":56,"lv":[64,70]},"bracken_sink":{"n":"Bracken Sink","rg":"A","w":56,"h":56,"lv":[9,15]},"mistmire_swamp":{"n":"Mistmire Swamp","rg":"B","w":56,"h":56,"lv":[34,40]},"glasswrack":{"n":"Glasswrack","rg":"D","w":56,"h":56,"lv":[72,80]},"coralstep_plateau":{"n":"Coralstep Plateau","rg":"E","w":56,"h":56,"lv":[103,106]},"southvale_field":{"n":"Southvale Field","rg":"A","w":56,"h":56,"lv":[1,4]},"sledrun_gully":{"n":"Sledrun Gully","rg":"C","w":56,"h":56,"lv":[47,53]},"throne_of_warden":{"n":"Throne of the Warden","rg":"D","w":48,"h":48,"lv":[90,99]},"shellforge_basin":{"n":"Shellforge Basin","rg":"E","w":56,"h":56,"lv":[110,113]},"umbral_depths":{"n":"Umbral Depths","rg":"D","w":56,"h":56,"lv":[80,90]},"brinecrust_shoals":{"n":"Brinecrust Shoals","rg":"C","w":56,"h":56,"lv":[54,60]},"wreckwake_coast":{"n":"Wreckwake Coast","rg":"E","w":56,"h":56,"lv":[99,102]},"frozen_mere":{"n":"Frozen Mere","rg":"C","w":56,"h":56,"lv":[52,58]},"whispering_woods":{"n":"Whispering Woods","rg":"A","w":56,"h":56,"lv":[4,9]},"riverside":{"n":"Riverside","rg":"A","w":56,"h":56,"lv":[6,12]},"rustbell_barracks":{"n":"Rustbell Barracks","rg":"D","w":56,"h":56,"lv":[92,99]},"shattered_vale":{"n":"Shattered Vale","rg":"D","w":56,"h":56,"lv":[70,80]},"drowned_forum":{"n":"Drowned Forum","rg":"E","w":56,"h":56,"lv":[105,108]},"marrowdeep":{"n":"Marrowdeep","rg":"D","w":56,"h":56,"lv":[82,90]},"peatcut_bog":{"n":"Peatcut Bog","rg":"B","w":56,"h":56,"lv":[36,42]},"honeyrill":{"n":"Honeyrill","rg":"A","w":56,"h":56,"lv":[3,8]}}};
+window.FARM = {"mons":[{"id":"ammonite_crawler","n":"Ammonite Crawler","sp":"lurker","color":"red","maps":["coralstep_plateau"]},{"id":"coral_brute","n":"Coral Brute","sp":"brute","color":"red","maps":["coralstep_plateau"]},{"id":"coral_pebblit","n":"Coral Pebblit","sp":"pebblit","color":"blue","maps":["coralstep_plateau"]},{"id":"coralback_tortoise","n":"Coralback Tortoise","sp":"pebblit","color":"blue","maps":["coralstep_plateau"]},{"id":"pearl_wisp","n":"Pearl Wisp","sp":"wisp","color":"purple","maps":["coralstep_plateau"]},{"id":"shell_remnant","n":"Shell Remnant","sp":"remnant","color":"blue","maps":["coralstep_plateau"]},{"id":"bronze_remnant","n":"Bronze Remnant","sp":"remnant","color":"blue","maps":["drowned_forum"]},{"id":"drowned_senator","n":"Drowned Senator","sp":"remnant","color":"purple","maps":["drowned_forum"]},{"id":"forum_sentinel","n":"Forum Sentinel","sp":"remnant","color":"purple","maps":["drowned_forum"]},{"id":"fountain_serpent","n":"Fountain Serpent","sp":"lurker","color":"purple","maps":["drowned_forum"]},{"id":"mirror_merchant","n":"Mirror Merchant","sp":"horror","color":"purple","maps":["drowned_forum"]},{"id":"vase_lurker","n":"Vase Lurker","sp":"lurker","color":"red","maps":["drowned_forum"]},{"id":"kite_drake","n":"Kite Drake","sp":"harpy","color":"red","maps":["lanternrice_delta"]},{"id":"lantern_skitter","n":"Lantern Skitter","sp":"skitter","color":"purple","maps":["lanternrice_delta"]},{"id":"paddy_brute","n":"Paddy Brute","sp":"brute","color":"blue","maps":["lanternrice_delta"]},{"id":"paddy_ox","n":"Paddy Ox","sp":"brute","color":"blue","maps":["lanternrice_delta"]},{"id":"reed_crane","n":"Reed Crane","sp":"harpy","color":"red","maps":["lanternrice_delta"]},{"id":"straw_thornling","n":"Straw Thornling","sp":"thornling","color":"red","maps":["lanternrice_delta"]},{"id":"crucible_hound","n":"Crucible Hound","sp":"hound","color":"red","maps":["shellforge_basin"]},{"id":"forge_hermit","n":"Forge Hermit","sp":"crab","color":"purple","maps":["shellforge_basin"]},{"id":"furnace_warden","n":"Furnace Warden","sp":"brute","color":"red","maps":["shellforge_basin"]},{"id":"hollow_caster","n":"Hollow Caster","sp":"remnant","color":"purple","maps":["shellforge_basin"]},{"id":"plate_turtle","n":"Plate Turtle","sp":"crab","color":"blue","maps":["shellforge_basin"]},{"id":"rivet_golem","n":"Rivet Golem","sp":"pebblit","color":"blue","maps":["shellforge_basin"]},{"id":"slag_skitter","n":"Slag Skitter","sp":"skitter","color":"red","maps":["shellforge_basin"]},{"id":"compass_wisp","n":"Compass Wisp","sp":"wisp","color":"purple","maps":["stormrail_causeway"]},{"id":"rail_brute","n":"Rail Brute","sp":"brute","color":"red","maps":["stormrail_causeway"]},{"id":"spark_eel","n":"Spark Eel","sp":"wisp","color":"red","maps":["stormrail_causeway"]},{"id":"stationmaster_automaton","n":"Stationmaster Automaton","sp":"brute","color":"purple","maps":["stormrail_causeway"]},{"id":"thunder_harpy","n":"Thunder Harpy","sp":"harpy","color":"red","maps":["stormrail_causeway"]},{"id":"tram_remnant","n":"Tram Remnant","sp":"remnant","color":"purple","maps":["stormrail_causeway"]},{"id":"anchor_crab","n":"Anchor Crab","sp":"crab","color":"blue","maps":["wreckwake_coast"]},{"id":"barnacle_remnant","n":"Barnacle Remnant","sp":"remnant","color":"blue","maps":["wreckwake_coast"]},{"id":"brass_mimic","n":"Brass Mimic","sp":"crab","color":"purple","maps":["wreckwake_coast"]},{"id":"drowned_bosun","n":"Drowned Bosun","sp":"remnant","color":"blue","maps":["wreckwake_coast"]},{"id":"gull_harpy","n":"Gull Harpy","sp":"harpy","color":"red","maps":["wreckwake_coast"]},{"id":"hullbreaker_kraken","n":"Hullbreaker Kraken","sp":"lurker","color":"blue","maps":["wreckwake_coast"]}],"weak":{"sprout":["fire","earth"],"thornling":["fire","frost"],"hound":["fire","shadow"],"skitter":["earth","storm"],"harpy":["earth","storm"],"crab":["storm","frost"],"brute":["storm","earth"],"pebblit":["frost","fire"],"lurker":["frost","earth"],"remnant":["holy","shadow"],"horror":["holy","shadow"],"wisp":["shadow","holy"],"warden":["shadow","holy"]},"slay":{"brute":["rock_skitter"],"crab":["frost_skitter","sulfur_skitter","peat_wisp"],"sprout":["acorn_skitter"],"remnant":["ember_hound"],"wisp":["frost_fang"],"skitter":["steppe_hound","reed_crane"],"thornling":["hive_skitter","sap_wisp"],"pebblit":["hill_hound"],"hound":["tar_thornling"],"lurker":["tusk_fang","bog_wisp"]},"gold":["shrine_firefly","lamp_wisp","golden_sentinel","mirror_merchant","brass_mimic"],"maps":{"old_quarry":{"n":"Old Quarry","rg":"A","w":56,"h":56,"lv":[10,16]},"sunfield_plains":{"n":"Sunfield Plains","rg":"B","w":56,"h":56,"lv":[18,24]},"lanternrice_delta":{"n":"Lanternrice Delta","rg":"E","w":56,"h":56,"lv":[101,104]},"frostpeak_slopes":{"n":"Frostpeak Slopes","rg":"C","w":56,"h":56,"lv":[45,52]},"ember_hollow":{"n":"Ember Hollow","rg":"B","w":56,"h":56,"lv":[28,36]},"stormrail_causeway":{"n":"Stormrail Causeway","rg":"E","w":56,"h":56,"lv":[107,110]},"cloudspire_ruins":{"n":"Cloudspire Ruins","rg":"C","w":56,"h":56,"lv":[64,70]},"duskgate_pass":{"n":"Duskgate Pass","rg":"B","w":56,"h":56,"lv":[40,45]},"ancient_ruins":{"n":"Ancient Ruins","rg":"A","w":56,"h":56,"lv":[14,20]},"yellowlick_flats":{"n":"Yellowlick Flats","rg":"B","w":56,"h":56,"lv":[30,36]},"howling_steppes":{"n":"Howling Steppes","rg":"C","w":56,"h":56,"lv":[58,64]},"gloomroot_forest":{"n":"Gloomroot Forest","rg":"B","w":56,"h":56,"lv":[24,30]},"pitchwood":{"n":"Pitchwood","rg":"B","w":56,"h":56,"lv":[24,30]},"verdigris_rise":{"n":"Verdigris Rise","rg":"A","w":56,"h":56,"lv":[14,20]},"kitewind_terraces":{"n":"Kitewind Terraces","rg":"C","w":56,"h":56,"lv":[64,70]},"bracken_sink":{"n":"Bracken Sink","rg":"A","w":56,"h":56,"lv":[9,15]},"mistmire_swamp":{"n":"Mistmire Swamp","rg":"B","w":56,"h":56,"lv":[34,40]},"glasswrack":{"n":"Glasswrack","rg":"D","w":56,"h":56,"lv":[72,80]},"coralstep_plateau":{"n":"Coralstep Plateau","rg":"E","w":56,"h":56,"lv":[103,106]},"southvale_field":{"n":"Southvale Field","rg":"A","w":56,"h":56,"lv":[1,4]},"sledrun_gully":{"n":"Sledrun Gully","rg":"C","w":56,"h":56,"lv":[47,53]},"throne_of_warden":{"n":"Throne of the Warden","rg":"D","w":48,"h":48,"lv":[90,99]},"shellforge_basin":{"n":"Shellforge Basin","rg":"E","w":56,"h":56,"lv":[110,113]},"umbral_depths":{"n":"Umbral Depths","rg":"D","w":56,"h":56,"lv":[80,90]},"brinecrust_shoals":{"n":"Brinecrust Shoals","rg":"C","w":56,"h":56,"lv":[54,60]},"wreckwake_coast":{"n":"Wreckwake Coast","rg":"E","w":56,"h":56,"lv":[99,102]},"frozen_mere":{"n":"Frozen Mere","rg":"C","w":56,"h":56,"lv":[52,58]},"whispering_woods":{"n":"Whispering Woods","rg":"A","w":56,"h":56,"lv":[4,9]},"riverside":{"n":"Riverside","rg":"A","w":56,"h":56,"lv":[6,12]},"rustbell_barracks":{"n":"Rustbell Barracks","rg":"D","w":56,"h":56,"lv":[92,99]},"shattered_vale":{"n":"Shattered Vale","rg":"D","w":56,"h":56,"lv":[70,80]},"drowned_forum":{"n":"Drowned Forum","rg":"E","w":56,"h":56,"lv":[105,108]},"marrowdeep":{"n":"Marrowdeep","rg":"D","w":56,"h":56,"lv":[82,90]},"peatcut_bog":{"n":"Peatcut Bog","rg":"B","w":56,"h":56,"lv":[36,42]},"honeyrill":{"n":"Honeyrill","rg":"A","w":56,"h":56,"lv":[3,8]}}};
+</script>
+<script>
+"use strict";
+const D=window.CARDDATA, CARDS=D.cards, BY=Object.fromEntries(CARDS.map(c=>[c.id,c])), TPL=D.tpl;
+const FD=window.FARM, SP=window.SPAWNS||{spawns:{},maps:{}}, SPAWN=SP.spawns, SMAP=SP.maps;
+const SLOTLV=[12,18,25,32,40,50,60,70,85], PA=[1,.5,.25,0], STAR_MAX=5;
+const COLOR={red:{n:'แดง',e:'Attack'},blue:{n:'น้ำเงิน',e:'Guard'},green:{n:'เขียว',e:'Growth'},purple:{n:'ม่วง',e:'Spirit'},legend:{n:'ตำนาน',e:'Legendary'}};
+const REGION={A:'Valebrook',B:'Ashford',C:'Stormwall',D:'Sanctum',E:'Nacreon'};
+const SPN={sprout:'Sprout',skitter:'Skitter',wisp:'Wisp',thornling:'Thornling',crab:'Crab',brute:'Brute',pebblit:'Pebblit',remnant:'Remnant',hound:'Hound',lurker:'Lurker',harpy:'Harpy',horror:'Horror',warden:'Warden'};
+const SPTH={sprout:'พืช',skitter:'แมลง',wisp:'วิญญาณ',thornling:'หนาม',crab:'ปู',brute:'ยักษ์',pebblit:'หิน',remnant:'ซาก',hound:'หมา',lurker:'ซุ่ม',harpy:'ปักษา',horror:'สยอง',warden:'ผู้พิทักษ์'};
+const ELEM={fire:{n:'ไฟ',c:'#e0592f'},frost:{n:'น้ำแข็ง',c:'#2f8fe0'},storm:{n:'สายฟ้า',c:'#b06be0'},holy:{n:'ศักดิ์สิทธิ์',c:'#d9b24e'},shadow:{n:'มืด',c:'#6a6f8a'},earth:{n:'ดิน',c:'#8a6a3a'}};
+const J=(k,v,stat)=>({k,v,stat});
+const RES_REGION={E:{name:'Tidebound',t3:[J('dmgTaken',3),J('atkPct',3),J('matkPct',3)],t5:[J('maxHpPct',6),J('drop',4),J('cdr',2)]},A:{name:'Hearthland',t3:[J('maxHpPct',6),J('gold',6)],t5:[J('maxHpPct',6),J('drop',6)]},B:{name:'Emberheart',t3:[J('atkPct',5),J('matkPct',5)],t5:[J('critDmg',6),J('atkPct',3),J('matkPct',3)]},C:{name:'Frostbound',t3:[J('dmgTaken',5)],t5:[J('dmgTaken',4),J('maxHpPct',8)]},D:{name:'Riftsight',t3:[J('cdr',4),J('crit',2)],t5:[J('cdr',3),J('crit',2),J('spirit',15)]}};
+const RES_KIN={skitter:{name:'Swarm Instinct',fx:[J('crit',2)]},hound:{name:'Pack Bond',fx:[J('aspd',5)]},thornling:{name:'Bramble Pact',fx:[J('debuffed',8)]},brute:{name:'Hide of Giants',fx:[J('maxHpPct',6)]},crab:{name:'Shellguard',fx:[J('thorns',12)]},pebblit:{name:'Pebble Wall',fx:[J('dmgTaken',3)]},sprout:{name:'Deep Roots',fx:[J('stat',3,'vit'),J('stat',3,'str')]},lurker:{name:'Mire Ambush',fx:[J('opener',10)]},wisp:{name:"Will-o'-Chorus",fx:[J('matkPct',5)]},remnant:{name:'Echoing Oath',fx:[J('cdr',4)]}};
+const RES_COLOR={red:{name:'Crimson Mastery',need:3,fx:[J('atkPct',3),J('matkPct',3)]},blue:{name:'Azure Mastery',need:3,fx:[J('dmgTaken',3),J('maxHpPct',3)]},green:{name:'Verdant Mastery',need:3,fx:[J('gold',5),J('drop',3),J('gather',3)]},purple:{name:'Violet Mastery',need:3,fx:[J('cdr',3),J('crit',1)]},legend:{name:'Sovereign Mastery',need:2,fx:[J('boss',8),J('maxHpPct',4)]}};
+const COLOR_STAR=3;
+const SIX=['str','agi','vit','int','dex','luk'];
+const CODEX=[{n:5,fx:SIX.map(s=>J('stat',1,s))},{n:10,fx:[J('atkPct',2),J('matkPct',2)]},{n:20,fx:[J('maxHpPct',3)]},{n:30,fx:SIX.map(s=>J('stat',1,s))},{n:40,fx:[J('gold',5),J('drop',3)]},{n:50,fx:[J('atkPct',2),J('matkPct',2)]},{n:60,fx:[J('dmgTaken',3)]},{n:75,fx:[J('crit',2),...SIX.map(s=>J('stat',2,s))]}];
+const NIGHT_SP=new Set(['wisp','remnant','horror','lurker']), DAY_SP=new Set(['sprout','crab','pebblit','harpy','hound']);
+function cycle(c){ if(/gloom|dusk|umbral|void|abyss|lantern|firefly|night|shade/.test(c.id))return 'night'; if(/sun|golden|shrine_|field|plains|bloom|sky/.test(c.id))return 'day'; return NIGHT_SP.has(c.sp)?'night':DAY_SP.has(c.sp)?'day':'steady'; }
+const dayMult=(c,night)=>{const g=cycle(c);return g==='steady'?1:(g==='night')===night?1.4:.85};
+const loadCap=lv=>lv<12?0:Math.min(18,4+Math.floor((lv-12)/6));
+const starVal=(f,s)=>{const a=Math.max(1,Math.min(STAR_MAX,s)),n=f.v[0]+(f.v[1]-f.v[0])*(a-1)/(STAR_MAX-1);return f.k==='stat'?Math.round(n):Math.round(n*10)/10};
+const r1=x=>Math.round(x*10)/10;
+const fkey=f=>f.k+(f.stat?':'+f.stat:'')+(f.species?'@'+f.species:'');
+function label(key,val){ const [k0,sp]=key.split('@'); let t=TPL[k0]||TPL[k0.split(':')[0]]||(k0+' +{x}'); if(sp) t=t.replace('{sp}',SPN[sp]||sp); return t.replace('{x}','<span class="v">'+val+'</span>'); }
+const fxText=(c,s)=>c.fx.map(f=>label(fkey(f),starVal(f,s))).join(' · ');
+const ORDER=Object.keys(TPL);
+function sortKeys(keys){ return keys.sort((a,b)=>{ const ia=ORDER.indexOf(a.split('@')[0]), ib=ORDER.indexOf(b.split('@')[0]); return (ia<0?999:ia)-(ib<0?999:ib)||a.localeCompare(b); }); }
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+function toast(t){ const el=document.createElement('div'); el.className='toast'; el.innerHTML='<div><b>'+esc(t)+'</b></div>'; $('toasts').appendChild(el); el.onclick=()=>el.remove(); setTimeout(()=>el.remove(),6000); }
+
+/* ---------- engine: mirrors cards.html calc() ---------- */
+function calc(S0){ const tot={}, add=(key,v)=>{ tot[key]=(tot[key]||0)+v; };
+  const placed=[], seen=new Map();
+  S0.slots.forEach((x,i)=>{ if(!x||S0.lv<SLOTLV[i])return; const c=BY[x.id]; const n=seen.get(c.id)||0; seen.set(c.id,n+1); placed.push({i,c,star:x.star,echo:PA[Math.min(n,PA.length-1)]}); });
+  for(const p of placed){ if(!p.echo)continue; const m=dayMult(p.c,S0.night)*p.echo;
+    for(const f of p.c.fx){ const v=f.k==='stat'?Math.round(starVal(f,p.star)*m):r1(starVal(f,p.star)*m); add(fkey(f),v); } }
+  const uniq=[...new Map(placed.map(p=>[p.c.id,p])).values()].map(p=>({c:p.c,star:Math.max(...placed.filter(q=>q.c.id===p.c.id).map(q=>q.star))}));
+  const res=[];
+  for(const g of ['A','B','C','D','E']){ const ms=uniq.filter(u=>u.c.rg===g), n=ms.length, R=RES_REGION[g];
+    res.push({name:R.name,sub:REGION[g],count:n,on:n>=3,tier:n>=5?2:n>=3?1:0});
+    if(n>=3)R.t3.forEach(f=>add(fkey(f),f.v)); if(n>=5)R.t5.forEach(f=>add(fkey(f),f.v)); }
+  for(const [sp,R] of Object.entries(RES_KIN)){ const n=uniq.filter(u=>u.c.sp===sp).length;
+    res.push({name:R.name,sub:SPN[sp],count:n,on:n>=2}); if(n>=2)R.fx.forEach(f=>add(fkey(f),f.v)); }
+  for(const [col,R] of Object.entries(RES_COLOR)){ const n=uniq.filter(u=>u.c.color===col&&u.star>=COLOR_STAR).length;
+    res.push({name:R.name,sub:COLOR[col].n+' ★'+COLOR_STAR+'+',count:n,on:n>=R.need}); if(n>=R.need)R.fx.forEach(f=>add(fkey(f),f.v)); }
+  const caps={},capAt=(k,m)=>{ if(tot[k]>m)tot[k]=m; };
+  capAt('dmgTaken',25); capAt('wardBoss',30); capAt('wardNight',30);
+  for(const k of Object.keys(tot)) if(k.startsWith('ward@')) capAt(k,40);
+  for(const k of Object.keys(tot)) tot[k]=r1(tot[k]);
+  const load=placed.reduce((a,p)=>a+p.c.load,0);
+  return {tot,res,placed,load,cap:loadCap(S0.lv)};
+}
+
+/* ---------- scoring: mirrors cards.html ---------- */
+const OFF_PHYS={atkPct:3,crit:3,critDmg:2.5,aspd:2.5,armorPen:2,boss:2,elite:1.5,opener:1.5,debuffed:1.5,desperate:1,night:1.2,bleed:1.5,expose:1.5,haste:1.5,echo:1,chain:1,lifesteal:1.5,slayer:.6,judgment:2,storm:1.5,web:1.5,phoenix:1,lotusdrain:1.2};
+const OFF_MAG={matkPct:3,cdr:2.5,armorPen:2,boss:2,elite:1.5,opener:1.2,debuffed:1.5,night:1.2,echo:1.5,chain:1.5,frost:1,nova:1.5,focus:1.5,slayer:.6,judgment:2,storm:1.5,polar:1.5,lotusdrain:1.2,web:1,spellAmp:3};
+const DEF={maxHpPct:2,dmgTaken:2.5,ward:.8,wardBoss:2,wardNight:1,thorns:1,barrier:1.5,bulwark:1.5,renew:1.2,prism:2,bloom:1.5,phoenix:1.2,gust:.5,moveSpeed:.5};
+const FARMW={gold:3,drop:3,gather:2,spirit:2.5,moveSpeed:1.5};
+const JOBW={
+  knight:{off:{...OFF_PHYS,matkPct:1.5,cdr:1},offW:.6,def:1.6,stat:{vit:2,str:1.2,int:1,agi:.6}},
+  warrior:{off:OFF_PHYS,offW:1,def:.7,stat:{str:2,agi:1,vit:1}},
+  scout:{off:OFF_PHYS,offW:1,def:.5,stat:{dex:2,agi:1,luk:1}},
+  rogue:{off:OFF_PHYS,offW:1,def:.5,stat:{agi:2,luk:1.5,dex:1}},
+  mage:{off:OFF_MAG,offW:1,def:.6,stat:{int:2,dex:1.5}},
+  acolyte:{off:{...OFF_MAG,matkPct:2.5,cdr:2.5,focus:2},offW:.8,def:1.2,stat:{int:2,vit:1.2,dex:.8},extra:{renew:2.5,bloom:3,dmgTaken:1}},
+  summoner:{off:OFF_MAG,offW:1,def:.6,stat:{int:2,luk:1,dex:.8}}};
+const MAG_JOB=new Set(['mage','acolyte','summoner']);
+const KEYMAX=(()=>{ const m={}; for(const c of CARDS) for(const f of c.fx){ const k=f.k==='stat'?'stat':f.k; m[k]=Math.max(m[k]||0,f.v[1]); } return m; })();
+const JOBS={knight:'Knight',warrior:'Warrior',scout:'Scout',rogue:'Rogue',mage:'Mage',acolyte:'Acolyte',summoner:'Summoner'};
+function weightOf(job,f){ const W=JOBW[job]; let w=0;
+  if(f.k==='stat') w=(W.stat[f.stat]||.2);
+  else w=(W.off[f.k]||0)*W.offW + (DEF[f.k]||0)*W.def + ((W.extra||{})[f.k]||0) + (FARMW[f.k]?.3:0);
+  return w; }
+// damage-only score (ignore slayer here, handled separately); star=5, day cycle neutral
+function dmgScore(c,job){ let s=0; for(const f of c.fx){ if(f.k==='slayer'||f.k==='gold')continue; const w=weightOf(job,f); if(w<=0)continue; const k=f.k==='stat'?'stat':f.k; s+=w*(starVal(f,5)/(KEYMAX[k]||1)); } return s; }
+const slayVal=(c,sp)=>{ const f=c.fx.find(x=>x.k==='slayer'&&x.species===sp); return f?starVal(f,5):0; };
+const goldVal=(c)=>{ const f=c.fx.find(x=>x.k==='gold'); return f?starVal(f,5):0; };
+
+/* ---------- farm planner ---------- */
+const STAR=5, LV=99;
+function plan(job,mon,goal){
+  const cap=loadCap(LV), nSlots=SLOTLV.filter(l=>LV>=l).length; // 9 @ Lv99
+  const sp=mon.sp, night=NIGHT_SP.has(sp);  // match mob's active time for day/night bonus
+  const picks=[]; let load=0; const count={};
+  const add=(c,tag,maxDup=1)=>{ const dup=(count[c.id]||0); if(dup>=maxDup)return false; if(picks.length>=nSlots)return false; if(load+c.load>cap)return false; picks.push({c,tag,copy:dup+1}); load+=c.load; count[c.id]=dup+1; return true; };
+  // 1) PRIMARY — slayer cards for this species
+  const slayers=(FD.slay[sp]||[]).map(id=>BY[id]).sort((a,b)=>slayVal(b,sp)-slayVal(a,sp)||a.load-b.load);
+  for(const c of slayers) add(c,'slay');
+  const hasSlay=picks.length>0;
+  if(goal==='gold'){
+    // 2g) gold cards, strongest first, allow up to 3 copies of the best (echo 100/50/25)
+    const golds=FD.gold.map(id=>BY[id]).sort((a,b)=>goldVal(b)-goldVal(a)||a.load-b.load);
+    // best gold card: stack up to 3; others 1 each
+    golds.forEach((c,i)=>{ const dup=i===0?3:1; for(let k=0;k<dup;k++) add(c,'gold',dup); });
+    // fill leftovers with best job damage cards (to kill faster)
+    const rest=CARDS.filter(c=>!count[c.id]).map(c=>({c,s:dmgScore(c,job)})).filter(x=>x.s>0).sort((a,b)=>b.s/b.c.load-a.s/a.c.load||b.s-a.s);
+    for(const x of rest) add(x.c,'dmg');
+  } else {
+    // 2d) damage — build toward Crimson Mastery (red) which boosts ATK% & MATK% for every job,
+    // plus top job damage cards by score-per-load
+    const pool=CARDS.filter(c=>!count[c.id]).map(c=>({c,s:dmgScore(c,job)})).filter(x=>x.s>0);
+    const reds=pool.filter(x=>x.c.color==='red').sort((a,b)=>b.s-a.s);
+    const redHave=()=>picks.filter(p=>BY[p.c.id].color==='red').length;
+    // ensure 3 red for Crimson Mastery if feasible
+    for(const x of reds){ if(redHave()>=3)break; add(x.c,'set'); }
+    const rest=pool.filter(x=>!count[x.c.id]).sort((a,b)=>b.s/b.c.load-a.s/a.c.load||b.s-a.s);
+    for(const x of rest) add(x.c,'dmg');
+  }
+  // build S0 for calc + share
+  const S0={lv:LV,night,codex:0,slots:Array(9).fill(null)};
+  let k=0; SLOTLV.forEach((l,i)=>{ if(LV>=l&&k<picks.length) S0.slots[i]={id:picks[k++].c.id,star:STAR}; });
+  return {picks,load,cap,nSlots,night,hasSlay,R:calc(S0),S0};
+}
+
+/* ---------- share code (matches cards.html c1 format) ---------- */
+const AL='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+const idx=id=>CARDS.findIndex(c=>c.id===id)+1;
+function enc(S0){ let c='c1'+String(S0.lv).padStart(2,'0')+(S0.night?'1':'0')+'000';
+  for(const x of S0.slots){ const i=x?idx(x.id):0; c+=AL[Math.floor(i/64)]+AL[i%64]+(x?x.star:0); } return c; }
+
+/* ---------- mini-map (spawn zones) ---------- */
+function miniMap(z){ const m=SMAP[z.m]; if(!m)return '';
+  const W=120,H=Math.round(W*m.h/m.w),sx=W/m.w,sy=H/m.h; let mk;
+  if(z.r){ const [x0,y0,x1,y1]=z.r; mk='<rect x="'+(x0*sx).toFixed(1)+'" y="'+(y0*sy).toFixed(1)+'" width="'+((x1-x0)*sx).toFixed(1)+'" height="'+((y1-y0)*sy).toFixed(1)+'" rx="2" class="spawn"/>'; }
+  else { const [cx,cy,rx,ry]=z.d; mk='<ellipse cx="'+(cx*sx).toFixed(1)+'" cy="'+(cy*sy).toFixed(1)+'" rx="'+(rx*sx).toFixed(1)+'" ry="'+(ry*sy).toFixed(1)+'" class="spawn"/>'; }
+  return '<figure class="mm"><svg viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" class="mmbg"/>'+mk+'</svg>'+
+    '<figcaption><b>'+esc(m.n)+'</b> <small>Lv '+m.lv[0]+'–'+m.lv[1]+' · '+m.w+'×'+m.h+'</small></figcaption></figure>'; }
+
+/* ---------- render ---------- */
+let CUR=null;
+function render(){
+  const job=$('fJob').value, monId=$('fMon').value, goal=$('fGoal').value;
+  const mon=FD.mons.find(m=>m.id===monId); if(!mon){ $('fOut').innerHTML=''; return; }
+  try{localStorage.setItem('farmPlan',JSON.stringify({job,mon:monId,map:$('fMap').value,goal}))}catch(e){}
+  const [weak,resist]=FD.weak[mon.sp]||['',''];
+  const P=plan(job,mon,goal); CUR=P;
+  const cc='--cc:var(--c-'+mon.color+')';
+  const tagLabel={slay:'ตีเผ่า',set:'เข้าเซต',dmg:'ดาเมจ',gold:'ทอง'};
+  const cards=P.picks.map(p=>{ const c=p.c; const fxs=c.fx.map(f=>label(fkey(f),starVal(f,STAR))).join(' · ');
+    return '<div class="pc" style="--cc:var(--c-'+c.color+')"><img src="img/card/'+c.id+'.svg" alt="" loading="lazy">'+
+      '<div class="pcm"><b>'+esc(c.n)+(p.copy>1?' <span class="dup">#'+p.copy+' ('+(PA[p.copy-1]*100)+'%)</span>':'')+'</b>'+
+      ' <small>'+COLOR[c.color].n+' · Load '+c.load+'</small><div class="why">'+fxs+'</div></div>'+
+      '<span class="btag t-'+p.tag+'">'+tagLabel[p.tag]+'</span></div>'; }).join('');
+  const keys=sortKeys(Object.keys(P.R.tot).filter(k=>P.R.tot[k]));
+  const resOn=P.R.res.filter(r=>r.on);
+  const zones=(SPAWN[mon.id]||[]); const byMap={}; zones.forEach(z=>{ if(!byMap[z.m])byMap[z.m]=z; });
+  const maps=Object.values(byMap).map(miniMap).join('');
+  const slayNote=P.hasSlay?'':'<p class="warn">เผ่า '+SPN[mon.sp]+' ยังไม่มีการ์ด slayer — เน้นการ์ดดาเมจของอาชีพและใส่ธาตุ '+ELEM[weak].n+' ที่อาวุธแทน</p>';
+  $('fOut').innerHTML=
+    '<div class="mhead" style="'+cc+'"><img src="img/card/'+mon.id+'.svg" alt=""><div>'+
+      '<h3>'+esc(mon.n)+'</h3><p class="msub">เผ่า <b>'+SPN[mon.sp]+'</b> ('+SPTH[mon.sp]+') · '+COLOR[mon.color].n+' · ทวีป Nacreon</p>'+
+      '<p class="elem"><span class="ech weak" style="--e:'+ELEM[weak].c+'">แพ้ธาตุ '+ELEM[weak].n+' ×1.25</span> <span class="ech res" style="--e:'+ELEM[resist].c+'">ต้านธาตุ '+ELEM[resist].n+' ×0.6</span></p>'+
+      '<p class="m">อาวุธ → ช่างตีเหล็ก → Infusion ธาตุ <b>'+ELEM[weak].n+'</b> (ใช้ Core 1 ชิ้น ถอดฟรี) เพื่อตีมอนตัวนี้แรงขึ้น</p>'+
+    '</div></div>'+
+    slayNote+
+    '<div class="plan"><div class="plist">'+cards+'</div>'+
+      '<div class="pbox"><h4>ชุดการ์ดแนะนำ · '+JOBS[job]+' · '+(goal==='gold'?'เน้นทอง':'ดาเมจสูงสุด')+'</h4>'+
+        '<div>ใช้ '+P.picks.length+' / '+P.nSlots+' ช่อง · Load '+P.load+' / '+P.cap+' · การ์ด ★5 · Lv 99</div>'+
+        '<div><b>Resonance ที่เปิด:</b> '+(resOn.length?resOn.map(r=>'<span class="ok">'+esc(r.name)+(r.tier===2?' II':'')+'</span>').join(' · '):'—')+'</div>'+
+        '<div><b>สเตตัสรวม (การ์ด + Resonance):</b><ul>'+keys.map(k=>'<li>'+label(k,P.R.tot[k])+'</li>').join('')+'</ul></div>'+
+        '<button type="button" class="btn pri" id="fOpen">เปิดชุดนี้ในหน้าการ์ด</button>'+
+      '</div></div>'+
+    (maps?'<h4 class="sh">จุดเกิดของ '+esc(mon.n)+'</h4><div class="maps">'+maps+'</div>':'');
+}
+function fillMons(){
+  const mapSel=$('fMap').value;
+  const list=FD.mons.filter(m=>mapSel==='all'||m.maps.includes(mapSel));
+  $('fMon').innerHTML=list.map(m=>'<option value="'+m.id+'">'+esc(m.n)+' · '+SPN[m.sp]+'</option>').join('');
+}
+function init(){
+  $('fJob').innerHTML=Object.entries(JOBS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('');
+  const maps=[...new Set(FD.mons.flatMap(m=>m.maps))].map(id=>({id,n:SMAP[id]?SMAP[id].n:id})).sort((a,b)=>a.n.localeCompare(b.n));
+  $('fMap').innerHTML='<option value="all">ทุกแมพ Nacreon</option>'+maps.map(m=>'<option value="'+m.id+'">'+esc(m.n)+'</option>').join('');
+  fillMons();
+  try{ const s=JSON.parse(localStorage.getItem('farmPlan')||'null'); if(s){ if(JOBS[s.job])$('fJob').value=s.job; if(s.map&&[...$('fMap').options].some(o=>o.value===s.map)){$('fMap').value=s.map; fillMons();} if(s.mon&&FD.mons.some(m=>m.id===s.mon))$('fMon').value=s.mon; if(s.goal)$('fGoal').value=s.goal; } }catch(e){}
+  $('fMap').addEventListener('change',()=>{ fillMons(); render(); });
+  ['fJob','fMon','fGoal'].forEach(id=>$(id).addEventListener('change',render));
+  document.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+    if(b.id==='fOpen'&&CUR){ location.href='cards.html#c='+enc(CUR.S0); } });
+  $('fver').textContent='ข้อมูลตามตัวเกม 27 ต.ค. 2569 · เผ่า/ธาตุแพ้ทางจากไฟล์เกม · การ์ด ★5 ที่ Lv 99 (เปิดครบ 9 ช่อง)';
+  render();
+}
+init();
+</script>
+</body>
+</html>
