@@ -63,6 +63,12 @@ h3{font-family:var(--display);font-weight:600;font-size:17px;margin:0}
 .chip small{color:var(--muted);margin-left:3px}
 .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:10px;margin-top:12px}
 .bk{border:1px solid var(--rim);border-radius:14px;padding:12px 14px;background:var(--panel-2);display:flex;flex-direction:column;gap:6px;min-width:0}
+.feat{display:grid;gap:12px;margin-top:10px}
+.fb{border:1px solid var(--rim);border-left:4px solid var(--accent);border-radius:14px;padding:14px 16px;background:var(--panel-2);min-width:0}
+.fb h3{margin:0 0 4px;font-family:var(--display);font-weight:600;font-size:18px;overflow-wrap:anywhere}
+.fb .sub{color:var(--muted);font-size:14px;margin:0 0 10px}
+.fb ul{margin:6px 0 10px;padding-left:20px;line-height:1.65}
+.fb .warn{font-size:13.5px;color:var(--muted);border-top:1px dashed var(--rim);padding-top:8px;margin-top:8px}
 .bk.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .bk .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .bk .t b{font-family:var(--display);font-weight:600;font-size:17px;overflow-wrap:anywhere}
@@ -141,6 +147,11 @@ table.t td.tot{font-weight:700;color:var(--accent);text-align:right}
     </div>
     <button class="btn pri" type="button" id="newBtn" style="margin-left:auto">+ สร้างบิลด์ใหม่</button>
   </header>
+
+  <section class="panel" aria-labelledby="featT">
+    <h2 class="sec" id="featT">บิลด์แนะนำ</h2>
+    <div class="feat" id="feat"></div>
+  </section>
 
   <section class="panel" aria-labelledby="libT">
     <div class="tabs" role="group" aria-label="แหล่งบิลด์"><button type="button" class="tab" data-src="mine" aria-pressed="true">บิลด์ของฉัน</button><button type="button" class="tab" data-src="got" aria-pressed="false">ได้รับจากลิงก์</button></div>
@@ -411,6 +422,28 @@ function renderEditor(){
 function renderView(){ const v=$('viewBar'); v.hidden=!VIEW; if(!VIEW) return;
   v.innerHTML='<span>กำลังดูบิลด์ที่แชร์มา <b>🔒 '+esc(VIEW.name)+'</b> · '+JOB[VIEW.job].name+'</span><span class="sp"></span><button type="button" class="btn pri" id="vSave">บันทึกลงเครื่องนี้</button><button type="button" class="btn" id="vBack">กลับไปคลังบิลด์</button>'; }
 function render(){ renderLib(); renderEditor(); renderView(); }
+
+/* ---------- บิลด์แนะนำ (ทุกคนเห็นเหมือนกัน) ---------- */
+const FEATURED=[{
+  name:'Rogue · ล่า Lantern Skitter (เชน Pickpocket)', job:'rogue', lv:105,
+  stats:{str:99,agi:1,vit:50,int:0,dex:1,luk:90},
+  skill:'b5005a55a35a5500100000000000aa0000000000000674czz',
+  sub:'ฟาร์มทีละตัวใน Lanternrice Delta · Lantern Skitter Lv102 เลือด 172,140 · ฆ่าได้ = Soul Filch รีคูลดาวน์ทันที แล้วกดตัวต่อไป',
+  pts:[
+    '<b>หัวใจของบิลด์:</b> Soul Filch ใส่ Trait <b>Pickpocket</b> (ฆ่าได้ = รีคูลดาวน์ทันที) + Evolution <b>Core Burst</b> (ดาเมจ +60%) · ตีเป้าที่ติดดีบัฟแรง ×1.8',
+    '<b>วิธีเล่น:</b> Fan of Knives (Evolution <b>Toxic Fan</b>) ปาใส่ฝูงให้ติดพิษทุกตัว → Soul Filch ทีละตัว ฆ่าแล้วกดซ้ำได้ทันที → Assassinate เก็บตัวที่ไม่ตาย',
+    '<b>สกิล (64 แต้ม · Job 50):</b> Soul Filch 10 · Assassinate 10 · Shadow Strike 10 · Fan of Knives 5 · Flurry 5 · Killing Edge 5 · Lethality 5 · Essence Hunger 5 · Dirty Tricks 5 · Death Mark 3 · Fade 1',
+    '<b>สเตตัส:</b> STR 99 · LUK 90 · VIT 50 · AGI 1 · DEX 1 (เลือดราว 1,000 พอทนฝูงที่ถูก Lantern Lure เรียกมา)',
+    '<b>อุปกรณ์:</b> มีดสั้นคู่ (มือหลัก+มือรอง) ตีบวกสูงสุดเท่าที่ทำได้ · Affix คริ / ดาเมจคริ / ATK% · แหวน 2 วง'
+  ],
+  warn:'ตัวเลขคำนวณจากสูตรในไฟล์เกม เทียบกับ Scout ที่ตีบวก +15 ที่ฆ่าตัวนี้ได้ 1–2 ที: Soul Filch แบบนี้แรงกว่า Blast Arrow ราว 3 เท่าเมื่อเป้าติดพิษ จึงน่าจะฆ่าได้ในทีเดียวและเชนต่อได้ · ถ้าเป้าไม่ติดพิษ ดาเมจเหลือราว 1.7 เท่า · ยังไม่ได้ทดสอบในเกมจริง'
+}];
+function renderFeat(){ $('feat').innerHTML=FEATURED.map((f,i)=>'<article class="fb"><h3>'+esc(f.name)+'</h3><p class="sub">'+JOB[f.job].name+' · Lv '+f.lv+' · '+esc(f.sub)+'</p><ul>'+f.pts.map(p=>'<li>'+p+'</li>').join('')+'</ul>'+
+  '<button type="button" class="btn pri" data-feat="'+i+'">เปิดดูสเตตัส + Skill Tree</button><div class="warn">'+esc(f.warn)+'</div></article>').join(''); }
+$('feat').addEventListener('click',e=>{ const t=e.target.closest('[data-feat]'); if(!t) return; const f=FEATURED[+t.dataset.feat];
+  VIEW={v:1,id:'',name:f.name.slice(0,40),job:f.job,created:Date.now(),updated:Date.now(),lv:f.lv,stats:{...f.stats},gear:'',skill:f.skill,cards:''};
+  render(); window.scrollTo({top:0,behavior:'smooth'}); });
+renderFeat();
 function upd(b,fn){ fn(b); b.updated=Date.now(); store(db); render(); }
 function copyLink(url,name){ const o=$('shareOut');
   const put=ok=>{ o.innerHTML='<div class="shareout">'+(ok?'คัดลอกลิงก์บิลด์ "'+esc(name)+'" แล้ว ส่งให้เพื่อนได้เลย':'กดค้างที่ลิงก์แล้วเลือกคัดลอก')+'<input readonly value="'+esc(url)+'" aria-label="ลิงก์แชร์บิลด์"></div>'; return o.querySelector('input'); };
