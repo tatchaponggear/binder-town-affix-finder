@@ -428,20 +428,27 @@ const FEATURED=[{
   name:'Rogue · ล่า Lantern Skitter (เชน Pickpocket)', job:'rogue', lv:105,
   stats:{str:99,agi:1,vit:50,int:0,dex:1,luk:90},
   skill:'b5005a55a35a5500100000000000aa0000000000000674czz',
+  gear:'e392040gilw4086py4086py40cbyp40giml40ghml40cbyt40gilw40cbyp40cbyp40gilw40000000O0A0Q0i0i0I0I0G9900000000000',
   sub:'ฟาร์มทีละตัวใน Lanternrice Delta · Lantern Skitter Lv102 เลือด 172,140 · ฆ่าได้ = Soul Filch รีคูลดาวน์ทันที แล้วกดตัวต่อไป',
   pts:[
     '<b>หัวใจของบิลด์:</b> Soul Filch ใส่ Trait <b>Pickpocket</b> (ฆ่าได้ = รีคูลดาวน์ทันที) + Evolution <b>Core Burst</b> (ดาเมจ +60%) · ตีเป้าที่ติดดีบัฟแรง ×1.8',
     '<b>วิธีเล่น:</b> Fan of Knives (Evolution <b>Toxic Fan</b>) ปาใส่ฝูงให้ติดพิษทุกตัว → Soul Filch ทีละตัว ฆ่าแล้วกดซ้ำได้ทันที → Assassinate เก็บตัวที่ไม่ตาย',
     '<b>สกิล (64 แต้ม · Job 50):</b> Soul Filch 10 · Assassinate 10 · Shadow Strike 10 · Fan of Knives 5 · Flurry 5 · Killing Edge 5 · Lethality 5 · Essence Hunger 5 · Dirty Tricks 5 · Death Mark 3 · Fade 1',
     '<b>สเตตัส:</b> STR 99 · LUK 90 · VIT 50 · AGI 1 · DEX 1 (เลือดราว 1,000 พอทนฝูงที่ถูก Lantern Lure เรียกมา)',
-    '<b>อุปกรณ์:</b> มีดสั้นคู่ (มือหลัก+มือรอง) ตีบวกสูงสุดเท่าที่ทำได้ · Affix คริ / ดาเมจคริ / ATK% · แหวน 2 วง'
+    '<b>อุปกรณ์ (แดง 4 แถวทุกชิ้น · ตีบวกให้สูงสุดเท่าที่ทำได้):</b>',
+    '<b>อาวุธ มีดสั้น:</b> ดาเมจใส่มอนเลือดเต็ม · ดาเมจใส่มอนติดสถานะ · LUK · ดูดเลือด',
+    '<b>แหวน ×2 · สร้อยคอ:</b> ดาเมจใส่มอนเลือดเต็ม · ดาเมจใส่มอนติดสถานะ · LUK · Skill CDR',
+    '<b>หน้า · ปาก:</b> CRIT · Crit DMG · Skill CDR · LUK',
+    '<b>มือรอง มีดสั้น · หมวก · รองเท้า:</b> DEF · FLEE · Max HP · VIT',
+    '<b>เกราะชุดหนัง:</b> DEF · FLEE · Max HP% · Max HP · <b>เข็มขัด:</b> DEF · Soft DEF · Max HP% · Max HP',
+    '<b>ทำไมเลือก 2 Prefix นี้:</b> Soul Filch ทุกครั้งตีมอนที่<b>เลือดเต็ม</b> (สูงสุด +60%) และ<b>ติดพิษ</b>จาก Toxic Fan (สูงสุด +42%) จึงแรงกว่า ATK% (+24%) · ช่องมือรองถึงเป็นอาวุธก็สุ่มได้แค่ Affix สายป้องกัน'
   ],
   warn:'ตัวเลขคำนวณจากสูตรในไฟล์เกม เทียบกับ Scout ที่ตีบวก +15 ที่ฆ่าตัวนี้ได้ 1–2 ที: Soul Filch แบบนี้แรงกว่า Blast Arrow ราว 3 เท่าเมื่อเป้าติดพิษ จึงน่าจะฆ่าได้ในทีเดียวและเชนต่อได้ · ถ้าเป้าไม่ติดพิษ ดาเมจเหลือราว 1.7 เท่า · ยังไม่ได้ทดสอบในเกมจริง'
 }];
 function renderFeat(){ $('feat').innerHTML=FEATURED.map((f,i)=>'<article class="fb"><h3>'+esc(f.name)+'</h3><p class="sub">'+JOB[f.job].name+' · Lv '+f.lv+' · '+esc(f.sub)+'</p><ul>'+f.pts.map(p=>'<li>'+p+'</li>').join('')+'</ul>'+
-  '<button type="button" class="btn pri" data-feat="'+i+'">เปิดดูสเตตัส + Skill Tree</button><div class="warn">'+esc(f.warn)+'</div></article>').join(''); }
+  '<button type="button" class="btn pri" data-feat="'+i+'">เปิดดูสเตตัส + อุปกรณ์ + Skill Tree</button><div class="warn">'+esc(f.warn)+'</div></article>').join(''); }
 $('feat').addEventListener('click',e=>{ const t=e.target.closest('[data-feat]'); if(!t) return; const f=FEATURED[+t.dataset.feat];
-  VIEW={v:1,id:'',name:f.name.slice(0,40),job:f.job,created:Date.now(),updated:Date.now(),lv:f.lv,stats:{...f.stats},gear:'',skill:f.skill,cards:''};
+  VIEW={v:1,id:'',name:f.name.slice(0,40),job:f.job,created:Date.now(),updated:Date.now(),lv:f.lv,stats:{...f.stats},gear:f.gear||'',skill:f.skill,cards:''};
   render(); window.scrollTo({top:0,behavior:'smooth'}); });
 renderFeat();
 function upd(b,fn){ fn(b); b.updated=Date.now(); store(db); render(); }
