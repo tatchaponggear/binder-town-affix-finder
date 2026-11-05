@@ -280,7 +280,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
   </section>
 
   <section class="block reveal" id="bindertown">
-    <div class="sec-h"><div><span class="kicker">BINDERTOWN</span><h2>เครื่องมือในบ้าน</h2><p>สำหรับสมาชิกที่ได้รับอนุมัติ — เข้าสู่ระบบด้วย Google</p></div></div>
+    <div class="sec-h"><div><span class="kicker">BINDERTOWN</span><h2>เครื่องมือในบ้าน</h2><p>เข้าสู่ระบบด้วย Google — แต่ละคนเห็นหน้าตามสิทธิ์ที่ได้รับ</p></div></div>
     <div class="tools" id="tools">
       <a class="tool" href="boss.html"><span class="ti">⏰</span><span><b>เวลาบอส</b><small>Field Boss เกิดใหม่ 3 ชม. + World Boss</small></span></a>
       <a class="tool" href="miniboss.html"><span class="ti">👹</span><span><b>มินิบอส</b><small>จดเวลาแยกแชนแนล อ่านจากรูปหลุมศพได้</small></span></a>
@@ -296,10 +296,6 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
     <div id="status"></div>
     <div class="glass" id="adminBox" style="padding:20px;margin-top:16px" hidden>
       <h3 style="font-family:var(--display);margin:0 0 8px">🔑 แอดมิน</h3>
-      <div id="keyBox" hidden>
-        <p class="hint">ยังไม่ได้ใส่คีย์ของเว็บ — เปิดไฟล์ <b>site-src/PRIVATE_KEY.txt</b> ในเครื่อง คัดลอกบรรทัดแรก (คีย์) มาวาง แล้วกดบันทึก ทำครั้งเดียว (และทุกครั้งที่เปลี่ยนคีย์)</p>
-        <input type="text" id="keyIn" autocomplete="off" placeholder="วางคีย์ 43 ตัวอักษร"> <button class="btn sm" id="keySave">บันทึกคีย์</button> <span id="keyMsg" class="hint"></span>
-      </div>
       <a class="btn" href="admin.html">จัดการผู้ใช้ / อนุมัติบัญชี</a>
     </div>
   </section>
@@ -351,8 +347,8 @@ const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEac
 document.querySelectorAll('.reveal').forEach(el=>io?io.observe(el):el.classList.add('in'));
 if(new URLSearchParams(location.search).has('next')&&!location.hash) setTimeout(()=>$('bindertown').scrollIntoView(),300);
 const GLOGO='<svg class="g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
-function setTools(open){ document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('locked',!open)); }
-setTools(false);
+function setTools(can){ document.querySelectorAll('.tool').forEach(a=>{ const id=a.getAttribute('href').replace('.html',''); a.classList.toggle('locked',!can(id)); }); }
+setTools(()=>false);
 if(!ready){ $('status').innerHTML='<p class="note warn">ยังไม่ได้ตั้งค่าระบบล็อกอิน</p>'; }
 else{
   firebase.initializeApp(CFG);
@@ -361,25 +357,24 @@ else{
   auth.onAuthStateChanged(async u=>{
     if(!u){
       $('acct').innerHTML='<button class="btn pri sm" id="li">'+GLOGO+'เข้าสู่ระบบ</button>'; $('li').onclick=login;
-      $('status').innerHTML='<p class="note">🧊 เคาะประตูบ้านด้วยการเข้าสู่ระบบ Google — บัญชีใหม่ต้องรอ Penguin อนุมัติก่อนถึงจะเข้าบ้านได้ <button class="btn sm" id="li2">'+GLOGO+'เข้าสู่ระบบด้วย Google</button></p>'; $('li2').onclick=login;
-      setTools(false); $('adminBox').hidden=true; return; }
+      $('status').innerHTML='<p class="note">🧊 เคาะประตูบ้านด้วยการเข้าสู่ระบบ Google <button class="btn sm" id="li2">'+GLOGO+'เข้าสู่ระบบด้วย Google</button></p>'; $('li2').onclick=login;
+      setTools(()=>false); $('adminBox').hidden=true; return; }
     $('acct').innerHTML='<div class="who">'+(u.photoURL?'<img src="'+esc(u.photoURL)+'" alt="" referrerpolicy="no-referrer">':'')+'<span>'+esc(u.displayName||u.email)+'</span><button class="btn sm" id="lo">ออก</button></div>';
     $('lo').onclick=()=>auth.signOut();
     try{ await db.ref('users/'+u.uid).set({name:(u.displayName||'').slice(0,80),email:(u.email||'').slice(0,120),photo:(u.photoURL||'').slice(0,500),at:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
-    let ok=false, isAdmin=false, hasKey=false;
-    try{ const s=await db.ref('site/key').get(); ok=true; hasKey=!!s.val(); }catch(e){}
-    try{ await db.ref('allow').limitToFirst(1).get(); isAdmin=true; }catch(e){}
-    const open=ok&&hasKey; setTools(open);
-    const next=new URLSearchParams(location.search).get('next');
-    if(open&&next&&/^[a-z-]+\.html$/.test(next)){ location.replace(next); return; }
-    $('status').innerHTML=open?'<p class="note">✓ บัญชีนี้เข้าบ้านได้แล้ว — เลือกเครื่องมือด้านบนได้เลย</p>'
-      :ok?'<p class="note warn">ระบบยังไม่พร้อม (แอดมินยังไม่ได้ใส่คีย์)</p>'
-      :'<p class="note warn">บัญชี <b>'+esc(u.email)+'</b> รอการอนุมัติ — แจ้ง Penguin ให้อนุมัติ แล้วรีเฟรชหน้านี้</p>';
-    $('adminBox').hidden=!isAdmin; $('keyBox').hidden=!(isAdmin&&!hasKey);
+    let isAdmin=false, defs={}, mine={};
+    try{ await db.ref('perms').limitToFirst(1).get(); isAdmin=true; }catch(e){}
+    try{ defs=(await db.ref('defaults').get()).val()||{}; }catch(e){}
+    try{ mine=(await db.ref('perms/'+u.uid).get()).val()||{}; }catch(e){}
+    const can=id=>isAdmin||(id!=='admin'&&(defs[id]||mine[id]||mine.all));
+    setTools(can);
+    const next=new URLSearchParams(location.search).get('next'), nid=next&&next.replace('.html','');
+    if(next&&/^[a-z-]+\.html$/.test(next)&&can(nid)){ location.replace(next); return; }
+    const n=[...document.querySelectorAll('.tool')].filter(a=>can(a.getAttribute('href').replace('.html',''))).length;
+    $('status').innerHTML=(next&&!can(nid)?'<p class="note warn">บัญชีนี้ยังไม่มีสิทธิ์เข้าหน้า <b>'+esc(next)+'</b> — ขอสิทธิ์จาก Penguin ได้</p>':'')+
+      '<p class="note">✓ เข้าสู่ระบบเป็น <b>'+esc(u.email)+'</b> · เข้าได้ '+(isAdmin||mine.all?'ทุกหน้า':n+' หน้า')+(isAdmin?' (แอดมิน)':' — อยากได้หน้าเพิ่ม แจ้ง Penguin')+'</p>';
+    $('adminBox').hidden=!isAdmin;
   });
-  $('keySave').onclick=async()=>{ const k=$('keyIn').value.trim().split(/\s/)[0];
-    if(!/^[A-Za-z0-9_-]{43}$/.test(k)){ $('keyMsg').textContent='คีย์ไม่ถูกรูปแบบ'; return; }
-    try{ await db.ref('site/key').set(k); $('keyMsg').textContent='บันทึกแล้ว'; location.reload(); }catch(e){ $('keyMsg').textContent='บันทึกไม่ได้: '+e.message; } };
 }
 </script>
 </body>
