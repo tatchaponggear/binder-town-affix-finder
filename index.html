@@ -68,8 +68,8 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 10px;dis
 .note.warn{border-color:var(--warn)}
 .hint{color:var(--muted);font-size:14px}
 input[type=text]{font:inherit;color:inherit;background:var(--snow);border:2px solid var(--ice-edge);border-radius:10px;padding:7px 10px;width:100%;max-width:420px}
-.menu{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-@media (max-width:720px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}.menu a:first-child{grid-column:1/-1}}
+.menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .menu a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:104px;padding:14px 8px;border-radius:20px;border:2px solid var(--ice-edge);
   background:linear-gradient(165deg,var(--snow),var(--ice-2));color:var(--ink);text-decoration:none;font-family:var(--display);font-weight:600;font-size:17px;box-shadow:var(--shadow),inset 0 3px 0 rgba(255,255,255,.8);transition:transform .15s,border-color .15s}
 .menu a:hover{transform:translateY(-3px);border-color:var(--accent)}
@@ -94,7 +94,6 @@ footer{text-align:center;color:var(--muted);font-size:13px}
   <nav class="menu" aria-label="เมนูหลัก">
     <a href="#home" data-go="home"><span class="ic">🏠</span>Home<small>บ้านเพนกวิน</small></a>
     <a href="#bindertown" data-go="bindertown"><span class="ic">⚔️</span>Bindertown<small>เครื่องมือเกม</small></a>
-    <a id="lkGithub" target="_blank" rel="noopener"><span class="ic">🐙</span>GitHub<small>โค้ดของผม</small></a>
     <a id="lkCodewars" target="_blank" rel="noopener"><span class="ic">🥋</span>Codewars<small>ฝึกโจทย์</small></a>
     <a id="lkPortfolio" target="_blank" rel="noopener"><span class="ic">🧊</span>Portfolio<small>ผลงาน</small></a>
   </nav>
@@ -156,8 +155,8 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ready=!!(CFG&&CFG.apiKey);
 /* ลิงก์ภายนอก — เว้นว่าง = ขึ้นว่า "เร็วๆ นี้" */
-const LINKS={github:"https://github.com/tatchaponggear",codewars:"",portfolio:""};
-[["lkGithub","github"],["lkCodewars","codewars"],["lkPortfolio","portfolio"]].forEach(([id,k])=>{ const a=$(id);
+const LINKS={codewars:"",portfolio:""};
+[["lkCodewars","codewars"],["lkPortfolio","portfolio"]].forEach(([id,k])=>{ const a=$(id);
   if(LINKS[k]) a.href=LINKS[k]; else { a.classList.add('soon'); a.querySelector('small').textContent='เร็วๆ นี้'; a.removeAttribute('target'); } });
 function route(){ let v=(location.hash||'#home').slice(1); if(new URLSearchParams(location.search).has('next')&&!location.hash) v='bindertown';
   if(!['home','bindertown'].includes(v)) v='home';
