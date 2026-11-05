@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="PenguinzGear — เครื่องมือช่วยเล่น Binder Town โดย Penguin">
 <title>PenguinzGear</title>
+<link rel="icon" href="img/penguin-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
 <style>
@@ -31,7 +32,7 @@ body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-siz
 .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .brand{font-family:var(--display);font-weight:600;font-size:19px;display:flex;align-items:center;gap:8px}
-.brand img,.brand svg{width:34px;height:34px;object-fit:contain}
+.brand img.icon{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--ice-edge);background:#fff}
 .panel{background:var(--panel);backdrop-filter:blur(6px);border:2px solid var(--rim);border-radius:22px;box-shadow:var(--shadow);padding:22px}
 /* igloo hero */
 .igloo{position:relative;text-align:center;padding:26px 18px 0;overflow:hidden;border-radius:240px 240px 26px 26px;
@@ -40,7 +41,8 @@ body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-siz
   -webkit-mask:repeating-linear-gradient(0deg,#000 0 48px,transparent 48px 96px);mask:repeating-linear-gradient(0deg,#000 0 48px,transparent 48px 96px);pointer-events:none}
 .door{position:relative;margin:8px auto 0;width:min(320px,80%);aspect-ratio:1/1.02;border-radius:50% 50% 0 0;background:radial-gradient(circle at 50% 70%,#fff 0 40%,var(--ice) 75%);
   border:3px solid var(--ice-edge);display:grid;place-items:end center;overflow:hidden}
-.door img,.door svg{width:92%;height:auto;display:block;margin-bottom:-2px}
+.door img{width:108%;height:auto;display:block;margin-bottom:-6%;mix-blend-mode:multiply}
+@media (prefers-color-scheme: dark){.door{background:radial-gradient(circle at 50% 65%,#fff 0 55%,#dff4fa 80%)}}
 .igloo h1{position:relative;font-family:var(--display);font-weight:600;font-size:clamp(28px,6vw,40px);line-height:1.15;margin:0}
 .igloo .tag{position:relative;color:var(--muted);margin:4px 0 0}
 .credit{position:relative;font-size:12px;color:var(--muted);margin:6px 0 10px}
@@ -70,17 +72,16 @@ footer{text-align:center;color:var(--muted);font-size:13px}
 </head>
 <body>
 <div class="snow" aria-hidden="true"></div>
-<template id="pgFallback"><svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="38" rx="22" ry="24" fill="#141a22"/><ellipse cx="32" cy="41" rx="15" ry="18" fill="#fff"/><circle cx="25" cy="31" r="2.2" fill="#141a22"/><circle cx="39" cy="31" r="2.2" fill="#141a22"/><circle cx="21" cy="36" r="2.6" fill="#f4b6b9"/><circle cx="43" cy="36" r="2.6" fill="#f4b6b9"/><path d="M28 33q4-3 8 0l-4 4z" fill="#f6e7a8"/><ellipse cx="22" cy="60" rx="5" ry="3" fill="#f6e7a8"/><ellipse cx="42" cy="60" rx="5" ry="3" fill="#f6e7a8"/></svg></template>
 <div class="wrap">
   <div class="top">
-    <div class="brand"><img src="img/penguin.png" alt="Penguin ถือดาบดำกับดาบน้ำแข็งไขว้กัน" onerror="this.replaceWith(document.getElementById('pgFallback').content.cloneNode(true))">PenguinzGear</div>
+    <div class="brand"><img class="icon" src="img/penguin-icon.jpg" alt="">PenguinzGear</div>
     <div id="acct"></div>
   </div>
 
   <section class="igloo" aria-label="บ้านเพนกวินน้ำแข็ง">
     <h1>บ้านเพนกวินน้ำแข็ง 🧊</h1>
     <p class="tag">PenguinzGear · Tatchapong Gear</p>
-    <div class="door"><img src="img/penguin.png" alt="Penguin ถือดาบดำกับดาบน้ำแข็งไขว้กัน" onerror="this.replaceWith(document.getElementById('pgFallback').content.cloneNode(true))"></div>
+    <div class="door"><img src="img/penguin.jpg" alt="Penguin ถือดาบดำกับดาบน้ำแข็งไขว้กัน" width="720" height="698"></div>
     <p class="credit">ภาพเพนกวินโดย VenusLapis</p>
   </section>
 
