@@ -3,147 +3,262 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="PenguinzGear — เครื่องมือช่วยเล่น Binder Town โดย Penguin">
+<meta name="description" content="PenguinzGear — บ้านเพนกวินน้ำแข็งของ Penguin: เครื่องมือ Binder Town, GuinFit และผลงานอื่นๆ">
 <title>PenguinzGear</title>
 <link rel="icon" href="img/penguin-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap">
 <style>
 :root{
-  --sky1:#eaf7fb; --sky2:#cdeaf2; --ice:#bfe6ee; --ice-2:#e6f6fa; --ice-edge:#8fcbd8; --snow:#ffffff;
-  --ink:#141a22; --muted:#4f6576; --cream:#f6e7a8; --blush:#f4b6b9; --accent:#1f7a93; --warn:#c0571b; --ok:#23883a;
-  --panel:rgba(255,255,255,.72); --rim:rgba(143,203,216,.75);
+  --bg:#f3fafc; --bg-2:#e3f3f8; --ink:#0f1720; --muted:#55707e; --line:rgba(120,180,200,.35);
+  --glass:rgba(255,255,255,.62); --glass-2:rgba(255,255,255,.82); --ice:#bfe6ee; --ice-edge:#8fcbd8; --cream:#f6e7a8; --blush:#f4b6b9;
+  --accent:#1a7f9a; --accent-2:#43b8d1; --ok:#23883a; --warn:#c0571b;
   --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
-  --shadow:0 10px 30px rgba(31,122,147,.16);
+  --shadow:0 20px 50px rgba(26,127,154,.14); --shadow-s:0 6px 18px rgba(26,127,154,.1);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --sky1:#0b1a2b; --sky2:#10293d; --ice:#2c5868; --ice-2:#163245; --ice-edge:#4f97ab; --snow:#dff4fa;
-  --ink:#e8f6fb; --muted:#9fc1cd; --accent:#8fd8ea; --panel:rgba(16,41,61,.72); --rim:rgba(79,151,171,.6); --shadow:0 10px 30px rgba(0,0,0,.4); color-scheme:dark}}
+  --bg:#06111b; --bg-2:#0b1d2c; --ink:#e9f6fb; --muted:#93b3c2; --line:rgba(110,170,195,.22);
+  --glass:rgba(16,38,56,.6); --glass-2:rgba(18,44,64,.85); --ice:#2c5868; --ice-edge:#4f97ab; --accent:#8fd8ea; --accent-2:#5cc4dc;
+  --shadow:0 20px 50px rgba(0,0,0,.45); --shadow-s:0 6px 18px rgba(0,0,0,.3); color-scheme:dark}}
 *{box-sizing:border-box}
-html{background:var(--sky1)}
-body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding:16px 16px 64px;
-  background:radial-gradient(1200px 500px at 50% -10%,var(--snow),transparent 70%),linear-gradient(180deg,var(--sky1),var(--sky2));overflow-x:hidden}
-/* snow */
-.snow{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:
+html{overflow-x:hidden;scroll-behavior:smooth;scroll-padding-top:84px;background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;background:var(--bg);overflow-x:hidden}
+a{color:inherit}
+.bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(800px 500px at 85% -10%,rgba(67,184,209,.28),transparent 60%),
+  radial-gradient(700px 420px at -10% 20%,rgba(191,230,238,.55),transparent 60%),
+  radial-gradient(600px 400px at 50% 110%,rgba(246,231,168,.25),transparent 60%),
+  linear-gradient(180deg,var(--bg),var(--bg-2))}
+@media (prefers-color-scheme: dark){.bgfx{background:
+  radial-gradient(800px 500px at 85% -10%,rgba(67,184,209,.22),transparent 60%),
+  radial-gradient(700px 420px at -10% 25%,rgba(80,120,220,.18),transparent 60%),
+  radial-gradient(600px 400px at 50% 110%,rgba(120,220,190,.12),transparent 60%),
+  linear-gradient(180deg,var(--bg),var(--bg-2))}}
+.snow{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:
   radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 140px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 90px 160px,#fff,transparent),
-  radial-gradient(2.5px 2.5px at 200px 120px,#fff,transparent),radial-gradient(1.5px 1.5px at 260px 40px,#fff,transparent);background-size:300px 200px;opacity:.85;animation:fall 18s linear infinite}
-@keyframes fall{to{background-position:0 400px,0 400px,0 400px,0 400px,0 400px}}
-@media (prefers-reduced-motion:reduce){.snow{animation:none}}
-.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.brand{font-family:var(--display);font-weight:600;font-size:19px;display:flex;align-items:center;gap:8px}
-.brand img.icon{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--ice-edge);background:#fff}
-.panel{background:var(--panel);backdrop-filter:blur(6px);border:2px solid var(--rim);border-radius:22px;box-shadow:var(--shadow);padding:22px}
-/* igloo hero */
-.igloo{position:relative;text-align:center;padding:26px 18px 0;overflow:hidden;border-radius:240px 240px 26px 26px;
-  background:repeating-linear-gradient(0deg,transparent 0 46px,var(--ice-edge) 46px 48px),var(--ice-2);border:3px solid var(--ice-edge);box-shadow:var(--shadow),inset 0 -18px 30px rgba(143,203,216,.35)}
-.igloo::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 78px,rgba(143,203,216,.55) 78px 80px);
-  -webkit-mask:repeating-linear-gradient(0deg,#000 0 48px,transparent 48px 96px);mask:repeating-linear-gradient(0deg,#000 0 48px,transparent 48px 96px);pointer-events:none}
-.door{position:relative;margin:8px auto 0;width:min(320px,80%);aspect-ratio:1/1.02;border-radius:50% 50% 0 0;background:radial-gradient(circle at 50% 70%,#fff 0 40%,var(--ice) 75%);
-  border:3px solid var(--ice-edge);display:grid;place-items:end center;overflow:hidden}
-.door img{width:108%;height:auto;display:block;margin-bottom:-6%;mix-blend-mode:multiply}
-@media (prefers-color-scheme: dark){.door{background:radial-gradient(circle at 50% 65%,#fff 0 55%,#dff4fa 80%)}}
-.igloo h1{position:relative;font-family:var(--display);font-weight:600;font-size:clamp(28px,6vw,40px);line-height:1.15;margin:0}
-.igloo .tag{position:relative;color:var(--muted);margin:4px 0 0}
-@media (max-width:560px){.igloo{border-radius:150px 150px 22px 22px;padding-top:40px}.igloo h1{font-size:23px}}
-.credit{position:relative;font-size:12px;color:var(--muted);margin:6px 0 10px}
-h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
-.about p{margin:0 0 8px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.chip{border:1.5px solid var(--ice-edge);background:var(--ice-2);border-radius:999px;padding:3px 12px;font-size:14px}
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px}
-.tool{display:block;border:2px solid var(--ice-edge);background:linear-gradient(160deg,var(--ice-2),var(--panel));border-radius:16px;padding:12px 14px;color:inherit;text-decoration:none;box-shadow:inset 0 2px 0 rgba(255,255,255,.7);transition:transform .15s}
-.tool:hover{transform:translateY(-2px)}
+  radial-gradient(2.5px 2.5px at 200px 120px,#fff,transparent),radial-gradient(1.5px 1.5px at 260px 40px,#fff,transparent);background-size:300px 220px;opacity:.8;animation:fall 22s linear infinite}
+@media (prefers-color-scheme: light){.snow{filter:drop-shadow(0 0 1px rgba(26,127,154,.35))}}
+@keyframes fall{to{background-position:0 440px,0 440px,0 440px,0 440px,0 440px}}
+@media (prefers-reduced-motion:reduce){.snow,.float,.glow{animation:none!important}}
+.container{max-width:1120px;margin:0 auto;padding:0 20px}
+.nav{position:sticky;top:12px;z-index:20;margin:12px auto 0;max-width:1120px;padding:0 20px}
+.nav .bar{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:20px;background:var(--glass);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--line);box-shadow:var(--shadow-s)}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:18px;text-decoration:none;white-space:nowrap}
+.logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--ice-edge);background:#fff}
+.links{display:flex;gap:2px;margin-left:auto}
+.links a{text-decoration:none;font-family:var(--display);font-weight:500;font-size:15px;padding:7px 13px;border-radius:12px;color:var(--muted)}
+.links a:hover{background:var(--glass-2);color:var(--ink)}
+@media (max-width:760px){.links{display:none}.acct{margin-left:auto}}
+.acct{display:flex;align-items:center;gap:8px}
+.btn{font-family:var(--display);font-size:15px;font-weight:600;padding:10px 18px;border-radius:14px;border:1px solid var(--line);background:var(--glass-2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-s)}
+.btn.pri{background:linear-gradient(135deg,#0f1720,#22384a);color:#fff;border-color:transparent}
+@media (prefers-color-scheme: dark){.btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04202a}}
+.btn.sm{font-size:13px;padding:7px 12px;border-radius:11px}
+.btn .g{width:18px;height:18px}
+.who{display:flex;align-items:center;gap:8px;font-size:14px}
+.who img{width:32px;height:32px;border-radius:50%;border:2px solid var(--ice-edge)}
+.who span{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:520px){.who span{display:none}}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:70px 0 40px}
+@media (max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:40px}.hero .cta{justify-content:center}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent);background:var(--glass);border:1px solid var(--line);padding:5px 12px;border-radius:999px}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,6.4vw,72px);line-height:1.04;margin:16px 0 14px;letter-spacing:-.5px}
+.hero h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent-2) 55%,#7fd6c9);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:18.5px;color:var(--muted);max-width:540px;margin:0 0 26px}
+@media (max-width:860px){.hero p.lead{margin-left:auto;margin-right:auto}}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.cta .btn{padding:13px 22px;font-size:16px}
+.portal{position:relative;justify-self:center;width:min(420px,80vw);aspect-ratio:1/1.02;margin:0 auto}
+.portal .arch{position:absolute;inset:0;border-radius:50% 50% 34px 34px;background:
+  repeating-linear-gradient(0deg,transparent 0 46px,var(--ice-edge) 46px 48px),linear-gradient(180deg,#f7fdff,#dff3f8);border:3px solid var(--ice-edge);box-shadow:var(--shadow),inset 0 -30px 50px rgba(143,203,216,.35);overflow:hidden}
+@media (prefers-color-scheme: dark){.portal .arch{background:repeating-linear-gradient(0deg,transparent 0 46px,#3d7b8d 46px 48px),linear-gradient(180deg,#1b3a4e,#102a3b)}}
+.portal .door{position:absolute;left:11%;right:11%;bottom:0;top:16%;border-radius:50% 50% 0 0;background:radial-gradient(circle at 50% 62%,#fff 0 52%,#e6f6fa 78%);border:3px solid var(--ice-edge);overflow:hidden;display:flex;align-items:flex-end;justify-content:center}
+.portal .door img{width:104%;height:auto;margin-bottom:-4%;mix-blend-mode:multiply}
+.portal .glow{position:absolute;inset:-12%;z-index:-1;border-radius:50%;background:radial-gradient(circle,rgba(67,184,209,.35),transparent 65%);filter:blur(10px);animation:pulse 5s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55;transform:scale(1.05)}}
+.float{animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.crystal{position:absolute;font-size:26px;filter:drop-shadow(0 4px 8px rgba(26,127,154,.3))}
+.badge{position:absolute;display:flex;align-items:center;gap:8px;background:var(--glass-2);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:8px 12px;font-size:13.5px;box-shadow:var(--shadow-s);font-weight:600;white-space:nowrap}
+@media (max-width:600px){.badge{display:none}.crystal{display:none}}
+.credit{text-align:center;font-size:12px;color:var(--muted);margin-top:10px}
+.menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:10px 0 70px}
+@media (max-width:860px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mcard{position:relative;display:flex;flex-direction:column;gap:6px;padding:22px 20px;min-height:170px;border-radius:26px;text-decoration:none;color:inherit;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow-s);overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
+.mcard::after{content:"";position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;background:var(--tint,rgba(67,184,209,.18));filter:blur(4px);transition:transform .3s}
+.mcard:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:var(--ice-edge)}
+.mcard:hover::after{transform:scale(1.25)}
+.mcard .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:27px;background:var(--glass-2);border:1px solid var(--line)}
+.mcard b{font-family:var(--display);font-size:21px;font-weight:700;margin-top:6px}
+.mcard small{color:var(--muted);font-size:14px;line-height:1.45}
+.mcard .go{position:absolute;right:18px;top:18px;opacity:.4;font-size:18px;transition:transform .2s,opacity .2s}
+.mcard:hover .go{opacity:1;transform:translateX(3px)}
+.mcard.soon{opacity:.55;pointer-events:none}
+.mcard.soon .go{display:none}
+section.block{margin:0 0 80px}
+.sec-h{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.sec-h h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,38px);margin:0;line-height:1.1}
+.sec-h p{margin:6px 0 0;color:var(--muted)}
+.kicker{font-family:var(--display);font-size:14px;font-weight:600;color:var(--accent);letter-spacing:.5px}
+.glass{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-s)}
+.about{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+@media (max-width:860px){.about{grid-template-columns:1fr}}
+.about .story{padding:28px}
+.about .story p{margin:0 0 12px;font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{border:1px solid var(--line);background:var(--glass-2);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:500}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.stat{padding:22px;display:flex;flex-direction:column;justify-content:center}
+.stat b{font-family:var(--display);font-size:38px;font-weight:700;line-height:1;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{color:var(--muted);font-size:14px;margin-top:6px}
+.projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:960px){.projects{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.projects{grid-template-columns:1fr}}
+.proj{display:flex;flex-direction:column;overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s}
+a.proj:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.proj .shot{height:190px;position:relative;display:grid;place-items:center;overflow:hidden}
+.proj .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.proj h3{font-family:var(--display);font-size:21px;margin:0}
+.proj p{margin:0;color:var(--muted);font-size:14.5px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:10px}
+.tag{font-size:12px;font-weight:600;border-radius:8px;padding:3px 9px;background:var(--glass-2);border:1px solid var(--line);color:var(--muted)}
+.proj .more{font-family:var(--display);font-weight:600;color:var(--accent);margin-top:8px}
+.shot.gf{background:linear-gradient(180deg,#9fdcf0,#eefafd)}
+.shot.bt{background:linear-gradient(135deg,#1b2a4a,#2e4f7a)}
+.shot.ar{background:linear-gradient(135deg,#21313f,#0f1a24)}
+.mini-phone{width:118px;height:200px;border-radius:22px;background:#0b1118;padding:6px;box-shadow:0 14px 30px rgba(0,0,0,.25);transform:rotate(-6deg) translateY(18px)}
+.mini-phone div{width:100%;height:100%;border-radius:17px;background:linear-gradient(180deg,#bfe7f5,#f4fbfd 70%);display:grid;place-items:center}
+.mini-phone svg{width:74%}
+.mini-win{width:80%;border-radius:12px;background:#0f1720;box-shadow:0 14px 30px rgba(0,0,0,.35);overflow:hidden;font-family:ui-monospace,monospace;font-size:11px;color:#9fe7c4}
+.mini-win .tb{height:20px;background:#22303e;display:flex;gap:5px;align-items:center;padding:0 8px}.mini-win .tb i{width:7px;height:7px;border-radius:50%;background:#e8605a}.mini-win .tb i+i{background:#f7c548}.mini-win .tb i+i+i{background:#5dd18a}
+.mini-win pre{margin:0;padding:10px 12px;white-space:pre-wrap;line-height:1.5}
+.bt-grid{display:grid;grid-template-columns:repeat(3,44px);gap:8px;transform:rotate(-4deg)}
+.bt-grid span{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:22px;border:1px solid rgba(255,255,255,.15)}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:14px}
+.tool{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:20px;text-decoration:none;color:inherit;background:var(--glass);border:1px solid var(--line);transition:transform .15s,border-color .15s}
+.tool:hover{transform:translateY(-3px);border-color:var(--ice-edge)}
+.tool .ti{font-size:24px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--glass-2);flex:none}
 .tool b{font-family:var(--display);font-weight:600;display:block}
 .tool small{color:var(--muted);font-size:13.5px}
-.tool.locked{opacity:.55;pointer-events:none;filter:saturate(.6)}
-.tool.locked b::after{content:" 🧊";font-size:13px}
-.btn{font-family:var(--body);font-size:15px;font-weight:600;padding:9px 16px;border-radius:12px;border:2px solid var(--ice-edge);background:var(--snow);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
-.btn.pri{background:var(--ink);color:var(--snow);border-color:var(--ink)}
-@media (prefers-color-scheme: dark){.btn.pri{background:var(--accent);color:#0b1a2b;border-color:var(--accent)}}
-.btn.sm{font-size:13px;padding:5px 11px}
-.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.who img{width:34px;height:34px;border-radius:50%;border:2px solid var(--ice-edge)}
-.note{border-radius:14px;padding:10px 14px;background:var(--ice-2);border:1.5px dashed var(--ice-edge);margin-top:12px}
+.tool.locked{opacity:.5;pointer-events:none;filter:saturate(.5)}
+.tool.locked b::after{content:" 🔒";font-size:12px}
+.note{border-radius:16px;padding:12px 16px;background:var(--glass);border:1px dashed var(--ice-edge);margin-top:16px}
 .note.warn{border-color:var(--warn)}
+.note .btn{margin-left:8px}
 .hint{color:var(--muted);font-size:14px}
-input[type=text]{font:inherit;color:inherit;background:var(--snow);border:2px solid var(--ice-edge);border-radius:10px;padding:7px 10px;width:100%;max-width:420px}
-.menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media (max-width:720px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.menu a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:104px;padding:14px 8px;border-radius:20px;border:2px solid var(--ice-edge);
-  background:linear-gradient(165deg,var(--snow),var(--ice-2));color:var(--ink);text-decoration:none;font-family:var(--display);font-weight:600;font-size:17px;box-shadow:var(--shadow),inset 0 3px 0 rgba(255,255,255,.8);transition:transform .15s,border-color .15s}
-.menu a:hover{transform:translateY(-3px);border-color:var(--accent)}
-.menu a[aria-current="page"]{background:var(--ink);color:var(--snow);border-color:var(--ink)}
-@media (prefers-color-scheme: dark){.menu a[aria-current="page"]{background:var(--accent);color:#0b1a2b;border-color:var(--accent)}}
-.menu a.soon{opacity:.5;pointer-events:none}
-.menu .ic{font-size:30px;line-height:1}
-.menu small{font-family:var(--body);font-weight:400;font-size:12.5px;color:inherit;opacity:.7}
-[data-view]{display:flex;flex-direction:column;gap:18px}
-[data-view][hidden]{display:none!important}
-footer{text-align:center;color:var(--muted);font-size:13px}
+input[type=text]{font:inherit;color:inherit;background:var(--glass-2);border:1px solid var(--line);border-radius:12px;padding:9px 12px;width:100%;max-width:420px}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--muted);font-size:14px}
+footer .container{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div class="snow" aria-hidden="true"></div>
-<div class="wrap">
-  <div class="top">
-    <div class="brand"><img class="icon" src="img/penguin-icon.jpg" alt="">PenguinzGear</div>
-    <div id="acct"></div>
-  </div>
+<div class="bgfx" aria-hidden="true"></div><div class="snow" aria-hidden="true"></div>
 
-  <nav class="menu" aria-label="เมนูหลัก">
-    <a href="#home" data-go="home"><span class="ic">🏠</span>Home<small>บ้านเพนกวิน</small></a>
-    <a href="#bindertown" data-go="bindertown"><span class="ic">⚔️</span>Bindertown<small>เครื่องมือเกม</small></a>
-    <a id="lkCodewars" target="_blank" rel="noopener"><span class="ic">🥋</span>Codewars<small>ฝึกโจทย์</small></a>
-    <a id="lkPortfolio" target="_blank" rel="noopener"><span class="ic">🧊</span>Portfolio<small>ผลงาน</small></a>
+<header class="nav"><div class="bar">
+  <a class="logo" href="#home"><img src="img/penguin-icon.jpg" alt="">PenguinzGear</a>
+  <nav class="links" aria-label="เมนู"><a href="#home">Home</a><a href="#bindertown">Bindertown</a><a id="navCodewars" href="#">Codewars</a><a href="#portfolio">Portfolio</a></nav>
+  <div class="acct" id="acct"></div>
+</div></header>
+
+<main class="container">
+  <section class="hero" id="home">
+    <div>
+      <span class="eyebrow">🧊 บ้านเพนกวินน้ำแข็ง</span>
+      <h1>สวัสดีครับ ผม <span class="grad">Penguin</span> 🐧</h1>
+      <p class="lead">เพนกวินถือดาบคู่ — ดำหนึ่งเล่ม น้ำแข็งหนึ่งเล่ม · ที่นี่คือบ้านที่รวมของที่ผมทำ: เครื่องมือช่วยเล่น <b>Binder Town</b>, แอป <b>GuinFit</b> และโปรเจกต์อื่นๆ</p>
+      <div class="cta"><a class="btn pri" href="guinfit.html">🐧 ลองเล่น GuinFit</a><a class="btn" href="#bindertown">⚔️ เครื่องมือ Bindertown</a></div>
+    </div>
+    <div>
+      <div class="portal float">
+        <div class="glow"></div>
+        <div class="arch"><div class="door"><img src="img/penguin.jpg" alt="Penguin ถือดาบดำกับดาบน้ำแข็งไขว้กัน" width="720" height="698"></div></div>
+        <span class="crystal" style="left:-6%;top:22%">❄️</span><span class="crystal" style="right:-4%;top:8%;font-size:20px">✨</span><span class="crystal" style="right:2%;bottom:24%">🧊</span>
+        <span class="badge" style="left:-8%;bottom:14%">⚔️ ดาบคู่</span>
+        <span class="badge" style="right:-6%;top:30%">🛠️ Maker</span>
+      </div>
+      <p class="credit">ภาพเพนกวินโดย VenusLapis</p>
+    </div>
+  </section>
+
+  <nav class="menu" aria-label="ไปที่">
+    <a class="mcard reveal" href="#about" style="--tint:rgba(246,231,168,.45)"><span class="go">→</span><span class="ic">🏠</span><b>Home</b><small>รู้จักเพนกวินเจ้าของบ้าน</small></a>
+    <a class="mcard reveal" href="#bindertown" style="--tint:rgba(244,182,185,.4)"><span class="go">→</span><span class="ic">⚔️</span><b>Bindertown</b><small>เวลาบอส มินิบอส บิลด์ ออฟชั่น และอีกเพียบ</small></a>
+    <a class="mcard reveal" id="lkCodewars" target="_blank" rel="noopener" style="--tint:rgba(232,96,90,.3)"><span class="go">↗</span><span class="ic">🥋</span><b>Codewars</b><small>ฝึกโจทย์เขียนโค้ด</small></a>
+    <a class="mcard reveal" href="#portfolio" style="--tint:rgba(67,184,209,.3)"><span class="go">→</span><span class="ic">🧊</span><b>Portfolio</b><small>ผลงาน แอป และโปรเจกต์</small></a>
   </nav>
 
-  <div data-view="home">
-  <section class="igloo" aria-label="บ้านเพนกวินน้ำแข็ง">
-    <h1>บ้านเพนกวินน้ำแข็ง 🧊</h1>
-    <p class="tag">PenguinzGear · Tatchapong Gear</p>
-    <div class="door"><img src="img/penguin.jpg" alt="Penguin ถือดาบดำกับดาบน้ำแข็งไขว้กัน" width="720" height="698"></div>
-    <p class="credit">ภาพเพนกวินโดย VenusLapis</p>
+  <section class="block reveal" id="about">
+    <div class="sec-h"><div><span class="kicker">ABOUT</span><h2>แนะนำตัว</h2></div></div>
+    <div class="about">
+      <div class="glass story">
+        <p>ผม <b>Penguin</b> (TatchapongG) — ชอบทำเครื่องมือเล็กๆ ที่ช่วยให้ชีวิตง่ายขึ้น ทั้งในเกมและนอกเกม</p>
+        <p>เริ่มจากเล่น <b>Binder Town</b> แล้วอยากจดเวลาบอสกับเพื่อนให้ไม่พลาด เลยทำเว็บจดเวลา อ่านหลุมศพจากรูปหน้าจอ จนมีโปรแกรมจดอัตโนมัติ · ส่วนนอกเกมทำ <b>GuinFit</b> แอปนับแคลอรีที่เพนกวินเปลี่ยนหุ่นตาม BMI</p>
+        <div class="chips"><span class="chip">⚔️ ดาบคู่</span><span class="chip">🧊 สายน้ำแข็ง</span><span class="chip">🛠️ ทำเครื่องมือ</span><span class="chip">🎮 Binder Town</span><span class="chip">📱 iOS / SwiftUI</span><span class="chip">🌐 Web</span></div>
+      </div>
+      <div class="stats">
+        <div class="glass stat"><b>10+</b><span>เครื่องมือ Binder Town</span></div>
+        <div class="glass stat"><b>138</b><span>เมนูอาหารไทยใน GuinFit</span></div>
+        <div class="glass stat"><b>40</b><span>แชนแนลมินิบอสที่จดได้</span></div>
+        <div class="glass stat"><b>24/7</b><span>บ้านเพนกวินเปิดตลอด</span></div>
+      </div>
+    </div>
   </section>
 
-  <section class="panel about">
-    <h2>🐧 แนะนำตัว</h2>
-    <p>สวัสดีครับ ผม <b>Penguin</b> (TatchapongG) — เพนกวินถือดาบคู่ ดำหนึ่งเล่ม น้ำแข็งหนึ่งเล่ม</p>
-    <p>ผมเล่น <b>Binder Town</b> และทำเครื่องมือพวกนี้ไว้ใช้เองกับเพื่อน ๆ: ค้นออฟชั่นอุปกรณ์ วางบิลด์ จดเวลาบอสกับมินิบอสร่วมกัน และโปรแกรมจดเวลาอัตโนมัติจากหน้าจอเกม</p>
-    <div class="chips"><span class="chip">⚔️ ดาบคู่</span><span class="chip">🧊 สายน้ำแข็ง</span><span class="chip">🛠️ ทำเครื่องมือ</span><span class="chip">🎮 Binder Town</span></div>
+  <section class="block reveal" id="portfolio">
+    <div class="sec-h"><div><span class="kicker">PORTFOLIO</span><h2>ผลงาน</h2><p>ของที่ทำจริง ใช้จริง</p></div></div>
+    <div class="projects">
+      <a class="glass proj" href="guinfit.html">
+        <div class="shot gf"><div class="mini-phone"><div id="miniPenguin"></div></div></div>
+        <div class="body"><h3>GuinFit 🐧</h3><p>แอปนับแคลอรีที่มาสคอตเป็นเพนกวิน หุ่นเปลี่ยนตาม BMI · ฟักไข่ ป้อนอาหาร เก็บเหรียญซื้อหมวก · มีเวอร์ชันเว็บให้ลองเล่น</p>
+          <div class="tags"><span class="tag">SwiftUI</span><span class="tag">HealthKit</span><span class="tag">Core ML</span><span class="tag">Web demo</span></div><span class="more">ลองเล่นบนเว็บ →</span></div>
+      </a>
+      <a class="glass proj" href="#bindertown">
+        <div class="shot bt"><div class="bt-grid"><span>⏰</span><span>👹</span><span>🗺️</span><span>⚔️</span><span>🃏</span><span>🌳</span></div></div>
+        <div class="body"><h3>Binder Town Tools</h3><p>ชุดเครื่องมือช่วยเล่น: จดเวลาบอส/มินิบอสร่วมกันแบบเรียลไทม์ อ่านหลุมศพจากภาพหน้าจอ ค้นออฟชั่น บิลด์ และอื่นๆ</p>
+          <div class="tags"><span class="tag">Web</span><span class="tag">Firebase</span><span class="tag">OCR</span></div><span class="more">เข้าใช้ (ต้องล็อกอิน) →</span></div>
+      </a>
+      <div class="glass proj">
+        <div class="shot ar"><div class="mini-win"><div class="tb"><i></i><i></i><i></i></div><pre>✓ มินิบอส Forge Hermit CH 7
+  เกิดใน 13:44
+✓ บันทึก Lotus Maw Matriarch
+  เกิดอีกที 19:45:10</pre></div></div>
+        <div class="body"><h3>Auto Recorder</h3><p>โปรแกรม Windows ที่ดูหน้าต่างเกม อ่านหลุมศพมินิบอสกับประกาศในแชท แล้วจดเวลาลงเว็บให้อัตโนมัติ</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">Tesseract</span><span class="tag">Win32</span></div></div>
+      </div>
+    </div>
   </section>
 
-  </div>
-
-  <div data-view="bindertown" hidden>
-  <section class="panel">
-    <h2>⚔️ Bindertown · เครื่องมือ</h2>
+  <section class="block reveal" id="bindertown">
+    <div class="sec-h"><div><span class="kicker">BINDERTOWN</span><h2>เครื่องมือในบ้าน</h2><p>สำหรับสมาชิกที่ได้รับอนุมัติ — เข้าสู่ระบบด้วย Google</p></div></div>
     <div class="tools" id="tools">
-      <a class="tool" href="boss.html"><b>เวลาบอส</b><small>Field Boss เกิดใหม่ 3 ชม. + World Boss</small></a>
-      <a class="tool" href="miniboss.html"><b>มินิบอส</b><small>จดเวลาแยกแชนแนล อ่านจากรูปหลุมศพได้</small></a>
-      <a class="tool" href="autoboss.html"><b>ออโต้บอส</b><small>เวลาบอสที่จดอัตโนมัติจากแชทในเกม</small></a>
-      <a class="tool" href="affix.html"><b>ออฟชั่นอุปกรณ์</b><small>ค้นหา affix และค่าตัวเลข</small></a>
-      <a class="tool" href="builds.html"><b>บิลด์</b><small>วางแผนบิลด์ตัวละคร</small></a>
-      <a class="tool" href="skill-tree.html"><b>Skill Tree</b><small>ต้นสกิลทุกอาชีพ</small></a>
-      <a class="tool" href="cards.html"><b>การ์ด</b><small>ข้อมูลการ์ดทั้งหมด</small></a>
-      <a class="tool" href="farm.html"><b>ฟาร์ม Nacreon</b><small>จุดฟาร์มและมอนสเตอร์</small></a>
-      <a class="tool" href="guide.html"><b>ไกด์</b><small>คู่มือเล่น</small></a>
-      <a class="tool" href="patch.html"><b>แพทช์</b><small>แพทช์โน้ตและของที่กำลังมา</small></a>
+      <a class="tool" href="boss.html"><span class="ti">⏰</span><span><b>เวลาบอส</b><small>Field Boss เกิดใหม่ 3 ชม. + World Boss</small></span></a>
+      <a class="tool" href="miniboss.html"><span class="ti">👹</span><span><b>มินิบอส</b><small>จดเวลาแยกแชนแนล อ่านจากรูปหลุมศพได้</small></span></a>
+      <a class="tool" href="autoboss.html"><span class="ti">🤖</span><span><b>ออโต้บอส</b><small>เวลาบอสที่จดอัตโนมัติจากแชทในเกม</small></span></a>
+      <a class="tool" href="affix.html"><span class="ti">💎</span><span><b>ออฟชั่นอุปกรณ์</b><small>ค้นหา affix และค่าตัวเลข</small></span></a>
+      <a class="tool" href="builds.html"><span class="ti">⚔️</span><span><b>บิลด์</b><small>วางแผนบิลด์ตัวละคร</small></span></a>
+      <a class="tool" href="skill-tree.html"><span class="ti">🌳</span><span><b>Skill Tree</b><small>ต้นสกิลทุกอาชีพ</small></span></a>
+      <a class="tool" href="cards.html"><span class="ti">🃏</span><span><b>การ์ด</b><small>ข้อมูลการ์ดทั้งหมด</small></span></a>
+      <a class="tool" href="farm.html"><span class="ti">🗺️</span><span><b>ฟาร์ม Nacreon</b><small>จุดฟาร์มและมอนสเตอร์</small></span></a>
+      <a class="tool" href="guide.html"><span class="ti">📘</span><span><b>ไกด์</b><small>คู่มือเล่น</small></span></a>
+      <a class="tool" href="patch.html"><span class="ti">📜</span><span><b>แพทช์</b><small>แพทช์โน้ตและของที่กำลังมา</small></span></a>
     </div>
     <div id="status"></div>
-  </section>
-
-  <section class="panel" id="adminBox" hidden>
-    <h2>🔑 แอดมิน</h2>
-    <div id="keyBox" hidden>
-      <p class="hint">ยังไม่ได้ใส่คีย์ของเว็บ — เปิดไฟล์ <b>site-src/PRIVATE_KEY.txt</b> ในเครื่อง คัดลอกบรรทัดแรก (คีย์) มาวาง แล้วกดบันทึก ทำครั้งเดียว (และทุกครั้งที่เปลี่ยนคีย์)</p>
-      <input type="text" id="keyIn" autocomplete="off" placeholder="วางคีย์ 43 ตัวอักษร"> <button class="btn sm" id="keySave">บันทึกคีย์</button> <span id="keyMsg" class="hint"></span>
+    <div class="glass" id="adminBox" style="padding:20px;margin-top:16px" hidden>
+      <h3 style="font-family:var(--display);margin:0 0 8px">🔑 แอดมิน</h3>
+      <div id="keyBox" hidden>
+        <p class="hint">ยังไม่ได้ใส่คีย์ของเว็บ — เปิดไฟล์ <b>site-src/PRIVATE_KEY.txt</b> ในเครื่อง คัดลอกบรรทัดแรก (คีย์) มาวาง แล้วกดบันทึก ทำครั้งเดียว (และทุกครั้งที่เปลี่ยนคีย์)</p>
+        <input type="text" id="keyIn" autocomplete="off" placeholder="วางคีย์ 43 ตัวอักษร"> <button class="btn sm" id="keySave">บันทึกคีย์</button> <span id="keyMsg" class="hint"></span>
+      </div>
+      <a class="btn" href="admin.html">จัดการผู้ใช้ / อนุมัติบัญชี</a>
     </div>
-    <p><a class="btn" href="admin.html">จัดการผู้ใช้ / อนุมัติบัญชี</a></p>
   </section>
-  </div>
-  <footer>🐧 PenguinzGear · penguinzgear.com</footer>
-</div>
+</main>
+
+<footer><div class="container"><span>🐧 PenguinzGear · penguinzgear.com</span><span>ภาพเพนกวินโดย VenusLapis</span></div></footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -155,14 +270,14 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ready=!!(CFG&&CFG.apiKey);
 /* ลิงก์ภายนอก — เว้นว่าง = ขึ้นว่า "เร็วๆ นี้" */
-const LINKS={codewars:"",portfolio:""};
-[["lkCodewars","codewars"],["lkPortfolio","portfolio"]].forEach(([id,k])=>{ const a=$(id);
-  if(LINKS[k]) a.href=LINKS[k]; else { a.classList.add('soon'); a.querySelector('small').textContent='เร็วๆ นี้'; a.removeAttribute('target'); } });
-function route(){ let v=(location.hash||'#home').slice(1); if(new URLSearchParams(location.search).has('next')&&!location.hash) v='bindertown';
-  if(!['home','bindertown'].includes(v)) v='home';
-  document.querySelectorAll('[data-view]').forEach(el=>el.hidden=el.dataset.view!==v);
-  document.querySelectorAll('[data-go]').forEach(a=>a.toggleAttribute('aria-current',a.dataset.go===v)); if(document.querySelector('[data-go][aria-current]')) document.querySelector('[data-go][aria-current]').setAttribute('aria-current','page'); }
-addEventListener('hashchange',route); route();
+const LINKS={codewars:""};
+if(LINKS.codewars){ $('lkCodewars').href=LINKS.codewars; $('navCodewars').href=LINKS.codewars; $('navCodewars').target='_blank'; }
+else { $('lkCodewars').classList.add('soon'); $('lkCodewars').querySelector('small').textContent='เร็วๆ นี้'; $('navCodewars').remove(); }
+$('miniPenguin').innerHTML='<svg viewBox="0 0 200 250"><path d="M100 34C150 34 159 80 159 145C159 220 140 232 100 232C60 232 41 220 41 145C41 80 50 34 100 34Z" fill="#141a22"/><path d="M100 80C140 72 150 120 148 160C146 210 125 228 100 228C75 228 54 210 52 160C50 120 60 72 100 80Z" fill="#fff"/><ellipse cx="78" cy="88" rx="27" ry="25" fill="#fff"/><ellipse cx="122" cy="88" rx="27" ry="25" fill="#fff"/><path d="M70 96q8-9 16 0M114 96q8-9 16 0" stroke="#141a22" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="66" cy="112" rx="9" ry="6" fill="#f4b6b9"/><ellipse cx="134" cy="112" rx="9" ry="6" fill="#f4b6b9"/><path d="M86 107q14-12 28 0q-2 13-14 16q-12-3-14-16z" fill="#f6e7a8" stroke="#141a22" stroke-width="2.6"/><ellipse cx="78" cy="236" rx="19" ry="10" fill="#f6e7a8" stroke="#141a22" stroke-width="3"/><ellipse cx="122" cy="236" rx="19" ry="10" fill="#f6e7a8" stroke="#141a22" stroke-width="3"/><text x="100" y="44" font-size="46" text-anchor="middle">🧢</text></svg>';
+const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.12}):null;
+document.querySelectorAll('.reveal').forEach(el=>io?io.observe(el):el.classList.add('in'));
+if(new URLSearchParams(location.search).has('next')&&!location.hash) setTimeout(()=>$('bindertown').scrollIntoView(),300);
+const GLOGO='<svg class="g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 function setTools(open){ document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('locked',!open)); }
 setTools(false);
 if(!ready){ $('status').innerHTML='<p class="note warn">ยังไม่ได้ตั้งค่าระบบล็อกอิน</p>'; }
@@ -172,9 +287,10 @@ else{
   const login=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{ if(/popup/i.test(e.code||'')) auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); else $('status').innerHTML='<p class="note warn">เข้าสู่ระบบไม่สำเร็จ: '+esc(e.message)+'</p>'; });
   auth.onAuthStateChanged(async u=>{
     if(!u){
-      $('acct').innerHTML='<button class="btn pri" id="li">เข้าสู่ระบบด้วย Google</button>'; $('li').onclick=login;
-      $('status').innerHTML='<p class="note">เคาะประตูบ้านด้วยการเข้าสู่ระบบ Google — บัญชีใหม่ต้องรอ Penguin อนุมัติก่อนถึงจะเข้าบ้านได้</p>'; setTools(false); $('adminBox').hidden=true; return; }
-    $('acct').innerHTML='<div class="who">'+(u.photoURL?'<img src="'+esc(u.photoURL)+'" alt="" referrerpolicy="no-referrer">':'')+'<span>'+esc(u.displayName||u.email)+'</span><button class="btn sm" id="lo">ออกจากระบบ</button></div>';
+      $('acct').innerHTML='<button class="btn pri sm" id="li">'+GLOGO+'เข้าสู่ระบบ</button>'; $('li').onclick=login;
+      $('status').innerHTML='<p class="note">🧊 เคาะประตูบ้านด้วยการเข้าสู่ระบบ Google — บัญชีใหม่ต้องรอ Penguin อนุมัติก่อนถึงจะเข้าบ้านได้ <button class="btn sm" id="li2">'+GLOGO+'เข้าสู่ระบบด้วย Google</button></p>'; $('li2').onclick=login;
+      setTools(false); $('adminBox').hidden=true; return; }
+    $('acct').innerHTML='<div class="who">'+(u.photoURL?'<img src="'+esc(u.photoURL)+'" alt="" referrerpolicy="no-referrer">':'')+'<span>'+esc(u.displayName||u.email)+'</span><button class="btn sm" id="lo">ออก</button></div>';
     $('lo').onclick=()=>auth.signOut();
     try{ await db.ref('users/'+u.uid).set({name:(u.displayName||'').slice(0,80),email:(u.email||'').slice(0,120),photo:(u.photoURL||'').slice(0,500),at:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
     let ok=false, isAdmin=false, hasKey=false;
@@ -183,7 +299,7 @@ else{
     const open=ok&&hasKey; setTools(open);
     const next=new URLSearchParams(location.search).get('next');
     if(open&&next&&/^[a-z-]+\.html$/.test(next)){ location.replace(next); return; }
-    $('status').innerHTML=open?'<p class="note">✓ บัญชีนี้ใช้เครื่องมือได้แล้ว</p>'
+    $('status').innerHTML=open?'<p class="note">✓ บัญชีนี้เข้าบ้านได้แล้ว — เลือกเครื่องมือด้านบนได้เลย</p>'
       :ok?'<p class="note warn">ระบบยังไม่พร้อม (แอดมินยังไม่ได้ใส่คีย์)</p>'
       :'<p class="note warn">บัญชี <b>'+esc(u.email)+'</b> รอการอนุมัติ — แจ้ง Penguin ให้อนุมัติ แล้วรีเฟรชหน้านี้</p>';
     $('adminBox').hidden=!isAdmin; $('keyBox').hidden=!(isAdmin&&!hasKey);
