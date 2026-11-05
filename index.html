@@ -45,6 +45,7 @@ body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--body);font-siz
 @media (prefers-color-scheme: dark){.door{background:radial-gradient(circle at 50% 65%,#fff 0 55%,#dff4fa 80%)}}
 .igloo h1{position:relative;font-family:var(--display);font-weight:600;font-size:clamp(28px,6vw,40px);line-height:1.15;margin:0}
 .igloo .tag{position:relative;color:var(--muted);margin:4px 0 0}
+@media (max-width:560px){.igloo{border-radius:150px 150px 22px 22px;padding-top:40px}.igloo h1{font-size:23px}}
 .credit{position:relative;font-size:12px;color:var(--muted);margin:6px 0 10px}
 h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
 .about p{margin:0 0 8px}
@@ -67,6 +68,18 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 10px;dis
 .note.warn{border-color:var(--warn)}
 .hint{color:var(--muted);font-size:14px}
 input[type=text]{font:inherit;color:inherit;background:var(--snow);border:2px solid var(--ice-edge);border-radius:10px;padding:7px 10px;width:100%;max-width:420px}
+.menu{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}.menu a:first-child{grid-column:1/-1}}
+.menu a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:104px;padding:14px 8px;border-radius:20px;border:2px solid var(--ice-edge);
+  background:linear-gradient(165deg,var(--snow),var(--ice-2));color:var(--ink);text-decoration:none;font-family:var(--display);font-weight:600;font-size:17px;box-shadow:var(--shadow),inset 0 3px 0 rgba(255,255,255,.8);transition:transform .15s,border-color .15s}
+.menu a:hover{transform:translateY(-3px);border-color:var(--accent)}
+.menu a[aria-current="page"]{background:var(--ink);color:var(--snow);border-color:var(--ink)}
+@media (prefers-color-scheme: dark){.menu a[aria-current="page"]{background:var(--accent);color:#0b1a2b;border-color:var(--accent)}}
+.menu a.soon{opacity:.5;pointer-events:none}
+.menu .ic{font-size:30px;line-height:1}
+.menu small{font-family:var(--body);font-weight:400;font-size:12.5px;color:inherit;opacity:.7}
+[data-view]{display:flex;flex-direction:column;gap:18px}
+[data-view][hidden]{display:none!important}
 footer{text-align:center;color:var(--muted);font-size:13px}
 </style>
 </head>
@@ -78,6 +91,15 @@ footer{text-align:center;color:var(--muted);font-size:13px}
     <div id="acct"></div>
   </div>
 
+  <nav class="menu" aria-label="เมนูหลัก">
+    <a href="#home" data-go="home"><span class="ic">🏠</span>Home<small>บ้านเพนกวิน</small></a>
+    <a href="#bindertown" data-go="bindertown"><span class="ic">⚔️</span>Bindertown<small>เครื่องมือเกม</small></a>
+    <a id="lkGithub" target="_blank" rel="noopener"><span class="ic">🐙</span>GitHub<small>โค้ดของผม</small></a>
+    <a id="lkCodewars" target="_blank" rel="noopener"><span class="ic">🥋</span>Codewars<small>ฝึกโจทย์</small></a>
+    <a id="lkPortfolio" target="_blank" rel="noopener"><span class="ic">🧊</span>Portfolio<small>ผลงาน</small></a>
+  </nav>
+
+  <div data-view="home">
   <section class="igloo" aria-label="บ้านเพนกวินน้ำแข็ง">
     <h1>บ้านเพนกวินน้ำแข็ง 🧊</h1>
     <p class="tag">PenguinzGear · Tatchapong Gear</p>
@@ -92,8 +114,11 @@ footer{text-align:center;color:var(--muted);font-size:13px}
     <div class="chips"><span class="chip">⚔️ ดาบคู่</span><span class="chip">🧊 สายน้ำแข็ง</span><span class="chip">🛠️ ทำเครื่องมือ</span><span class="chip">🎮 Binder Town</span></div>
   </section>
 
+  </div>
+
+  <div data-view="bindertown" hidden>
   <section class="panel">
-    <h2>🛠️ เครื่องมือในบ้าน</h2>
+    <h2>⚔️ Bindertown · เครื่องมือ</h2>
     <div class="tools" id="tools">
       <a class="tool" href="boss.html"><b>เวลาบอส</b><small>Field Boss เกิดใหม่ 3 ชม. + World Boss</small></a>
       <a class="tool" href="miniboss.html"><b>มินิบอส</b><small>จดเวลาแยกแชนแนล อ่านจากรูปหลุมศพได้</small></a>
@@ -117,6 +142,7 @@ footer{text-align:center;color:var(--muted);font-size:13px}
     </div>
     <p><a class="btn" href="admin.html">จัดการผู้ใช้ / อนุมัติบัญชี</a></p>
   </section>
+  </div>
   <footer>🐧 PenguinzGear · penguinzgear.com</footer>
 </div>
 
@@ -129,6 +155,15 @@ const CFG={"apiKey": "", "authDomain": "bindertown-69c94.firebaseapp.com", "data
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ready=!!(CFG&&CFG.apiKey);
+/* ลิงก์ภายนอก — เว้นว่าง = ขึ้นว่า "เร็วๆ นี้" */
+const LINKS={github:"https://github.com/tatchaponggear",codewars:"",portfolio:""};
+[["lkGithub","github"],["lkCodewars","codewars"],["lkPortfolio","portfolio"]].forEach(([id,k])=>{ const a=$(id);
+  if(LINKS[k]) a.href=LINKS[k]; else { a.classList.add('soon'); a.querySelector('small').textContent='เร็วๆ นี้'; a.removeAttribute('target'); } });
+function route(){ let v=(location.hash||'#home').slice(1); if(new URLSearchParams(location.search).has('next')&&!location.hash) v='bindertown';
+  if(!['home','bindertown'].includes(v)) v='home';
+  document.querySelectorAll('[data-view]').forEach(el=>el.hidden=el.dataset.view!==v);
+  document.querySelectorAll('[data-go]').forEach(a=>a.toggleAttribute('aria-current',a.dataset.go===v)); if(document.querySelector('[data-go][aria-current]')) document.querySelector('[data-go][aria-current]').setAttribute('aria-current','page'); }
+addEventListener('hashchange',route); route();
 function setTools(open){ document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('locked',!open)); }
 setTools(false);
 if(!ready){ $('status').innerHTML='<p class="note warn">ยังไม่ได้ตั้งค่าระบบล็อกอิน</p>'; }
