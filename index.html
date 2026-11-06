@@ -308,10 +308,6 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
       <a class="tool" href="patch"><span class="ti">📜</span><span><b>แพทช์</b><small>แพทช์โน้ตและของที่กำลังมา</small></span></a>
     </div>
     <div id="status"></div>
-    <div class="glass" id="adminBox" style="padding:20px;margin-top:16px" hidden>
-      <h3 style="font-family:var(--display);margin:0 0 8px">🔑 แอดมิน</h3>
-      <p class="hint" style="margin:0">เข้าหน้าจัดการสิทธิ์จากลิงก์ที่บันทึกไว้ (ลิงก์ลับ ไม่แสดงในหน้านี้)</p>
-    </div>
   </section>
 </main>
 
@@ -372,7 +368,7 @@ else{
     if(!u){
       $('acct').innerHTML='<button class="btn pri sm" id="li">'+GLOGO+'เข้าสู่ระบบ</button>'; $('li').onclick=login;
       $('status').innerHTML='<p class="note">🧊 เคาะประตูบ้านด้วยการเข้าสู่ระบบ Google <button class="btn sm" id="li2">'+GLOGO+'เข้าสู่ระบบด้วย Google</button></p>'; $('li2').onclick=login;
-      setTools(()=>false); $('adminBox').hidden=true; return; }
+      setTools(()=>false); return; }
     $('acct').innerHTML='<div class="who">'+(u.photoURL?'<img src="'+esc(u.photoURL)+'" alt="" referrerpolicy="no-referrer">':'')+'<span>'+esc(u.displayName||u.email)+'</span><button class="btn sm" id="lo">ออก</button></div>';
     $('lo').onclick=()=>auth.signOut();
     try{ await db.ref('users/'+u.uid).set({name:(u.displayName||'').slice(0,80),email:(u.email||'').slice(0,120),photo:(u.photoURL||'').slice(0,500),at:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
@@ -386,8 +382,7 @@ else{
     if(next&&/^[a-z-]+(\.html)?$/.test(next)&&can(nid)){ location.replace(nid); return; }
     const n=[...document.querySelectorAll('.tool')].filter(a=>can(a.getAttribute('href').replace('.html',''))).length;
     $('status').innerHTML=(next&&!can(nid)?'<p class="note warn">บัญชีนี้ยังไม่มีสิทธิ์เข้าหน้า <b>'+esc(next)+'</b> — ขอสิทธิ์จาก Penguin ได้</p>':'')+
-      '<p class="note">✓ เข้าสู่ระบบเป็น <b>'+esc(u.email)+'</b> · เข้าได้ '+(isAdmin||mine.all?'ทุกหน้า':n+' หน้า')+(isAdmin?' (แอดมิน)':' — อยากได้หน้าเพิ่ม แจ้ง Penguin')+'</p>';
-    $('adminBox').hidden=!isAdmin;
+      '<p class="note">✓ เข้าสู่ระบบเป็น <b>'+esc(u.email)+'</b> · เข้าได้ '+(isAdmin||mine.all?'ทุกหน้า':n+' หน้า')+(isAdmin?'':' — อยากได้หน้าเพิ่ม แจ้ง Penguin')+'</p>';
   });
 }
 </script>
