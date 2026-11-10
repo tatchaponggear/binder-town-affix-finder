@@ -144,10 +144,14 @@ h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .simbtn button{border:1px solid var(--line);background:var(--card-2);border-radius:10px;padding:5px 10px;cursor:pointer;font-size:13px}
 .simnote{flex-basis:100%;font-size:12.5px}
 .jsec{display:flex;align-items:center;gap:8px;margin:18px 0 10px}
-.sk.sim .stepper{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
-.stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:16px;line-height:1}
-.stepper button:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}
-.stepper button:disabled{opacity:.35;cursor:default}
+.sk.sim{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:border-color .15s,transform .08s}
+.sk.sim:hover{border-color:var(--accent)}
+.sk.sim:active{transform:scale(.99)}
+.sk.sim .lvn{margin-left:auto}
+.sk.sim.max .lvn{color:var(--accent)}
+.sk.sim.bump{animation:bump .35s}
+@keyframes bump{40%{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}}
+.simhint{flex-basis:100%;font-size:12.5px;color:var(--muted)}
 .lvn{min-width:44px;text-align:center;font-family:var(--display);font-weight:700;font-size:16px}
 .lvn small{font-size:11.5px;color:var(--muted);font-weight:500}
 .lvbar{height:4px;border-radius:4px;background:var(--line);margin-top:7px;overflow:hidden}
@@ -158,7 +162,7 @@ h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .sk .req a.ok{color:#1f9d6b}.sk .req a.no{color:#e5484d}
 #simtoast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--card-2);border:1px solid var(--accent);border-radius:12px;padding:10px 16px;z-index:50;transition:.25s;max-width:calc(100% - 32px);font-size:14px}
 #simtoast.on{opacity:1;transform:translate(-50%,0)}
-@media (max-width:640px){.tiermap{flex-direction:column;align-items:stretch;overflow:visible;gap:6px}.tiermap>.tarr{display:none}.c23{grid-template-columns:1fr auto 1fr;row-gap:6px}.c23 .tier{flex-basis:auto}.tcol{flex-direction:row;flex-wrap:wrap;align-items:center;min-width:0}.tcol .tier{flex-basis:100%}.tcol button{padding:5px 9px;font-size:13.5px}.simbtn{margin-left:0}.simnote{display:none}.simbar{gap:6px 12px;padding:8px 10px}.simbar .pts{gap:10px;font-size:13px}.simbtn button{padding:4px 8px;font-size:12.5px}.simbar input[type=range]{width:120px}}
+@media (max-width:640px){.tiermap{flex-direction:column;align-items:stretch;overflow:visible;gap:6px}.tiermap>.tarr{display:none}.c23{grid-template-columns:1fr auto 1fr;row-gap:6px}.c23 .tier{flex-basis:auto}.tcol{flex-direction:row;flex-wrap:wrap;align-items:center;min-width:0}.tcol .tier{flex-basis:100%}.tcol button{padding:5px 9px;font-size:13.5px}.simbtn{margin-left:0}.simnote,.simhint{display:none}.simbar{gap:6px 12px;padding:8px 10px}.simbar .pts{gap:10px;font-size:13px}.simbtn button{padding:4px 8px;font-size:12.5px}.simbar input[type=range]{width:120px}}
 .inherit{margin-top:18px}
 .inherit summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:16px;padding:6px 0}
 /* builds */
@@ -191,7 +195,9 @@ h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .brk{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
 /* items */
 .it{padding:12px;display:flex;flex-direction:column;gap:5px}
-.it-h{display:flex;align-items:start;gap:8px}
+.it-h{display:flex;align-items:center;gap:10px}
+.pic{flex:none;width:var(--s);height:var(--s);border-radius:12px;background-color:var(--chip);background-repeat:no-repeat;border:1px solid var(--line)}
+.pic.none{display:inline-grid;place-items:center;font-size:calc(var(--s) * .45);opacity:.7}
 .it-h b{font-family:var(--display);font-size:15.5px;flex:1;line-height:1.3}
 .it .lvr{font-family:var(--display);font-weight:700;font-size:13px;white-space:nowrap;color:var(--muted)}
 .it .st{display:flex;flex-wrap:wrap;gap:4px}
@@ -204,10 +210,12 @@ h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .rname{color:var(--rc);font-weight:700;font-size:12px}
 .mini{font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card-2);border-left:3px solid var(--rc,var(--line))}
 .mini b{font-family:var(--display);font-weight:600}
+.mini .pic{float:left;margin:0 9px 2px 0;border-radius:9px}
+.mini::after{content:"";display:block;clear:both}
 .mini small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
 /* monsters */
 .mo{padding:12px;display:flex;flex-direction:column;gap:6px}
-.mo-h{display:flex;gap:8px;align-items:start}
+.mo-h{display:flex;gap:10px;align-items:center}
 .mo-h b{font-family:var(--display);font-size:16px;flex:1;line-height:1.3}
 .mo .lvr{font-family:var(--display);font-weight:700;font-size:13px;white-space:nowrap}
 .bars{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;font-size:12px;align-items:center}
@@ -323,7 +331,7 @@ function prep(){
   }
   for(const [a,v] of Object.entries(D.areas)) for(const m of v.maps) MAP_AREA[m]=a;
   for(const [id,s] of Object.entries(D.skills)) s.id=id;
-  for(const it of Object.values(D.items)) it.lv=it.lv||0;
+  for(const [id,it] of Object.entries(D.items)){it.id=id;it.lv=it.lv||0;}
 }
 const chain=id=>{const out=[];let c=D.jobs[id];while(c){out.unshift(c.id);c=D.jobs[c.from];}return out;};
 const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
@@ -354,6 +362,13 @@ function viewJobs(){
      <div class="c2row">${kids(j.id).map(c2=>`<div>${jb(c2)}<div class="arrow">↓ Base Lv ${D.c3Lv}</div>${kids(c2.id).map(c3=>jb(c3,'hc')).join('')}</div>`).join('')}</div>
    </div>`).join('')}`;
   app.querySelectorAll('[data-job]').forEach(b=>b.onclick=()=>location.hash='skills/'+b.dataset.job);
+}
+let IMGI=null;
+function pic(kind,id,sz,fb){
+  const I=IMGI&&IMGI[kind], n=I?I.idx[id]:null;
+  if(n==null) return fb?`<span class="pic none" style="--s:${sz}px">${fb}</span>`:'';
+  const per=I.cols*I.rows, ch=Math.floor(n/per), l=n%per, k=sz/I.cell;
+  return `<span class="pic" style="--s:${sz}px;background-image:url(nc-img/${kind==='mon'?'monsters':'items'}-${ch}.webp);background-size:${I.cols*I.cell*k}px auto;background-position:${-(l%I.cols)*sz}px ${-Math.floor(l/I.cols)*sz}px" role="img" aria-label=""></span>`;
 }
 const cut=(s,n)=>{s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s};
 
@@ -426,11 +441,10 @@ function skCardSim(s,dep,st,id){
   const lv=st.lv[s.id]||0, f=freeLv(s.id), L=SKL&&SKL[s.id], left=simTotal(id,st)-simUsed(id,st), ok=reqOk(s,st);
   const say=l=>L?L.d[l-1]:(l===1?s.d1:l===s.max?s.dMax:'');
   const req=(s.req||[]).map(([r,l])=>{const R=D.skills[r];const met=(st.lv[r]||0)>=l;return R?`<a data-go="${r}" class="${met?'ok':'no'}">${met?'✔':'✕'} ${esc(R.name)} Lv${l}</a>`:esc(r)}).join(s.reqAny?' หรือ ':' + ');
-  const canUp=lv<s.max&&left>0&&ok, canDn=lv>f;
   const L1=Math.max(1,lv), sp=L?lvAt(L.sp,L1):null, cd=L?lvAt(L.cd,L1):null;
-  return `<div class="sk sim${dep?' dep':''}${lv>0?' got':''}${!ok&&lv===0?' lock':''}" id="sk-${s.id}">
+  return `<div class="sk sim${dep?' dep':''}${lv>0?' got':''}${lv>=s.max?' max':''}${!ok&&lv===0?' lock':''}" id="sk-${s.id}" data-sk="${s.id}" role="button" tabindex="0" aria-label="${esc(s.name)} Lv ${lv} จาก ${s.max}">
     <div class="sk-h"><b>${esc(s.name)}</b><span class="chip k-${s.kind}">${KIND[s.kind]||s.kind}</span>${elChip(s.el)}${s.ult?'<span class="chip boss">อัลติ</span>':''}
-      <span class="stepper"><button data-dn="${s.id}" ${canDn?'':'disabled'} aria-label="ลดเลเวล">−</button><span class="lvn">${lv}<small>/${s.max}</small></span><button data-up="${s.id}" ${canUp?'':'disabled'} aria-label="เพิ่มเลเวล">+</button></span></div>
+      <span class="lvn">${lv}<small>/${s.max}</small></span></div>
     <div class="lvbar"><i style="width:${lv/s.max*100}%"></i></div>
     ${lv>0?`<p><span class="lvx">Lv${lv}</span>${esc(say(lv))}</p>`:'<p class="muted">ยังไม่ได้เรียน</p>'}
     ${lv<s.max?`<p class="nxt"><span class="lvx">Lv${lv+1}</span>${esc(say(lv+1))}</p>`:''}
@@ -453,7 +467,7 @@ function viewSkills(arg){
   const sections=own.map(p=>{const q={...p,skills:p.skills.filter(s=>!seen.has(s))};p.skills.forEach(s=>seen.add(s));return q;});
   const extra=path.filter(x=>!line.includes(x));  // e.g. the traveler: its skills do not carry over
   app.innerHTML=`
-  <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพตามระดับ Class · ${sim?'กด + / − เพื่อทดลองอัพสกิล แต้มคิดตามสูตรในเกม':'ค่าตัวเลขคือ Lv1 และเลเวลสูงสุด'} · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
+  <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพตามระดับ Class · ${sim?'แตะการ์ดสกิล = +1 · กดค้าง/คลิกขวา = −1 · อัพสกิลปลายทางได้เลย สกิลทางผ่านอัพให้อัตโนมัติ':'ค่าตัวเลขคือ Lv1 และเลเวลสูงสุด'} · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
   <div class="jobpick">${jobSelect(id)}<div class="modesw"><button data-mode="sim" class="${sim?'on':''}">🧪 ทดลองอัพ</button><button data-mode="view" class="${sim?'':'on'}">📖 ดูอย่างเดียว</button></div></div>
   ${tierMap(id)}
   <div class="card pad jinfo"><div><span class="tier">${TIER[j.tier]}</span><h2>${ICON[j.fam]||''} ${esc(j.name)}</h2><div class="muted" style="margin-top:4px">${esc(j.desc)}</div>
@@ -462,6 +476,7 @@ function viewSkills(arg){
   ${sim?`<div class="simbar card"><label>Job Lv <b id="jlv">${st.jl}</b><input type="range" id="jlr" min="1" max="${j.maxJob}" value="${st.jl}"></label>
      <div class="pts"><span>แต้มทั้งหมด <b id="ptot"></b></span><span>ใช้ไป <b id="pused"></b></span><span class="left">เหลือ <b id="pleft"></b></span></div>
      <div class="simbtn"><button id="sreset">รีเซ็ต</button><button id="smax">อัพตามลำดับ</button><button id="scopy">🔗 คัดลอกลิงก์</button></div>
+     <div class="simhint">👆 กด = +1 · คลิกขวา / กดค้าง = −1 · Shift+คลิก = อัพเต็ม · อัพสกิลปลายทางได้เลย สกิลที่ต้องเรียนก่อนจะอัพให้ตามเงื่อนไข</div>
      <div class="muted simnote">${j.tier>=2?`ได้แต้มจาก Traveler 9 + ${line.slice(1).map(x=>esc(J[x].name)+' '+(J[x].maxJob-1)).join(' + ')} + Job Lv ปัจจุบัน − 1 · ใช้แต้มกับสกิลของอาชีพก่อนหน้าได้ด้วย`:j.tier===1?'ได้แต้มจาก Traveler 9 + Job Lv − 1':'1 แต้มต่อ Job Lv'}</div></div>`:''}
   ${sections.map((p,i)=>`${line.length>1?`<h3 class="jsec"><span class="tier">${TIER[p.tier]}</span> ${esc(p.name)}${i?' <small class="muted">(สกิลจากอาชีพก่อนหน้า)</small>':''}</h3>`:''}${lineHTML(p,sim)}`).join('')}
   ${extra.length?`<details class="inherit card pad"><summary>สกิล ${extra.map(p=>esc(J[p].name)).join(', ')} (ไม่ติดมาเมื่อเปลี่ยนอาชีพ แต่แต้ม ${J.traveler.maxJob-1} แต้มยังอยู่)</summary>
@@ -485,18 +500,64 @@ function viewSkills(arg){
     $('.simbar .left').classList.toggle('neg',tot-used<0);
     for(const sid of LL){const el=document.getElementById('sk-'+sid),S=D.skills[sid];if(!el||!S)continue;
       const l=el.closest('.line'),dep=el.classList.contains('dep');el.outerHTML=skCardSim(S,dep,st,id);}
-    bindGo();bindStep();save();
+    bindGo();save();
   };
   const dependents=(sid,newLv)=>LL.filter(o=>{const S=D.skills[o];if(!S||!(st.lv[o]>freeLv(o)))return false;const R=S.req||[];if(!R.some(([r])=>r===sid))return false;
     const t={lv:{...st.lv,[sid]:newLv}};return !reqOk(S,t);});
   const toast=m=>{let t=$('#simtoast');if(!t){t=document.createElement('div');t.id='simtoast';document.body.appendChild(t)}t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)};
-  const bindStep=()=>{
-    app.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const sid=b.dataset.up;st.lv[sid]=(st.lv[sid]||0)+1;refresh()});
-    app.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const sid=b.dataset.dn,nl=st.lv[sid]-1,dp=dependents(sid,nl);
-      if(dp.length){toast('ลดไม่ได้: '+dp.map(o=>D.skills[o].name).join(', ')+' ยังต้องใช้สกิลนี้อยู่');return}
-      st.lv[sid]=nl;refresh()});
+  // raise sid to `to`, learning whatever it needs first; returns the new levels or an error
+  const plan=(sid,to)=>{
+    const t={...st.lv}, auto=[];
+    const raise=(x,l,seen)=>{
+      const S=D.skills[x];if(!S||!LL.includes(x))return S?S.name+' ต้องเรียนจากอาชีพอื่น':'ไม่พบสกิล';
+      if(seen.has(x))return 'เงื่อนไขวนกัน';seen=new Set(seen).add(x);
+      const R=(S.req||[]).filter(([r])=>r!==x);
+      if(!reqOk(S,{lv:t})){
+        if(S.reqAny){ // pick the cheapest option
+          let best=null;
+          for(const [r,rl] of R){const save={...t},n0=auto.length,e=raise(r,rl,seen);const c=e?1e9:simUsed(id,{lv:t});
+            if(!e&&(!best||c<best.c))best={r,rl,c};Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,save);auto.length=n0;}
+          if(!best)return 'ยังขาดเงื่อนไขของ '+S.name;
+          const e=raise(best.r,best.rl,seen);if(e)return e;
+        } else for(const [r,rl] of R){if((t[r]||0)<rl){const e=raise(r,rl,seen);if(e)return e;}}
+      }
+      if((t[x]||0)<l){if(x!==sid)auto.push([x,l]);t[x]=l;}
+      return null;
+    };
+    const err=raise(sid,to,new Set());
+    return err?{err}:{t,auto,cost:simUsed(id,{lv:t})-simUsed(id,st)};
   };
-  bindStep();
+  const bump=sid=>{const el=document.getElementById('sk-'+sid);if(el){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}};
+  const up=(sid,full)=>{
+    const S=D.skills[sid],cur=st.lv[sid]||0;if(cur>=S.max){toast(S.name+' เต็มแล้ว (Lv '+S.max+')');return}
+    const left=simTotal(id,st)-simUsed(id,st);
+    let r=plan(sid,full?S.max:cur+1);
+    if(r.err){toast('อัพไม่ได้: '+r.err);return}
+    if(r.cost>left&&full){ // fill as far as points allow
+      let best=null;for(let l=cur+1;l<S.max;l++){const q=plan(sid,l);if(!q.err&&q.cost<=left)best=q;else break}
+      if(best)r=best;
+    }
+    if(r.cost>left){toast('แต้มไม่พอ: ต้องใช้ '+r.cost+' แต้ม เหลือ '+left+(r.auto.length?' (รวมสกิลทางผ่าน)':''));return}
+    Object.assign(st.lv,r.t);refresh();bump(sid);r.auto.forEach(([x])=>bump(x));
+    if(r.auto.length)toast('อัพทางผ่านอัตโนมัติ: '+r.auto.map(([x,l])=>D.skills[x].name+' → Lv '+l).join(', '));
+  };
+  const down=sid=>{
+    const S=D.skills[sid],f=freeLv(sid);if((st.lv[sid]||0)<=f){toast(S.name+(f?' เป็นเลเวลฟรี ลดไม่ได้':' ยังไม่ได้เรียน'));return}
+    const nl=st.lv[sid]-1,dp=dependents(sid,nl);
+    if(dp.length){toast('ลดไม่ได้: '+dp.map(o=>D.skills[o].name).join(', ')+' ยังต้องใช้สกิลนี้อยู่');return}
+    st.lv[sid]=nl;refresh();bump(sid);
+  };
+  const cardOf=e=>!e.target.closest('[data-go],a,button,input')&&e.target.closest('.sk.sim[data-sk]');
+  let pressT=0,pressed=false,pressXY=null;
+  app.onclick=e=>{const c=cardOf(e);if(!c)return;if(pressed){pressed=false;return}up(c.dataset.sk,e.shiftKey)};
+  app.oncontextmenu=e=>{const c=cardOf(e);if(!c)return;e.preventDefault();if(pressed)return;down(c.dataset.sk)};
+  app.onkeydown=e=>{const c=e.target.closest&&e.target.closest('.sk.sim[data-sk]');if(!c)return;
+    if(e.key==='Enter'||e.key===' '||e.key==='+'||e.key==='='){e.preventDefault();up(c.dataset.sk,e.shiftKey)}
+    else if(e.key==='-'||e.key==='Backspace'||e.key==='Delete'){e.preventDefault();down(c.dataset.sk)}};
+  app.ontouchstart=e=>{const c=cardOf(e);pressed=false;clearTimeout(pressT);if(!c)return;const t=e.touches[0];pressXY=[t.clientX,t.clientY];
+    pressT=setTimeout(()=>{pressed=true;down(c.dataset.sk);navigator.vibrate&&navigator.vibrate(15)},480)};
+  app.ontouchmove=e=>{if(!pressXY)return;const t=e.touches[0];if(Math.hypot(t.clientX-pressXY[0],t.clientY-pressXY[1])>10)clearTimeout(pressT)};
+  app.ontouchend=app.ontouchcancel=()=>{clearTimeout(pressT);pressXY=null;setTimeout(()=>{pressed=false},400)};
   {const h=document.querySelector('header');if(h&&getComputedStyle(h).position==='sticky')document.documentElement.style.setProperty('--hdr',h.offsetHeight+'px');}
   $('#jlr').oninput=e=>{st.jl=+e.target.value;$('#jlv').textContent=st.jl;refresh()};
   $('#sreset').onclick=()=>{for(const s of LL)st.lv[s]=freeLv(s);refresh()};
@@ -583,7 +644,7 @@ function gearFor(j,main){
   }).filter(([,l])=>l.length);
   return {weapons,armor};
 }
-function miniItem(it){return `<div class="mini rar-${it.rarity}"><b>${esc(it.name)}</b> <span class="rname">${esc(D.rarity[it.rarity].name)}</span>
+function miniItem(it){return `<div class="mini rar-${it.rarity}">${pic('items',it.id,38)}<b>${esc(it.name)}</b> <span class="rname">${esc(D.rarity[it.rarity].name)}</span>
   <small>Lv ${it.lv}${it.dmg?` · ดาเมจ ${it.dmg[0]}–${it.dmg[1]}`:''}${it.el?' · '+esc(elTh(it.el)):''}${it.stats?' · '+Object.entries(it.stats).map(([k,v])=>statTxt(k,v)).join(', '):''}</small>
   ${it.abil?`<small>✦ ${esc(it.abil)}</small>`:''}${it.wsk?`<small>✦ ${esc(it.wsk)}</small>`:''}</div>`}
 function viewBuilds(arg){
@@ -649,7 +710,7 @@ function viewGear(){
     L.sort(GS.sort==='dmg'?(x,y)=>av(y)-av(x):GS.sort==='name'?(x,y)=>x.name.localeCompare(y.name,'th'):(x,y)=>x.lv-y.lv||av(x)-av(y));
     $('#gc').textContent=`พบ ${L.length} ชิ้น`;
     $('#gl').innerHTML=L.slice(0,shown).map(it=>`<div class="card it rar-${it.rarity}">
-      <div class="it-h"><b>${esc(it.name)}</b><span class="lvr">Lv ${it.lv}</span></div>
+      <div class="it-h">${pic('items',it.id,44,'⚔️')}<b>${esc(it.name)}</b><span class="lvr">Lv ${it.lv}</span></div>
       <div><span class="rname">${esc(D.rarity[it.rarity].name)}</span> <span class="muted" style="font-size:12.5px">· ${esc(it.wtype?(D.wtypes[it.wtype]||{}).name||it.wtype:SLOT_TH[it.slot])}${it.two?' · สองมือ':''}${it.magic?' · เวท':''}</span> ${elChip(it.el)}</div>
       ${it.dmg?`<div style="font-family:var(--display);font-weight:600">ดาเมจ ${it.dmg[0]}–${it.dmg[1]}${it.aspd?` <span class="muted" style="font-weight:400;font-size:13px">· ความเร็ว ×${it.aspd}</span>`:''}</div>`:''}
       ${it.stats?`<div class="st">${Object.entries(it.stats).map(([k,v])=>`<span>${esc(statTxt(k,v))}</span>`).join('')}</div>`:''}
@@ -694,7 +755,7 @@ function viewMonsters(){
     <select id="msort"><option value="lv">เรียง: เลเวล</option><option value="exp"${MS.sort==='exp'?' selected':''}>เรียง: EXP</option><option value="hp"${MS.sort==='hp'?' selected':''}>เรียง: HP</option></select>
   </div><div class="count" id="mc"></div><div class="grid g-auto" id="ml"></div><button class="more" id="mmore">แสดงเพิ่ม</button>
   <div class="sec-h"><h2>บอสเนื้อเรื่อง</h2><p>บอสที่เจอตามเควสหลัก</p></div>
-  <div class="grid g-auto">${Object.values(D.story).sort((a,b)=>a.lv-b.lv).map(b=>`<div class="card mo"><div class="mo-h"><b>${esc(b.name)}</b><span class="lvr">Lv ${b.lv}</span></div><div>${elChip(b.el)} <span class="chip boss">เนื้อเรื่อง</span>${b.quest?` <span class="chip">${esc(b.quest)}</span>`:''}</div><div class="maps">📍 ${esc((D.maps[b.map]||{}).name||b.map)}</div><div class="weak">แพ้ธาตุ: ${weakOf(b.el).map(([e])=>elChip(e)).join(' ')||'<span class="muted">-</span>'}</div></div>`).join('')}</div>`;
+  <div class="grid g-auto">${Object.values(D.story).sort((a,b)=>a.lv-b.lv).map(b=>`<div class="card mo"><div class="mo-h">${pic('mon',Object.keys(D.story).find(k=>D.story[k]===b),56,'👤')}<b>${esc(b.name)}</b><span class="lvr">Lv ${b.lv}</span></div><div>${elChip(b.el)} <span class="chip boss">เนื้อเรื่อง</span>${b.quest?` <span class="chip">${esc(b.quest)}</span>`:''}</div><div class="maps">📍 ${esc((D.maps[b.map]||{}).name||b.map)}</div><div class="weak">แพ้ธาตุ: ${weakOf(b.el).map(([e])=>elChip(e)).join(' ')||'<span class="muted">-</span>'}</div></div>`).join('')}</div>`;
   let shown=60;
   const bar=(lab,v,mx,c)=>`<span>${lab}</span><i style="--w:${Math.min(100,v/mx*100)}%;--bc:${c}" title="×${v}"></i>`;
   const draw=()=>{
@@ -710,7 +771,7 @@ function viewMonsters(){
     $('#mc').textContent=`พบ ${L.length} ชนิด`;
     $('#ml').innerHTML=L.slice(0,shown).map(m=>{
       const mp=Object.entries(m.where||{}); const wk=weakOf(m.el), rs=resistOf(m.el);
-      return `<div class="card mo"><div class="mo-h"><b>${esc(m.name)}</b><span class="lvr">${m.lvr?`Lv ${m.lvr[0]}–${m.lvr[1]}`:'<span class="muted">ดันเจี้ยน/อีเวนต์</span>'}</span></div>
+      return `<div class="card mo"><div class="mo-h">${pic('mon',m.id,56,m.boss?'👑':'👾')}<b>${esc(m.name)}</b><span class="lvr">${m.lvr?`Lv ${m.lvr[0]}–${m.lvr[1]}`:'<span class="muted">ดันเจี้ยน/อีเวนต์</span>'}</span></div>
       <div>${elChip(m.el)}${m.atkEl&&m.atkEl!==m.el?` <span class="muted" style="font-size:12px">ตีเป็น</span> ${elChip(m.atkEl)}`:''} ${m.boss?'<span class="chip boss">บอส</span>':''}${m.elite?' <span class="chip boss">อีลิท</span>':''}</div>
       <div class="bars">${bar('HP',m.hpK,m.boss?60:4,'#e0525a')}${bar('ATK',m.atkK,m.boss?3:2.5,'#e8944a')}${bar('DEF',m.defK,2.5,'#6c8cd6')}${bar('MDEF',m.mdefK,2.5,'#9a6cd6')}${bar('EXP',m.expK,m.boss?60:4,'#3fae6a')}</div>
       <div class="weak">แพ้: ${wk.map(([e,v])=>elChip(e)+` <span class="muted">${v}%</span>`).join(' ')||'<span class="muted">-</span>'}${rs.length?` · ต้าน: ${rs.slice(0,4).map(([e,v])=>elChip(e)+` <span class="muted">${v}%</span>`).join(' ')}`:''}</div>
@@ -952,6 +1013,7 @@ function sysCosmetic(){
 }
 
 /* ---------- boot ---------- */
+fetch('nc-img/index.json').then(r=>r.ok?r.json():null).then(x=>{IMGI=x;if(D)route()}).catch(()=>{});
 fetch('nightcamp-data.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{D=d;prep();$('#ver').textContent='ข้อมูลเกม: '+d.ver;route()})
 .catch(e=>{app.innerHTML=`<div class="empty">โหลดข้อมูลไม่สำเร็จ (${esc(e.message)}) — ลองรีเฟรชอีกครั้ง</div>`});
 </script>
