@@ -24,8 +24,8 @@
   --r-common:#d6cfc2; --r-rare:#6fb6ff; --r-epic:#c792ff; --r-legend:#ffc94d; color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{background:var(--bg);overflow-x:hidden;scroll-padding-top:120px}
-body{margin:0;color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6;background:var(--bg);overflow-x:hidden}
+html{background:var(--bg);overflow-x:clip;scroll-padding-top:120px}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6;background:var(--bg);overflow-x:clip}
 a{color:inherit}
 button,input,select{font:inherit;color:inherit}
 .sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#f3d9c4 0%,#f6ece2 45%,var(--bg) 80%)}
@@ -121,6 +121,44 @@ h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
 .sk .nums{font-size:12px;color:var(--muted);margin-top:5px}
 .sk.flash{animation:fl 1.2s}
 @keyframes fl{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
+.tiermap{display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:12px}
+.tcol{display:flex;flex-direction:column;gap:6px;min-width:130px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}
+.tcol .tier{margin-bottom:2px}.tcol .tier small{font-weight:500;opacity:.8}
+.tcol button{border:1px solid var(--line);background:var(--card-2);border-radius:10px;padding:6px 10px;cursor:pointer;text-align:left;font-size:14px;white-space:nowrap}
+.tcol button.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+.tcol button.path{border-color:var(--accent-2)}
+.tcol button:disabled{opacity:.4;cursor:default}
+.tarr{align-self:center;color:var(--muted)}
+.c23{display:grid;grid-template-columns:auto auto auto;align-items:center;column-gap:8px}
+.c3s{display:flex;flex-direction:column;gap:6px}
+.modesw{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.modesw button{border:0;background:var(--card);padding:8px 12px;cursor:pointer;font-size:14px}
+.modesw button.on{background:var(--accent);color:#fff;font-weight:600}
+.simbar{position:sticky;top:calc(var(--hdr,64px) + 6px);z-index:5;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 14px;margin-bottom:14px;backdrop-filter:blur(8px)}
+.simbar label{display:flex;align-items:center;gap:8px;font-size:14px}
+.simbar input[type=range]{width:160px;accent-color:var(--accent)}
+.simbar .pts{display:flex;gap:14px;font-size:14px}
+.simbar .pts b{font-size:17px;font-family:var(--display)}
+.simbar .left b{color:var(--accent)}.simbar .left.neg b{color:#e5484d}
+.simbtn{display:flex;gap:6px;margin-left:auto}
+.simbtn button{border:1px solid var(--line);background:var(--card-2);border-radius:10px;padding:5px 10px;cursor:pointer;font-size:13px}
+.simnote{flex-basis:100%;font-size:12.5px}
+.jsec{display:flex;align-items:center;gap:8px;margin:18px 0 10px}
+.sk.sim .stepper{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
+.stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:16px;line-height:1}
+.stepper button:not(:disabled):hover{border-color:var(--accent);color:var(--accent)}
+.stepper button:disabled{opacity:.35;cursor:default}
+.lvn{min-width:44px;text-align:center;font-family:var(--display);font-weight:700;font-size:16px}
+.lvn small{font-size:11.5px;color:var(--muted);font-weight:500}
+.lvbar{height:4px;border-radius:4px;background:var(--line);margin-top:7px;overflow:hidden}
+.lvbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.sk.got{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.sk.lock{opacity:.6}
+.sk .nxt{color:var(--muted)}
+.sk .req a.ok{color:#1f9d6b}.sk .req a.no{color:#e5484d}
+#simtoast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--card-2);border:1px solid var(--accent);border-radius:12px;padding:10px 16px;z-index:50;transition:.25s;max-width:calc(100% - 32px);font-size:14px}
+#simtoast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:640px){.tiermap{flex-direction:column;align-items:stretch;overflow:visible;gap:6px}.tiermap>.tarr{display:none}.c23{grid-template-columns:1fr auto 1fr;row-gap:6px}.c23 .tier{flex-basis:auto}.tcol{flex-direction:row;flex-wrap:wrap;align-items:center;min-width:0}.tcol .tier{flex-basis:100%}.tcol button{padding:5px 9px;font-size:13.5px}.simbtn{margin-left:0}.simnote{display:none}.simbar{gap:6px 12px;padding:8px 10px}.simbar .pts{gap:10px;font-size:13px}.simbtn button{padding:4px 8px;font-size:12.5px}.simbar input[type=range]{width:120px}}
 .inherit{margin-top:18px}
 .inherit summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:16px;padding:6px 0}
 /* builds */
@@ -350,27 +388,126 @@ function linesOf(j){
   }
   return L.filter(l=>l.sk.length);
 }
+/* game rules (js/skilltree.js): a job's learnable skills, its skill points */
+const jobLine=id=>{const o=[];for(let j=id;j&&D.jobs[j]&&!o.includes(j);j=D.jobs[j].tier>=2?D.jobs[j].from:null)o.push(j);return o;};
+const learnList=id=>{const J=D.jobs[id];if(J.tier<2)return J.skills.slice();return [...new Set(jobLine(id).reverse().flatMap(j=>D.jobs[j].skills))];};
+const basePts=id=>{const L=jobLine(id),first=D.jobs[L[L.length-1]];return (first.tier>=1?D.jobs.traveler.maxJob-1:0)+L.slice(1).reduce((s,j)=>s+(D.jobs[j].tier>=1?D.jobs[j].maxJob-1:0),0);};
+let SKL=null,SKLP=null;
+const loadSkl=()=>SKLP=SKLP||fetch('nightcamp-skilllv.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>SKL=d);
+const freeLv=id=>SKL&&SKL[id]?SKL[id].f:((D.skills[id]||{}).active?1:0);
+const lvAt=(a,l)=>Array.isArray(a)?a[l-1]:a;
+const SIM={};  // job -> {jl, lv:{skill:level}}
+function simOf(id){
+  if(SIM[id]) return SIM[id];
+  const st={jl:D.jobs[id].maxJob,lv:{}};for(const s of learnList(id)) st.lv[s]=freeLv(s);
+  return SIM[id]=st;
+}
+const simUsed=(id,st)=>learnList(id).reduce((t,s)=>t+Math.max(0,(st.lv[s]||0)-freeLv(s)),0);
+const simTotal=(id,st)=>st.jl-1+basePts(id);
+const reqOk=(s,st)=>{const R=s.req||[];if(!R.length)return true;const ok=([r,l])=>(st.lv[r]||0)>=l;return s.reqAny?R.some(ok):R.every(ok);};
+function encSim(id,st){return st.jl.toString(36)+'.'+learnList(id).map(s=>(st.lv[s]||0).toString(36)).join('');}
+function decSim(id,code){
+  const [jl,lv]=String(code||'').split('.');if(!lv)return;const st=simOf(id),L=learnList(id);
+  const n=parseInt(jl,36);if(n>=1&&n<=D.jobs[id].maxJob)st.jl=n;
+  L.forEach((s,i)=>{const v=parseInt(lv[i],36);const S=D.skills[s];if(S&&v>=0&&v<=S.max)st.lv[s]=Math.max(v,freeLv(s));});
+}
+function tierMap(id){
+  const J=D.jobs, j=J[id], c1=j.tier===0?null:J[j.fam];
+  const btn=x=>`<button data-j="${x.id}" class="${x.id===id?'on':''}${jobLine(id).includes(x.id)&&x.id!==id?' path':''}">${esc(x.name)}</button>`;
+  const col=(t,body)=>`<div class="tcol"><span class="tier">${t}</span>${body}</div>`;
+  const c2s=c1?kids(c1.id):[];
+  return `<div class="tiermap">
+    ${col('Novice',btn(J.traveler))}<span class="tarr">→</span>
+    ${col('Class 1',c1?btn(c1):Object.values(J).filter(x=>x.tier===1).map(btn).join(''))}
+    ${c1?`<span class="tarr">→</span><div class="tcol c23"><span class="tier">Class 2</span><span></span><span class="tier">High Class <small>Base Lv ${D.c3Lv}</small></span>${c2s.map(c=>`${btn(c)}<span class="tarr">→</span><div class="c3s">${kids(c.id).map(btn).join('')||'<button disabled>–</button>'}</div>`).join('')}</div>`:''}
+  </div>`;
+}
+function skCardSim(s,dep,st,id){
+  const lv=st.lv[s.id]||0, f=freeLv(s.id), L=SKL&&SKL[s.id], left=simTotal(id,st)-simUsed(id,st), ok=reqOk(s,st);
+  const say=l=>L?L.d[l-1]:(l===1?s.d1:l===s.max?s.dMax:'');
+  const req=(s.req||[]).map(([r,l])=>{const R=D.skills[r];const met=(st.lv[r]||0)>=l;return R?`<a data-go="${r}" class="${met?'ok':'no'}">${met?'✔':'✕'} ${esc(R.name)} Lv${l}</a>`:esc(r)}).join(s.reqAny?' หรือ ':' + ');
+  const canUp=lv<s.max&&left>0&&ok, canDn=lv>f;
+  const L1=Math.max(1,lv), sp=L?lvAt(L.sp,L1):null, cd=L?lvAt(L.cd,L1):null;
+  return `<div class="sk sim${dep?' dep':''}${lv>0?' got':''}${!ok&&lv===0?' lock':''}" id="sk-${s.id}">
+    <div class="sk-h"><b>${esc(s.name)}</b><span class="chip k-${s.kind}">${KIND[s.kind]||s.kind}</span>${elChip(s.el)}${s.ult?'<span class="chip boss">อัลติ</span>':''}
+      <span class="stepper"><button data-dn="${s.id}" ${canDn?'':'disabled'} aria-label="ลดเลเวล">−</button><span class="lvn">${lv}<small>/${s.max}</small></span><button data-up="${s.id}" ${canUp?'':'disabled'} aria-label="เพิ่มเลเวล">+</button></span></div>
+    <div class="lvbar"><i style="width:${lv/s.max*100}%"></i></div>
+    ${lv>0?`<p><span class="lvx">Lv${lv}</span>${esc(say(lv))}</p>`:'<p class="muted">ยังไม่ได้เรียน</p>'}
+    ${lv<s.max?`<p class="nxt"><span class="lvx">Lv${lv+1}</span>${esc(say(lv+1))}</p>`:''}
+    ${s.active&&(sp||cd)?`<div class="nums">${[sp?'SP '+sp:'',cd?'CD '+cd+' วิ':''].filter(Boolean).join(' · ')}${lv===0?' (Lv1)':''}</div>`:''}
+    ${req?`<div class="req">ต้องการ: ${req}</div>`:(s.reqText?`<div class="req">${esc(s.reqText)}</div>`:'')}
+    ${s.grow?`<div class="grow">⬆ ${esc(s.grow)}</div>`:''}
+  </div>`;
+}
 function viewSkills(arg){
   const J=D.jobs, id=J[arg]?arg:'knight', j=J[id], path=chain(id);
-  const L=linesOf(j);
+  const code=(location.hash.split('/')[2]||'');
+  const sim=code!=='view';
+  if(sim&&!SKL){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลสกิล…</div>';loadSkl().then(()=>viewSkills(arg)).catch(()=>{SKLP=null;location.hash='skills/'+id+'/view'});return;}
+  if(sim&&code) decSim(id,code);
+  const st=sim?simOf(id):null;
+  const line=jobLine(id), own=line.map(x=>J[x]);  // current job first, then the jobs it grew from
+  const lineHTML=(p,simOn)=>`<div class="lines">${linesOf(p).map(l=>`<div class="card line"><div class="line-h">${esc(l.name)} ${elChip(l.el&&l.el!=='neutral'?l.el:null)}${l.auto?'<span class="chip">ร่ายเอง</span>':''}</div>
+     ${l.sk.map(s=>simOn?skCardSim(s,l.depth[s.id]>0,st,id):skCard(s,l.depth[s.id]>0)).join('')}</div>`).join('')}</div>`;
+  const seen=new Set();
+  const sections=own.map(p=>{const q={...p,skills:p.skills.filter(s=>!seen.has(s))};p.skills.forEach(s=>seen.add(s));return q;});
+  const extra=path.filter(x=>!line.includes(x));  // e.g. the traveler: its skills do not carry over
   app.innerHTML=`
-  <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพ · ค่าตัวเลขคือ Lv1 และเลเวลสูงสุดจากสูตรในเกม · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
-  <div class="jobpick">${jobSelect(id)}<div class="crumbs">${path.map(p=>`<button data-j="${p}" class="${p===id?'on':''}">${esc(J[p].name)}</button>`).join('<span class="muted">→</span>')}${kids(id).map(k=>`<span class="muted">→</span><button data-j="${k.id}">${esc(k.name)}</button>`).join('')}</div></div>
+  <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพตามระดับ Class · ${sim?'กด + / − เพื่อทดลองอัพสกิล แต้มคิดตามสูตรในเกม':'ค่าตัวเลขคือ Lv1 และเลเวลสูงสุด'} · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
+  <div class="jobpick">${jobSelect(id)}<div class="modesw"><button data-mode="sim" class="${sim?'on':''}">🧪 ทดลองอัพ</button><button data-mode="view" class="${sim?'':'on'}">📖 ดูอย่างเดียว</button></div></div>
+  ${tierMap(id)}
   <div class="card pad jinfo"><div><span class="tier">${TIER[j.tier]}</span><h2>${ICON[j.fam]||''} ${esc(j.name)}</h2><div class="muted" style="margin-top:4px">${esc(j.desc)}</div>
     <div class="kv">${j.allW.map(w=>`<span class="chip">${esc((D.wtypes[w]||{}).name||w)}</span>`).join('')}<span class="chip">HP ×${j.hp}</span><span class="chip">SP ×${j.sp}</span><span class="chip">Job Lv ${j.maxJob}</span><span class="chip">${j.skills.length} สกิล</span></div></div>
     ${j.tier>=1?`<a class="more" style="margin:0" href="#builds/${id}">⚔️ ดูบิลด์</a>`:''}</div>
-  <div class="lines">${L.map(l=>`<div class="card line"><div class="line-h">${esc(l.name)} ${elChip(l.el&&l.el!=='neutral'?l.el:null)}${l.auto?'<span class="chip">ร่ายเอง</span>':''}</div>
-     ${l.sk.map(s=>skCard(s,l.depth[s.id]>0)).join('')}</div>`).join('')}</div>
-  ${path.length>1?`<details class="inherit card pad"><summary>สกิลที่ติดมาจากอาชีพก่อนหน้า (${path.slice(0,-1).map(p=>esc(J[p].name)).join(', ')})</summary>
-     ${path.slice(0,-1).map(p=>`<h3 style="margin:12px 0 8px">${esc(J[p].name)}</h3><div class="lines">${linesOf(J[p]).map(l=>`<div class="card line"><div class="line-h">${esc(l.name)}</div>${l.sk.map(s=>skCard(s,l.depth[s.id]>0)).join('')}</div>`).join('')}</div>`).join('')}</details>`:''}`;
+  ${sim?`<div class="simbar card"><label>Job Lv <b id="jlv">${st.jl}</b><input type="range" id="jlr" min="1" max="${j.maxJob}" value="${st.jl}"></label>
+     <div class="pts"><span>แต้มทั้งหมด <b id="ptot"></b></span><span>ใช้ไป <b id="pused"></b></span><span class="left">เหลือ <b id="pleft"></b></span></div>
+     <div class="simbtn"><button id="sreset">รีเซ็ต</button><button id="smax">อัพตามลำดับ</button><button id="scopy">🔗 คัดลอกลิงก์</button></div>
+     <div class="muted simnote">${j.tier>=2?`ได้แต้มจาก Traveler 9 + ${line.slice(1).map(x=>esc(J[x].name)+' '+(J[x].maxJob-1)).join(' + ')} + Job Lv ปัจจุบัน − 1 · ใช้แต้มกับสกิลของอาชีพก่อนหน้าได้ด้วย`:j.tier===1?'ได้แต้มจาก Traveler 9 + Job Lv − 1':'1 แต้มต่อ Job Lv'}</div></div>`:''}
+  ${sections.map((p,i)=>`${line.length>1?`<h3 class="jsec"><span class="tier">${TIER[p.tier]}</span> ${esc(p.name)}${i?' <small class="muted">(สกิลจากอาชีพก่อนหน้า)</small>':''}</h3>`:''}${lineHTML(p,sim)}`).join('')}
+  ${extra.length?`<details class="inherit card pad"><summary>สกิล ${extra.map(p=>esc(J[p].name)).join(', ')} (ไม่ติดมาเมื่อเปลี่ยนอาชีพ แต่แต้ม ${J.traveler.maxJob-1} แต้มยังอยู่)</summary>
+     ${extra.map(p=>`<h3 style="margin:12px 0 8px">${esc(J[p].name)}</h3>${lineHTML(J[p],false)}`).join('')}</details>`:''}`;
   $('#jsel').onchange=e=>location.hash='skills/'+e.target.value;
   app.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>location.hash='skills/'+b.dataset.j);
-  app.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{
+  app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{location.hash='skills/'+id+(b.dataset.mode==='view'?'/view':'')});
+  const bindGo=()=>app.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{
     let el=document.getElementById('sk-'+a.dataset.go);
     if(el&&el.closest('details')) el.closest('details').open=true;
     if(!el){const o=SK_OWNER[a.dataset.go];if(o){location.hash='skills/'+o[0];return}}
     if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}
   });
+  bindGo();
+  if(!sim) return;
+  const LL=learnList(id);
+  const save=()=>history.replaceState(null,'','#skills/'+id+'/'+encSim(id,st));
+  const refresh=()=>{
+    const tot=simTotal(id,st),used=simUsed(id,st);
+    $('#ptot').textContent=tot;$('#pused').textContent=used;$('#pleft').textContent=tot-used;
+    $('.simbar .left').classList.toggle('neg',tot-used<0);
+    for(const sid of LL){const el=document.getElementById('sk-'+sid),S=D.skills[sid];if(!el||!S)continue;
+      const l=el.closest('.line'),dep=el.classList.contains('dep');el.outerHTML=skCardSim(S,dep,st,id);}
+    bindGo();bindStep();save();
+  };
+  const dependents=(sid,newLv)=>LL.filter(o=>{const S=D.skills[o];if(!S||!(st.lv[o]>freeLv(o)))return false;const R=S.req||[];if(!R.some(([r])=>r===sid))return false;
+    const t={lv:{...st.lv,[sid]:newLv}};return !reqOk(S,t);});
+  const toast=m=>{let t=$('#simtoast');if(!t){t=document.createElement('div');t.id='simtoast';document.body.appendChild(t)}t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)};
+  const bindStep=()=>{
+    app.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const sid=b.dataset.up;st.lv[sid]=(st.lv[sid]||0)+1;refresh()});
+    app.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const sid=b.dataset.dn,nl=st.lv[sid]-1,dp=dependents(sid,nl);
+      if(dp.length){toast('ลดไม่ได้: '+dp.map(o=>D.skills[o].name).join(', ')+' ยังต้องใช้สกิลนี้อยู่');return}
+      st.lv[sid]=nl;refresh()});
+  };
+  bindStep();
+  {const h=document.querySelector('header');if(h&&getComputedStyle(h).position==='sticky')document.documentElement.style.setProperty('--hdr',h.offsetHeight+'px');}
+  $('#jlr').oninput=e=>{st.jl=+e.target.value;$('#jlv').textContent=st.jl;refresh()};
+  $('#sreset').onclick=()=>{for(const s of LL)st.lv[s]=freeLv(s);refresh()};
+  $('#smax').onclick=()=>{ // fill the build guide's suggested order with the points left
+    const sel=new Set();for(const p of chain(id).map(x=>J[x]).filter(x=>x.tier>=1)){const L=linesOf(p).filter(l=>l.id!=='_');if(L[0])sel.add(p.id+':'+L[0].id);if(p.tier===3)L.forEach(l=>sel.add(p.id+':'+l.id));}
+    const order=skillPath(j,sel);let left=simTotal(id,st)-simUsed(id,st);
+    for(const [s,to] of order){if(!LL.includes(s.id))continue;while(left>0&&(st.lv[s.id]||0)<to&&reqOk(s,st)){st.lv[s.id]=(st.lv[s.id]||0)+1;left--}}
+    refresh();toast(left>0?'อัพตามลำดับบิลด์แนะนำแล้ว เหลือ '+left+' แต้ม':'อัพตามลำดับบิลด์แนะนำแล้ว');
+  };
+  $('#scopy').onclick=()=>{save();navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>toast('คัดลอกลิงก์บิลด์แล้ว'),()=>toast(location.href))};
+  refresh();
 }
 
 /* ================= BUILDS ================= */
