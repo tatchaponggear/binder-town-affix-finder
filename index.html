@@ -140,6 +140,8 @@ a{color:inherit}
   .world .pg{width:180px;left:42%}.world .bubble{bottom:290px;left:42%;white-space:normal;max-width:70%}.world .igloo{width:150px;right:4%}.world .orb{width:52px;height:52px;top:auto;bottom:330px;right:22px}}
 @media (prefers-reduced-motion:reduce){.world .snowfx,.world .aurora,.pg .bodyg,.pg .eye{animation:none}}
 .menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:10px 0 70px}
+@media (min-width:1000px){.menu{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (min-width:861px) and (max-width:999px){.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:860px){.menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .mcard{position:relative;display:flex;flex-direction:column;gap:6px;padding:22px 20px;min-height:170px;border-radius:26px;text-decoration:none;color:inherit;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow-s);overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
 .mcard::after{content:"";position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;background:var(--tint,rgba(67,184,209,.18));filter:blur(4px);transition:transform .3s}
@@ -225,7 +227,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
 
 <header class="nav"><div class="bar">
   <a class="logo" href="#home"><img src="img/penguin-icon.jpg" alt="">PenguinzGear</a>
-  <nav class="links" aria-label="เมนู"><a href="#home">Home</a><a href="#bindertown">Bindertown</a><a id="navCodewars" href="#">Codewars</a><a href="#portfolio">Portfolio</a></nav>
+  <nav class="links" aria-label="เมนู"><a href="#home">Home</a><a href="#bindertown">Bindertown</a><a href="nightcamp">Night Camp</a><a id="navCodewars" href="#">Codewars</a><a href="#portfolio">Portfolio</a></nav>
   <div class="acct" id="acct"></div>
 </div></header>
 
@@ -248,6 +250,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
   <nav class="menu" aria-label="ไปที่">
     <a class="mcard reveal" href="#about" style="--tint:rgba(246,231,168,.45)"><span class="go">→</span><span class="ic">🏠</span><b>Home</b><small>รู้จักเพนกวินเจ้าของบ้าน</small></a>
     <a class="mcard reveal" href="#bindertown" style="--tint:rgba(244,182,185,.4)"><span class="go">→</span><span class="ic">⚔️</span><b>Bindertown</b><small>เวลาบอส มินิบอส บิลด์ ออฟชั่น และอีกเพียบ</small></a>
+<a class="mcard reveal" href="nightcamp" style="--tint:rgba(232,80,90,.32)"><span class="go">→</span><span class="ic">🔥</span><b>Night Camp</b><small>อาชีพ สกิลทรี บิลด์ อุปกรณ์ มอนสเตอร์</small></a>
     <a class="mcard reveal" id="lkCodewars" target="_blank" rel="noopener" style="--tint:rgba(232,96,90,.3)"><span class="go">↗</span><span class="ic">🥋</span><b>Codewars</b><small>ฝึกโจทย์เขียนโค้ด</small></a>
     <a class="mcard reveal" href="#portfolio" style="--tint:rgba(67,184,209,.3)"><span class="go">→</span><span class="ic">🧊</span><b>Portfolio</b><small>ผลงาน แอป และโปรเจกต์</small></a>
   </nav>

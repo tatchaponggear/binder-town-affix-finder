@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Night Camp Guide — อาชีพ Class 1 · Class 2 · High Class, สกิลทรี, บิลด์, อุปกรณ์ และมอนสเตอร์ ดึงจากข้อมูลเกมจริง">
+<title>Night Camp Guide · PenguinzGear</title>
+<script>(function(){ var t='dark'; try{ var o=sessionStorage.getItem('pz.theme'); if(o) t=o; }catch(e){} var q=new URLSearchParams(location.search).get('theme'); if(q==='light'||q==='dark') t=q; document.documentElement.setAttribute('data-theme',t); })()</script>
+<link rel="icon" href="img/penguin-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f1ea; --bg-2:#ece3d6; --ink:#1d1520; --muted:#6c5d66; --line:rgba(120,70,70,.2);
+  --card:rgba(255,255,255,.78); --card-2:#fff; --accent:#c2343f; --accent-2:#e8794a; --gold:#b8860b;
+  --chip:rgba(120,70,70,.08); --shadow:0 14px 36px rgba(90,30,30,.12); --shadow-s:0 4px 14px rgba(90,30,30,.08);
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --r-common:#7d7466; --r-rare:#2f7fd6; --r-epic:#8a4fd6; --r-legend:#b8860b;
+}
+[data-theme="dark"]{
+  --bg:#0d0a14; --bg-2:#171121; --ink:#f1e9ef; --muted:#a898a6; --line:rgba(230,120,120,.16);
+  --card:rgba(28,20,36,.82); --card-2:#221a2c; --accent:#ff5a5f; --accent-2:#ffa25c; --gold:#ffc94d;
+  --chip:rgba(255,255,255,.06); --shadow:0 14px 40px rgba(0,0,0,.5); --shadow-s:0 4px 14px rgba(0,0,0,.35);
+  --r-common:#d6cfc2; --r-rare:#6fb6ff; --r-epic:#c792ff; --r-legend:#ffc94d; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);overflow-x:hidden;scroll-padding-top:120px}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6;background:var(--bg);overflow-x:hidden}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#f3d9c4 0%,#f6ece2 45%,var(--bg) 80%)}
+[data-theme="dark"] .sky{background:linear-gradient(180deg,#1a0a14 0%,#120b1c 40%,var(--bg) 80%)}
+.moon{position:absolute;top:-80px;right:-60px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#ffd9c7,#f08a7a 55%,transparent 72%);opacity:.45;filter:blur(2px)}
+[data-theme="dark"] .moon{background:radial-gradient(circle at 40% 40%,#ff9a8a,#c2203a 52%,transparent 72%);opacity:.55}
+.stars{position:absolute;inset:0 0 50% 0;opacity:0;background-image:radial-gradient(1.4px 1.4px at 40px 50px,#fff,transparent),radial-gradient(1px 1px at 170px 110px,#fff,transparent),radial-gradient(1.6px 1.6px at 290px 30px,#fff,transparent),radial-gradient(1px 1px at 410px 140px,#fff,transparent);background-size:460px 200px}
+[data-theme="dark"] .stars{opacity:.7}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;font-size:17px;text-decoration:none;white-space:nowrap}
+.logo img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+.logo small{font-weight:500;color:var(--muted);font-size:13px}
+.bar .sp{flex:1}
+.iconbtn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:6px 11px;cursor:pointer;font-size:15px;white-space:nowrap;text-decoration:none}
+@media (max-width:420px){.logo small{display:none}}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;text-decoration:none;font-family:var(--display);font-weight:500;font-size:15px;padding:7px 14px;border-radius:12px;color:var(--muted);border:1px solid transparent}
+.tabs a:hover{color:var(--ink);background:var(--chip)}
+.tabs a.on{color:var(--ink);background:var(--card);border-color:var(--line);box-shadow:var(--shadow-s)}
+.tabs a.on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:7px;vertical-align:2px}
+main{padding:22px 0 60px;min-height:70vh}
+h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0}
+.hero{padding:18px 0 8px}
+.hero h1{font-size:clamp(30px,5vw,48px);font-weight:800}
+.hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);margin:8px 0 0;max-width:720px}
+.meta{font-size:12.5px;color:var(--muted);margin-top:6px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin:26px 0 12px}
+.sec-h h2{font-size:24px;font-weight:700}
+.sec-h p{margin:0;color:var(--muted);font-size:14px;flex-basis:100%}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-s)}
+.pad{padding:16px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--chip);border:1px solid var(--line);white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--c,#999)}
+.chip.k-active{color:var(--accent)} .chip.k-buff{color:#1f9d6b} .chip.k-passive{color:var(--muted)}
+[data-theme="dark"] .chip.k-buff{color:#6fe0ad}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:12px}
+.g-auto{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.toolbar input[type=search],.toolbar select{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0}
+.toolbar input[type=search]{flex:1 1 220px}
+.toolbar label{font-size:13.5px;display:inline-flex;gap:6px;align-items:center;color:var(--muted)}
+.seg{display:inline-flex;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:9px;padding:5px 11px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--card-2);color:var(--ink);box-shadow:var(--shadow-s)}
+.count{font-size:13px;color:var(--muted);margin:-4px 0 10px}
+.more{display:block;margin:16px auto 0;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 20px;cursor:pointer;font-family:var(--display)}
+/* job tree */
+.fam{margin-bottom:16px;padding:14px}
+.fam-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.jico{width:44px;height:44px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--chip);border:1px solid var(--line)}
+.fam-h h3{font-size:20px}
+.fam-h .d{font-size:13.5px;color:var(--muted);margin-top:2px}
+.c2row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.c2row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.c2row{grid-template-columns:1fr}}
+.jbtn{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card-2);border-radius:14px;padding:10px 12px;cursor:pointer;transition:transform .15s,border-color .15s}
+.jbtn:hover{transform:translateY(-2px);border-color:var(--accent)}
+.jbtn b{font-family:var(--display);font-size:15.5px;display:block}
+.jbtn small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4;margin-top:2px}
+.tier{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--accent)}
+.arrow{color:var(--muted);text-align:center;font-size:13px;margin:4px 0}
+.hc{border-style:dashed;border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
+.hc .tier{color:var(--gold)}
+/* skill tree */
+.jobpick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.jobpick select{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-family:var(--display);font-size:16px;max-width:100%}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
+.crumbs button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:4px 10px;cursor:pointer}
+.crumbs button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.jinfo{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;margin-bottom:14px}
+@media (max-width:640px){.jinfo{grid-template-columns:1fr}}
+.jinfo h2{font-size:26px}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+.line{padding:12px}
+.line-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:var(--display);font-weight:600;font-size:16.5px}
+.line-h .chip{font-family:var(--body)}
+.sk{position:relative;border:1px solid var(--line);background:var(--card-2);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.sk.dep{margin-left:14px}
+.sk.dep::before{content:"";position:absolute;left:-10px;top:-9px;width:9px;height:24px;border-left:2px solid var(--line);border-bottom:2px solid var(--line);border-bottom-left-radius:8px}
+.sk-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sk-h b{font-family:var(--display);font-size:15.5px;margin-right:2px}
+.sk p{margin:6px 0 0;font-size:14px}
+.sk .lvx{font-size:12px;font-weight:700;color:var(--muted);margin-right:4px}
+.sk .req{font-size:12.5px;color:var(--muted);margin-top:6px}
+.sk .req a{color:var(--accent);cursor:pointer;text-decoration:none}
+.sk .grow{font-size:12.5px;color:var(--muted);margin-top:4px;border-top:1px dashed var(--line);padding-top:5px}
+.sk .nums{font-size:12px;color:var(--muted);margin-top:5px}
+.sk.flash{animation:fl 1.2s}
+@keyframes fl{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
+.inherit{margin-top:18px}
+.inherit summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:16px;padding:6px 0}
+/* builds */
+.bgrid{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
+@media (max-width:900px){.bgrid{grid-template-columns:1fr}}
+.bside{position:sticky;top:130px}
+@media (max-width:900px){.bside{position:static}}
+.bside h3{font-size:16px;margin:0 0 8px}
+.lpick{display:flex;flex-direction:column;gap:6px;margin:6px 0 14px}
+.lpick label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;background:var(--card-2);font-size:14px}
+.lpick label small{display:block;color:var(--muted);font-size:12px}
+.lpick input{margin-top:4px;accent-color:var(--accent)}
+.lpick .grp{font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.4px}
+.order{counter-reset:o;list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.order li{counter-increment:o;display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:7px 10px;font-size:14px}
+.order li::before{content:counter(o);font-family:var(--display);font-weight:700;color:var(--accent);text-align:center}
+.order li small{display:block;color:var(--muted);font-size:12px}
+.order .lv{font-family:var(--display);font-weight:700;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:8px 10px}
+.stat b{font-family:var(--display);font-size:18px}
+.stat .barx{height:6px;border-radius:4px;background:var(--chip);margin-top:6px;overflow:hidden}
+.stat .barx i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.stat small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.prio{font-size:11.5px;font-weight:700;color:var(--accent)}
+.note{font-size:13.5px;color:var(--muted);background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
+.bblock{margin-bottom:14px}
+.bblock h3{font-size:18px;margin-bottom:10px;display:flex;gap:8px;align-items:center}
+.brk{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+/* items */
+.it{padding:12px;display:flex;flex-direction:column;gap:5px}
+.it-h{display:flex;align-items:start;gap:8px}
+.it-h b{font-family:var(--display);font-size:15.5px;flex:1;line-height:1.3}
+.it .lvr{font-family:var(--display);font-weight:700;font-size:13px;white-space:nowrap;color:var(--muted)}
+.it .st{display:flex;flex-wrap:wrap;gap:4px}
+.it .st span{font-size:12.5px;background:var(--chip);border-radius:8px;padding:1px 7px}
+.it .ab{font-size:13px;line-height:1.45}
+.it .ab b{color:var(--accent);font-weight:600}
+.it .src{font-size:12px;color:var(--muted)}
+.rar-common{--rc:var(--r-common)} .rar-rare{--rc:var(--r-rare)} .rar-epic{--rc:var(--r-epic)} .rar-legend{--rc:var(--r-legend)}
+.it{border-top:3px solid var(--rc,var(--line))}
+.rname{color:var(--rc);font-weight:700;font-size:12px}
+.mini{font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card-2);border-left:3px solid var(--rc,var(--line))}
+.mini b{font-family:var(--display);font-weight:600}
+.mini small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+/* monsters */
+.mo{padding:12px;display:flex;flex-direction:column;gap:6px}
+.mo-h{display:flex;gap:8px;align-items:start}
+.mo-h b{font-family:var(--display);font-size:16px;flex:1;line-height:1.3}
+.mo .lvr{font-family:var(--display);font-weight:700;font-size:13px;white-space:nowrap}
+.bars{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;font-size:12px;align-items:center}
+.bars span{color:var(--muted)}
+.bars i{display:block;height:6px;border-radius:4px;background:var(--chip);overflow:hidden;position:relative}
+.bars i::after{content:"";position:absolute;inset:0;width:var(--w);background:var(--bc,var(--accent));border-radius:4px}
+.maps{font-size:12.5px;color:var(--muted);line-height:1.5}
+.weak{font-size:12.5px}
+.boss{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 50%,transparent)}
+table.el{border-collapse:collapse;font-size:13px;width:100%;min-width:640px}
+table.el th,table.el td{border:1px solid var(--line);padding:6px;text-align:center}
+table.el th{font-family:var(--display);font-weight:600;background:var(--chip)}
+.tblwrap{overflow-x:auto;border-radius:14px;border:1px solid var(--line);background:var(--card)}
+.v-hi{background:rgba(46,170,90,.22);font-weight:700}
+.v-lo{background:rgba(220,60,60,.16)}
+.v-0{background:rgba(120,120,120,.25);color:var(--muted)}
+.statinfo{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.statinfo .card b{font-family:var(--display);font-size:17px}
+.statinfo .card p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12.5px;color:var(--muted)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+/* systems */
+.sysgrid{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
+@media (max-width:860px){.sysgrid{grid-template-columns:1fr}}
+.sysnav{position:sticky;top:120px;display:flex;flex-direction:column;gap:2px;padding:8px;max-height:calc(100vh - 140px);overflow:auto}
+.sysnav a{text-decoration:none;padding:7px 10px;border-radius:10px;font-size:14.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.sysnav a:hover{background:var(--chip);color:var(--ink)}
+.sysnav a.on{background:var(--card-2);color:var(--ink);font-weight:600;box-shadow:var(--shadow-s)}
+@media (max-width:860px){.sysnav{position:static;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;max-height:none}.sysnav a{flex:none}}
+.sysbody h2{font-size:26px;margin-bottom:4px}
+.sysbody .lead{color:var(--muted);margin:0 0 14px}
+.sysbody h3{font-size:18px;margin:20px 0 10px}
+.tbl{border-collapse:collapse;width:100%;font-size:13.5px}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+.tbl th{font-family:var(--display);font-weight:600;font-size:13px;color:var(--muted);background:var(--chip)}
+.tbl td.n,.tbl th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.steps{margin:6px 0 0;padding-left:20px;font-size:14px}
+.steps li{margin:2px 0}
+.say{font-size:13.5px;color:var(--muted);font-style:italic;margin:4px 0 0}
+.gift{font-size:12.5px;color:var(--gold);font-weight:600;margin-top:6px}
+.rate{font-weight:700}
+.r-hi{color:#2a9d57}.r-mid{color:#c58a12}.r-lo{color:#d04545}
+[data-theme="dark"] .r-hi{color:#6fe0a0}[data-theme="dark"] .r-mid{color:#ffc94d}[data-theme="dark"] .r-lo{color:#ff7b7b}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:10px 0}
+.fact{border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:9px 12px}
+.fact b{display:block;font-family:var(--display);font-size:19px}
+.fact small{color:var(--muted);font-size:12.5px;line-height:1.4;display:block}
+kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 5px;background:var(--card-2)}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><div class="stars"></div><div class="moon"></div></div>
+<header class="top"><div class="wrap">
+  <div class="bar">
+    <a class="logo" href="./"><img src="img/penguin-icon.jpg" alt="">PenguinzGear <small>/ Night Camp</small></a>
+    <span class="sp"></span>
+    <a class="iconbtn" href="https://play.nightcamp.app/" target="_blank" rel="noopener" title="เปิดเกม">▶ เล่นเกม</a>
+    <button class="iconbtn" id="themeBtn" aria-label="สลับธีม">🌙</button>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="หมวดไกด์">
+    <a href="#jobs" data-t="jobs">อาชีพ</a>
+    <a href="#skills" data-t="skills">สกิลทรี</a>
+    <a href="#builds" data-t="builds">บิลด์</a>
+    <a href="#gear" data-t="gear">อุปกรณ์</a>
+    <a href="#monsters" data-t="monsters">มอนสเตอร์</a>
+    <a href="#systems" data-t="systems">ระบบเกม</a>
+    <a href="#basics" data-t="basics">สเตตัส &amp; ธาตุ</a>
+  </nav>
+</div></header>
+
+<main class="wrap" id="app"><div class="loading">กำลังโหลดข้อมูลเกม…</div></main>
+
+<footer><div class="wrap"><span>🔥 Night Camp Guide · PenguinzGear (แฟนไกด์ ไม่เกี่ยวข้องกับทีมผู้พัฒนา)</span><span id="ver"></span></div></footer>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let D=null;
+const app=$('#app');
+
+/* ---------- theme ---------- */
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);$('#themeBtn').textContent=t==='dark'?'🌙':'☀️';try{sessionStorage.setItem('pz.theme',t)}catch(e){}}
+$('#themeBtn').onclick=()=>setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+setTheme(document.documentElement.getAttribute('data-theme')||'dark');
+
+/* ---------- static helpers ---------- */
+const ICON={traveler:'🎒',knight:'🛡️',mage:'🔮',archer:'🏹',rogue:'🗡️',priest:'✨'};
+const KIND={active:'สกิลกด',buff:'บัฟ',passive:'ติดตัว'};
+const TIER={0:'Novice',1:'Class 1',2:'Class 2',3:'High Class'};
+const SLOT_TH={weapon:'อาวุธ',shield:'โล่',hat:'หมวก',top:'เสื้อ',pants:'กางเกง+รองเท้า',robe:'คลุม',cape:'ผ้าคลุมหลัง',acc:'เครื่องประดับ',glasses:'แว่น'};
+const STAT_TH={str:'STR',agi:'AGI',vit:'VIT',int:'INT',dex:'DEX',luk:'LUK',def:'DEF',mdef:'MDEF',hp:'HP',sp:'SP',hit:'HIT',flee:'FLEE',crit:'CRI',atk:'ATK',spd:'ความเร็วเดิน',cdr:'ลดคูลดาวน์',skill:'แรงสกิล'};
+const RANGED=new Set(['bow','xbow','pistol','shotgun']);
+const elName=e=>(D.elements[e]&&D.elements[e].th)||e||'-';
+const elTh=e=>({neutral:'ไม่มีธาตุ',water:'น้ำ',earth:'ดิน',fire:'ไฟ',wind:'ลม',poison:'พิษ',holy:'แสง',shadow:'มืด',ghost:'วิญญาณ',undead:'อมตะ'})[e]||e;
+const elChip=e=>e?`<span class="chip" style="--c:${(D.elements[e]||{}).color||'#999'}"><i></i>${esc(elTh(e))}</span>`:'';
+function statTxt(k,v){ if(k==='skill') return `แรงสกิล +${Math.round(v*100)}%`; if(k==='cdr') return `ลดคูลดาวน์ ${Math.round(v*100)}%`; if(k==='spd') return `เดินเร็ว +${Math.round(v*100)}%`; return `${STAT_TH[k]||k.toUpperCase()} +${v}`; }
+
+/* ---------- derived data ---------- */
+let FAM={}, SK_OWNER={}, MAP_AREA={};
+function prep(){
+  const J=D.jobs;
+  for(const [id,j] of Object.entries(J)){
+    j.id=id; j.fam = j.tier<=1 ? id : (j.tier===2 ? j.from : J[j.from].from);
+    for(const s of j.skills||[]) (SK_OWNER[s]=SK_OWNER[s]||[]).push(id);
+  }
+  for(const j of Object.values(J)){ // weapons inherit down the tree
+    const w=new Set(); let c=j; while(c){ (c.weapons||[]).forEach(x=>w.add(x)); c=J[c.from]; }
+    j.allW=[...w];
+  }
+  for(const [a,v] of Object.entries(D.areas)) for(const m of v.maps) MAP_AREA[m]=a;
+  for(const [id,s] of Object.entries(D.skills)) s.id=id;
+  for(const it of Object.values(D.items)) it.lv=it.lv||0;
+}
+const chain=id=>{const out=[];let c=D.jobs[id];while(c){out.unshift(c.id);c=D.jobs[c.from];}return out;};
+const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
+function jobOwnerName(sid){const o=(SK_OWNER[sid]||[]).filter(x=>x!=='traveler');return o.length?D.jobs[o[0]].name:''}
+
+/* ---------- router ---------- */
+const VIEWS={jobs:viewJobs,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
+function route(){
+  const [t,arg]=(location.hash.slice(1)||'jobs').split('/');
+  const v=VIEWS[t]?t:'jobs';
+  document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.t===v));
+  VIEWS[v](arg?decodeURIComponent(arg):null);
+}
+addEventListener('hashchange',()=>{route();scrollTo({top:0})});
+
+/* ================= JOBS ================= */
+function viewJobs(){
+  const J=D.jobs, c1=Object.values(J).filter(j=>j.tier===1);
+  const jb=(j,cls='')=>`<button class="jbtn ${cls}" data-job="${j.id}"><span class="tier">${TIER[j.tier]}</span><b>${esc(j.name)}</b><small>${esc(cut(j.desc,90))}</small></button>`;
+  app.innerHTML=`
+  <section class="hero"><h1>Night Camp <span>Guide</span></h1>
+    <p>อาชีพทุกสายตั้งแต่ Traveler → Class 1 → Class 2 → High Class (Class 3) สกิลทรี บิลด์ อุปกรณ์ และมอนสเตอร์ ดึงตัวเลขจากข้อมูลเกมโดยตรง</p>
+    <div class="meta">Base Lv สูงสุด ${D.lvMax} · Job Lv สูงสุด ${D.jobMax} · เปลี่ยนเป็น High Class ได้ที่ Base Lv ${D.c3Lv} · ข้อมูลจากบิลด์เกม ${esc(D.ver)}</div></section>
+  <div class="sec-h"><h2>เส้นทางอาชีพ</h2><p>เริ่มจาก <b>Traveler</b> (Job Lv 10 เปลี่ยนอาชีพได้) แล้วเลือก Class 1 หนึ่งใน 5 สาย · แต่ละสายแตกเป็น Class 2 ได้ 4 แบบ และแต่ละ Class 2 มี High Class ของตัวเอง · กดที่อาชีพเพื่อดูสกิลทรี</p></div>
+  ${c1.map(j=>`<div class="card fam">
+     <div class="fam-h"><span class="jico">${ICON[j.id]||'⭐'}</span><div><span class="tier">Class 1</span><h3><a href="#skills/${j.id}" style="text-decoration:none">${esc(j.name)}</a></h3><div class="d">${esc(j.desc)}</div>
+     <div class="kv">${j.allW.map(w=>`<span class="chip">${esc((D.wtypes[w]||{}).name||w)}</span>`).join('')}<span class="chip">HP ×${j.hp}</span><span class="chip">SP ×${j.sp}</span></div></div></div>
+     <div class="c2row">${kids(j.id).map(c2=>`<div>${jb(c2)}<div class="arrow">↓ Base Lv ${D.c3Lv}</div>${kids(c2.id).map(c3=>jb(c3,'hc')).join('')}</div>`).join('')}</div>
+   </div>`).join('')}`;
+  app.querySelectorAll('[data-job]').forEach(b=>b.onclick=()=>location.hash='skills/'+b.dataset.job);
+}
+const cut=(s,n)=>{s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s};
+
+/* ================= SKILL TREE ================= */
+function jobSelect(cur,id='jsel',filter=()=>true){
+  const J=D.jobs, groups=[[0,'Novice'],[1,'Class 1'],[2,'Class 2'],[3,'High Class']];
+  return `<select id="${id}">${groups.map(([t,n])=>`<optgroup label="${n}">${Object.values(J).filter(j=>j.tier===t&&filter(j)).sort((a,b)=>a.fam.localeCompare(b.fam)).map(j=>`<option value="${j.id}"${j.id===cur?' selected':''}>${esc(j.name)}${t>=2?' ('+esc(J[j.fam].name)+')':''}</option>`).join('')}</optgroup>`).join('')}</select>`;
+}
+function skCard(s,dep){
+  const req=(s.req||[]).map(([r,l])=>{const R=D.skills[r];return R?`<a data-go="${r}">${esc(R.name)} Lv${l}</a>`:esc(r)}).join(s.reqAny?' หรือ ':' + ');
+  const sp=(s.sp1||s.spMax)?`SP ${s.sp1}${s.spMax!==s.sp1?'→'+s.spMax:''}`:'';
+  const cd=s.cd?`CD ${s.cd} วิ`:'';
+  return `<div class="sk${dep?' dep':''}" id="sk-${s.id}">
+    <div class="sk-h"><b>${esc(s.name)}</b><span class="chip k-${s.kind}">${KIND[s.kind]||s.kind}</span>${elChip(s.el)}<span class="chip">Max ${s.max}</span>${s.party?'<span class="chip">ปาร์ตี้</span>':''}${s.ult?'<span class="chip boss">อัลติ</span>':''}</div>
+    ${s.d1?`<p><span class="lvx">Lv1</span>${esc(s.d1)}</p>`:''}
+    ${s.dMax&&s.dMax!==s.d1?`<p><span class="lvx">Lv${s.max}</span>${esc(s.dMax)}</p>`:''}
+    ${(sp||cd)?`<div class="nums">${[sp,cd].filter(Boolean).join(' · ')}</div>`:''}
+    ${req?`<div class="req">ต้องการ: ${req}</div>`:(s.reqText?`<div class="req">${esc(s.reqText)}</div>`:'')}
+    ${s.grow?`<div class="grow">⬆ ${esc(s.grow)}</div>`:''}
+  </div>`;
+}
+function linesOf(j){
+  const L=(j.lines&&j.lines.length?j.lines:[]).map(l=>({...l,sk:[]}));
+  const other={id:'_',name:'ทั่วไป',el:null,sk:[]};
+  for(const sid of j.skills){const s=D.skills[sid];if(!s)continue;(L.find(l=>l.id===s.line)||other).sk.push(s)}
+  if(other.sk.length) L.push(other);
+  // order each line by prerequisites
+  for(const l of L){
+    const ids=new Set(l.sk.map(s=>s.id)), depth={};
+    const dp=s=>{ if(depth[s.id]!=null) return depth[s.id]; depth[s.id]=0; let d=0; for(const [r] of s.req||[]) if(ids.has(r)) d=Math.max(d,dp(D.skills[r])+1); return depth[s.id]=d; };
+    l.sk.forEach(dp); l.sk.sort((a,b)=>depth[a.id]-depth[b.id]); l.depth=depth;
+  }
+  return L.filter(l=>l.sk.length);
+}
+function viewSkills(arg){
+  const J=D.jobs, id=J[arg]?arg:'knight', j=J[id], path=chain(id);
+  const L=linesOf(j);
+  app.innerHTML=`
+  <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพ · ค่าตัวเลขคือ Lv1 และเลเวลสูงสุดจากสูตรในเกม · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
+  <div class="jobpick">${jobSelect(id)}<div class="crumbs">${path.map(p=>`<button data-j="${p}" class="${p===id?'on':''}">${esc(J[p].name)}</button>`).join('<span class="muted">→</span>')}${kids(id).map(k=>`<span class="muted">→</span><button data-j="${k.id}">${esc(k.name)}</button>`).join('')}</div></div>
+  <div class="card pad jinfo"><div><span class="tier">${TIER[j.tier]}</span><h2>${ICON[j.fam]||''} ${esc(j.name)}</h2><div class="muted" style="margin-top:4px">${esc(j.desc)}</div>
+    <div class="kv">${j.allW.map(w=>`<span class="chip">${esc((D.wtypes[w]||{}).name||w)}</span>`).join('')}<span class="chip">HP ×${j.hp}</span><span class="chip">SP ×${j.sp}</span><span class="chip">Job Lv ${j.maxJob}</span><span class="chip">${j.skills.length} สกิล</span></div></div>
+    ${j.tier>=1?`<a class="more" style="margin:0" href="#builds/${id}">⚔️ ดูบิลด์</a>`:''}</div>
+  <div class="lines">${L.map(l=>`<div class="card line"><div class="line-h">${esc(l.name)} ${elChip(l.el&&l.el!=='neutral'?l.el:null)}${l.auto?'<span class="chip">ร่ายเอง</span>':''}</div>
+     ${l.sk.map(s=>skCard(s,l.depth[s.id]>0)).join('')}</div>`).join('')}</div>
+  ${path.length>1?`<details class="inherit card pad"><summary>สกิลที่ติดมาจากอาชีพก่อนหน้า (${path.slice(0,-1).map(p=>esc(J[p].name)).join(', ')})</summary>
+     ${path.slice(0,-1).map(p=>`<h3 style="margin:12px 0 8px">${esc(J[p].name)}</h3><div class="lines">${linesOf(J[p]).map(l=>`<div class="card line"><div class="line-h">${esc(l.name)}</div>${l.sk.map(s=>skCard(s,l.depth[s.id]>0)).join('')}</div>`).join('')}</div>`).join('')}</details>`:''}`;
+  $('#jsel').onchange=e=>location.hash='skills/'+e.target.value;
+  app.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>location.hash='skills/'+b.dataset.j);
+  app.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{
+    let el=document.getElementById('sk-'+a.dataset.go);
+    if(el&&el.closest('details')) el.closest('details').open=true;
+    if(!el){const o=SK_OWNER[a.dataset.go];if(o){location.hash='skills/'+o[0];return}}
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}
+  });
+}
+
+/* ================= BUILDS ================= */
+function jobMain(j){
+  const path=chain(j.id).map(x=>D.jobs[x]);
+  let mag=0,phy=0;
+  for(const p of path) for(const sid of p.skills){const s=D.skills[sid];if(!s)continue;if(s.type==='magic'||s.type==='heal')mag++;else if(s.type==='phys')phy++;}
+  const w=j.allW, ranged=w.some(x=>RANGED.has(x)), magicW=w.some(x=>['staff','orb','lantern','bell','book'].includes(x));
+  if(mag>phy) return 'int';
+  if(ranged && !w.some(x=>['sword','dagger','mace','knuckle'].includes(x)&&!RANGED.has(x))) return 'dex';
+  if(ranged) return 'dex';
+  if(magicW&&mag>=phy*0.6) return 'int';
+  return 'str';
+}
+function lineRole(lines){
+  const t=lines.map(l=>l.name+' '+l.id).join(' ');
+  const r=new Set();
+  if(/guard|shield|ปราการ|พิทักษ์|โล่|team|ทีม/i.test(t)) r.add('tank');
+  if(/heal|bless|ฮีล|พร|support|ทีม/i.test(t)) r.add('support');
+  if(/berserk|rapid|quick|คลั่ง|เร็ว|รัว/i.test(t)) r.add('speed');
+  if(/venom|crit|shadow|พิษ|เงา|คริ/i.test(t)) r.add('crit');
+  return r;
+}
+function statPlan(main,roles){
+  // priority weights → suggestion at Lv99 (cap 80 full effect, above works at 40%)
+  const w={str:0,agi:0,vit:1,int:0,dex:0,luk:0};
+  w[main]=5;
+  if(main==='int'){w.dex+=3;w.vit+=1}
+  if(main==='str'){w.agi+=2.5;w.dex+=1;w.vit+=1}
+  if(main==='dex'){w.agi+=2.5;w.luk+=1}
+  if(roles.has('tank')){w.vit+=3.5;w.agi=Math.max(0,w.agi-1)}
+  if(roles.has('support')){w.vit+=1.5;if(main!=='int')w.int+=2}
+  if(roles.has('speed'))w.agi+=1.5;
+  if(roles.has('crit'))w.luk+=2.5;
+  const order=Object.entries(w).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  return order.map(([k,v],i)=>({k,v,target:i===0?80:Math.max(20,Math.min(80,Math.round(v/5*80)))}));
+}
+const WHY={str:'ATK ระยะประชิด 1.6/แต้ม + เบาะเกราะแตก',agi:'ความเร็วโจมตี +0.5%/แต้ม (สูงสุด ×1.5) + หลบเฉียด',vit:'HP +1%/แต้ม · รับดาเมจ −0.2%/แต้ม · ต้านสถานะ',int:'MATK 1.6/แต้ม · พลังฮีล · SP สูงสุดและฟื้น SP',dex:'ATK ธนู/ปืน · ร่ายไว +0.6%/แต้ม (สูงสุด 50%) · ความแม่น',luk:'คริ 0.3%/แต้ม · แรงคริ ×1.4 +0.4%/แต้ม · โอกาสติดสถานะ'};
+function skillPath(j,lineIds){
+  const path=chain(j.id).map(x=>D.jobs[x]).filter(x=>x.tier>=1);
+  const picked=new Map(); // sid -> lv
+  const need=(sid,lv)=>{const s=D.skills[sid];if(!s)return;for(const [r,l] of (s.reqAny?(s.req||[]).slice(0,1):(s.req||[]))) need(r,l);picked.set(sid,Math.max(picked.get(sid)||0,lv));};
+  const order=[];
+  for(const p of path){
+    for(const l of linesOf(p)){
+      if(!lineIds.has(p.id+':'+l.id)) continue;
+      for(const s of l.sk){ need(s.id,s.max); }
+    }
+  }
+  // emit in job order then prerequisite depth
+  const seen=new Set();
+  const emit=sid=>{if(seen.has(sid))return;const s=D.skills[sid];for(const [r] of (s.reqAny?(s.req||[]).slice(0,1):(s.req||[]))) if(picked.has(r)) emit(r);seen.add(sid);order.push([s,picked.get(sid)]);};
+  for(const p of path) for(const sid of p.skills) if(picked.has(sid)) emit(sid);
+  for(const sid of picked.keys()) emit(sid);
+  return order;
+}
+function gearFor(j,main){
+  const w=new Set(j.allW), I=Object.values(D.items);
+  const wt={str:{str:3,atk:3,crit:1,hit:.5},int:{int:3,skill:40,sp:.02,cdr:30},dex:{dex:3,hit:1,crit:1,agi:1},agi:{agi:3}}[main]||{};
+  const score=it=>{let s=0;const st=it.stats||{};for(const [k,v] of Object.entries(st)) s+=(wt[k]||(k==='def'||k==='mdef'?1:k==='hp'?.02:k===main?3:.3))*v;return s};
+  const RB={common:0,rare:1,epic:2,legend:3};
+  const brackets=[[1,30],[31,55],[56,79],[80,99]];
+  const weapons=brackets.map(([a,b])=>{
+    const list=I.filter(it=>it.slot==='weapon'&&w.has(it.wtype)&&it.lv>=a&&it.lv<=b);
+    list.sort((x,y)=>((y.dmg?(y.dmg[0]+y.dmg[1])/2:0)*(1+RB[y.rarity]*.04)+score(y)*2)-((x.dmg?(x.dmg[0]+x.dmg[1])/2:0)*(1+RB[x.rarity]*.04)+score(x)*2));
+    return [a,b,list.slice(0,3)];
+  });
+  const armorSlots=['hat','top','pants','robe','cape','acc','shield','glasses'];
+  const armor=armorSlots.map(sl=>{
+    const list=I.filter(it=>it.slot===sl&&(sl!=='shield'||j.allW.some(x=>(D.wtypes[x]||{}).h===1)));
+    list.sort((a,b)=>(score(b)+(b.lv/10)+RB[b.rarity]*2)-(score(a)+(a.lv/10)+RB[a.rarity]*2));
+    return [sl,list.slice(0,2)];
+  }).filter(([,l])=>l.length);
+  return {weapons,armor};
+}
+function miniItem(it){return `<div class="mini rar-${it.rarity}"><b>${esc(it.name)}</b> <span class="rname">${esc(D.rarity[it.rarity].name)}</span>
+  <small>Lv ${it.lv}${it.dmg?` · ดาเมจ ${it.dmg[0]}–${it.dmg[1]}`:''}${it.el?' · '+esc(elTh(it.el)):''}${it.stats?' · '+Object.entries(it.stats).map(([k,v])=>statTxt(k,v)).join(', '):''}</small>
+  ${it.abil?`<small>✦ ${esc(it.abil)}</small>`:''}${it.wsk?`<small>✦ ${esc(it.wsk)}</small>`:''}</div>`}
+function viewBuilds(arg){
+  const J=D.jobs; const id=J[arg]&&J[arg].tier>=1?arg:'dawnwarden'; const j=J[id];
+  const path=chain(id).map(x=>J[x]).filter(x=>x.tier>=1);
+  let sel;
+  try{sel=new Set(JSON.parse(sessionStorage.getItem('nc.b.'+id)||'null')||[])}catch(e){sel=new Set()}
+  if(!sel.size){ for(const p of path){const L=linesOf(p).filter(l=>l.id!=='_'); if(L[0]) sel.add(p.id+':'+L[0].id); if(p.tier===3) L.forEach(l=>sel.add(p.id+':'+l.id)); } }
+  const render=()=>{
+    try{sessionStorage.setItem('nc.b.'+id,JSON.stringify([...sel]))}catch(e){}
+    const lines=path.flatMap(p=>linesOf(p).filter(l=>sel.has(p.id+':'+l.id)));
+    const main=jobMain(j), roles=lineRole(lines), plan=statPlan(main,roles), order=skillPath(j,sel), g=gearFor(j,main);
+    const total=order.reduce((a,[,l])=>a+l,0);
+    $('#bout').innerHTML=`
+    <div class="card pad bblock"><h3>📊 สเตตัสแนะนำ <span class="chip">สายหลัก ${main.toUpperCase()}</span>${[...roles].map(r=>`<span class="chip">${({tank:'แทงค์',support:'ซัพพอร์ต',speed:'ตีไว',crit:'คริ'})[r]}</span>`).join('')}</h3>
+      <div class="stats">${plan.map((p,i)=>`<div class="stat"><span class="prio">อันดับ ${i+1}</span><br><b>${p.k.toUpperCase()}</b> <span class="muted">≈ ${p.target}</span><div class="barx"><i style="width:${p.target/80*100}%"></i></div><small>${WHY[p.k]}</small></div>`).join('')}</div>
+      <div class="note">กติกาในเกม: แต่ละสเตตัสได้ผลเต็มถึง <b>30 + 0.55 × Base Lv</b> (สูงสุด 80) ส่วนที่เกินได้ผลแค่ 40% — ที่ Lv 50 ควรดันสเตตัสหลักถึง ~57, ที่ Lv 90+ ถึง 80 แล้วค่อยเทที่เหลือลงอันดับถัดไป ตัวเลข ≈ คือเป้าที่ Lv 99</div></div>
+    <div class="card pad bblock"><h3>🌳 ลำดับอัพสกิล <span class="chip">${order.length} สกิล · รวม ${total} เลเวล</span></h3>
+      <ol class="order">${order.map(([s,l])=>`<li><span><b>${esc(s.name)}</b> ${elChip(s.el)}<small>${esc(jobOwnerName(s.id))} · ${KIND[s.kind]||''}${s.d1?' · '+esc(cut(s.dMax||s.d1,70)):''}</small></span><span class="lv">Lv ${l}</span></li>`).join('')||'<div class="empty">เลือกสายสกิลด้านซ้ายก่อน</div>'}</ol>
+      <div class="note">ลำดับเรียงตามอาชีพและสกิลที่ต้องอัพก่อน (prerequisite) · สกิลพื้นฐาน “ชำนาญอาวุธ / ร่างกาย / สมาธิ” อัพเติมเมื่อแต้มเหลือ</div></div>
+    <div class="card pad bblock"><h3>⚔️ อาวุธแนะนำตามช่วงเลเวล</h3>
+      ${g.weapons.map(([a,b,l])=>`<div style="margin-bottom:10px"><div class="muted" style="font-weight:600;margin-bottom:6px">Lv ${a}–${b}</div><div class="brk">${l.map(miniItem).join('')||'<span class="muted">ไม่มีข้อมูล</span>'}</div></div>`).join('')}</div>
+    <div class="card pad bblock"><h3>🛡️ ชุดเกราะ/เครื่องประดับที่เข้ากับสาย ${main.toUpperCase()}</h3>
+      <div class="brk">${g.armor.map(([sl,l])=>l.map(it=>`<div><div class="muted" style="font-size:12px;font-weight:700">${SLOT_TH[sl]}</div>${miniItem(it)}</div>`).join('')).join('')}</div>
+      <div class="note">เลือกจากค่าสเตตัสของไอเทมที่ตรงกับสายหลัก ดูทั้งหมดและกรองเองได้ในแท็บ <a href="#gear">อุปกรณ์</a></div></div>`;
+  };
+  app.innerHTML=`
+  <div class="sec-h"><h2>บิลด์</h2><p>เลือกอาชีพปลายทางและสายสกิลที่อยากเล่น ระบบจะจัดลำดับอัพสกิล แนะนำสเตตัสและอุปกรณ์จากข้อมูลเกม (เป็นแนวทาง ปรับตามสไตล์ได้)</p></div>
+  <div class="bgrid">
+    <aside class="card pad bside">
+      <h3>อาชีพ</h3><div class="jobpick">${jobSelect(id,'bsel',x=>x.tier>=1)}</div>
+      <h3>สายสกิล</h3><div class="lpick">${path.map(p=>`<div class="grp">${TIER[p.tier]} · ${esc(p.name)}</div>${linesOf(p).filter(l=>l.id!=='_').map(l=>`<label><input type="checkbox" value="${p.id}:${l.id}"${sel.has(p.id+':'+l.id)?' checked':''}><span>${esc(l.name)} ${elChip(l.el&&l.el!=='neutral'?l.el:null)}<small>${l.sk.map(s=>esc(s.name)).join(' · ')}</small></span></label>`).join('')}`).join('')}</div>
+      <a class="more" style="margin:0" href="#skills/${id}">ดูสกิลทรีเต็ม →</a>
+    </aside>
+    <div id="bout"></div>
+  </div>`;
+  $('#bsel').onchange=e=>location.hash='builds/'+e.target.value;
+  app.querySelectorAll('.lpick input').forEach(c=>c.onchange=()=>{c.checked?sel.add(c.value):sel.delete(c.value);render()});
+  render();
+}
+
+/* ================= GEAR ================= */
+const GS={q:'',slot:'weapon',wtype:'',job:'',rar:'',lv:'',sort:'lv'};
+function viewGear(){
+  const J=D.jobs;
+  app.innerHTML=`
+  <div class="sec-h"><h2>อุปกรณ์</h2><p>อาวุธ ${Object.values(D.items).filter(i=>i.slot==='weapon').length} ชิ้น และชุดเกราะ/เครื่องประดับ · กรองตามอาชีพเพื่อดูเฉพาะอาวุธที่ใส่ได้</p></div>
+  <div class="toolbar">
+    <input type="search" id="gq" placeholder="ค้นหาชื่อ / ความสามารถ…" value="${esc(GS.q)}">
+    <select id="gslot">${['','weapon','shield','hat','top','pants','robe','cape','acc','glasses'].map(s=>`<option value="${s}"${GS.slot===s?' selected':''}>${s?SLOT_TH[s]:'ทุกช่อง'}</option>`).join('')}</select>
+    <select id="gjob"><option value="">ทุกอาชีพ</option>${Object.values(J).filter(j=>j.tier>=1).map(j=>`<option value="${j.id}"${GS.job===j.id?' selected':''}>${esc(j.name)}</option>`).join('')}</select>
+    <select id="gw"><option value="">ทุกชนิดอาวุธ</option>${Object.entries(D.wtypes).map(([k,v])=>`<option value="${k}"${GS.wtype===k?' selected':''}>${esc(v.name)}</option>`).join('')}</select>
+    <select id="grar"><option value="">ทุกระดับ</option>${['common','rare','epic','legend'].map(r=>`<option value="${r}"${GS.rar===r?' selected':''}>${D.rarity[r].name}</option>`).join('')}</select>
+    <select id="glv"><option value="">ทุกเลเวล</option>${[[1,20],[21,40],[41,60],[61,80],[81,99]].map(([a,b])=>`<option value="${a}-${b}"${GS.lv===a+'-'+b?' selected':''}>Lv ${a}–${b}</option>`).join('')}</select>
+    <select id="gsort"><option value="lv">เรียง: เลเวล</option><option value="dmg"${GS.sort==='dmg'?' selected':''}>เรียง: ดาเมจ</option><option value="name"${GS.sort==='name'?' selected':''}>เรียง: ชื่อ</option></select>
+  </div><div class="count" id="gc"></div><div class="grid g-auto" id="gl"></div><button class="more" id="gmore">แสดงเพิ่ม</button>`;
+  let shown=60;
+  const draw=()=>{
+    const q=GS.q.trim().toLowerCase(); const jw=GS.job?new Set(J[GS.job].allW):null;
+    const [a,b]=GS.lv?GS.lv.split('-').map(Number):[0,999];
+    let L=Object.entries(D.items).map(([id,it])=>it).filter(it=>(!GS.slot||it.slot===GS.slot)&&(!GS.rar||it.rarity===GS.rar)&&(!GS.wtype||it.wtype===GS.wtype)&&(!jw||it.slot!=='weapon'||jw.has(it.wtype))&&it.lv>=a&&it.lv<=b&&(!q||(it.name+' '+(it.abil||'')+' '+(it.wsk||'')+' '+(it.gs&&it.gs.text||'')).toLowerCase().includes(q)));
+    const av=it=>it.dmg?(it.dmg[0]+it.dmg[1])/2:0;
+    L.sort(GS.sort==='dmg'?(x,y)=>av(y)-av(x):GS.sort==='name'?(x,y)=>x.name.localeCompare(y.name,'th'):(x,y)=>x.lv-y.lv||av(x)-av(y));
+    $('#gc').textContent=`พบ ${L.length} ชิ้น`;
+    $('#gl').innerHTML=L.slice(0,shown).map(it=>`<div class="card it rar-${it.rarity}">
+      <div class="it-h"><b>${esc(it.name)}</b><span class="lvr">Lv ${it.lv}</span></div>
+      <div><span class="rname">${esc(D.rarity[it.rarity].name)}</span> <span class="muted" style="font-size:12.5px">· ${esc(it.wtype?(D.wtypes[it.wtype]||{}).name||it.wtype:SLOT_TH[it.slot])}${it.two?' · สองมือ':''}${it.magic?' · เวท':''}</span> ${elChip(it.el)}</div>
+      ${it.dmg?`<div style="font-family:var(--display);font-weight:600">ดาเมจ ${it.dmg[0]}–${it.dmg[1]}${it.aspd?` <span class="muted" style="font-weight:400;font-size:13px">· ความเร็ว ×${it.aspd}</span>`:''}</div>`:''}
+      ${it.stats?`<div class="st">${Object.entries(it.stats).map(([k,v])=>`<span>${esc(statTxt(k,v))}</span>`).join('')}</div>`:''}
+      ${it.abil?`<div class="ab"><b>ความสามารถ</b> ${esc(it.abil)}</div>`:''}
+      ${it.gs&&it.gs.text&&it.gs.text!==it.abil?`<div class="ab"><b>ออปชัน</b> ${esc(it.gs.text)}</div>`:''}
+      ${it.wsk?`<div class="ab"><b>สกิล</b> ${esc(it.wsk)}</div>`:''}
+      ${it.gs&&it.gs.src?`<div class="src">ได้จาก: ${esc(srcTxt(it.gs.src))}</div>`:''}
+    </div>`).join('')||'<div class="empty">ไม่พบอุปกรณ์</div>';
+    $('#gmore').style.display=L.length>shown?'block':'none';
+  };
+  const bind=(sel,key,ev='change')=>{$(sel).addEventListener(ev,e=>{GS[key]=e.target.value;shown=60;draw()})};
+  bind('#gq','q','input');bind('#gslot','slot');bind('#gjob','job');bind('#gw','wtype');bind('#grar','rar');bind('#glv','lv');bind('#gsort','sort');
+  $('#gmore').onclick=()=>{shown+=60;draw()};
+  draw();
+}
+function srcTxt(src){
+  const out=[];
+  if(src.mob){const m=D.monsters[src.mob];out.push('มอน '+(m?m.name:src.mob))}
+  if(src.chest) out.push('หีบ '+String(src.chest).replace('chest_',''));
+  for(const [k,v] of Object.entries(src)) if(k!=='mob'&&k!=='chest') out.push(k+' '+v);
+  return out.join(' · ');
+}
+
+/* ================= MONSTERS ================= */
+const MS={q:'',el:'',area:'',type:'',lv:'',sort:'lv'};
+function weakOf(def){const ks=D.elKeys, col=ks.indexOf(def); if(col<0) return [];
+  const vals=ks.map((k,i)=>[k,D.elTable[i][col]]); const mx=Math.max(...vals.map(v=>v[1]));
+  return mx>100?vals.filter(v=>v[1]===mx):[];}
+function resistOf(def){const ks=D.elKeys,col=ks.indexOf(def);if(col<0)return[];return ks.map((k,i)=>[k,D.elTable[i][col]]).filter(v=>v[1]<100);}
+function mLv(m){if(!m.where)return null;const v=Object.values(m.where).filter(Boolean);if(!v.length)return null;return [Math.min(...v.map(x=>x[0])),Math.max(...v.map(x=>x[1]))]}
+function viewMonsters(){
+  const M=D.monsters;
+  for(const [id,m] of Object.entries(M)){m.id=id;m.lvr=mLv(m)}
+  app.innerHTML=`
+  <div class="sec-h"><h2>มอนสเตอร์</h2><p>${Object.keys(M).length} ชนิด · เลเวลและแผนที่ตามจุดเกิดจริง · ค่า HP/ATK/DEF เป็นตัวคูณเทียบมอนปกติเลเวลเดียวกัน (1.0 = ปกติ)</p></div>
+  <div class="toolbar">
+    <input type="search" id="mq" placeholder="ค้นหาชื่อมอน / แผนที่ / ของดรอป…" value="${esc(MS.q)}">
+    <select id="mel"><option value="">ทุกธาตุ</option>${D.elKeys.map(e=>`<option value="${e}"${MS.el===e?' selected':''}>${elTh(e)}</option>`).join('')}</select>
+    <select id="marea"><option value="">ทุกพื้นที่</option>${Object.entries(D.areas).map(([k,v])=>`<option value="${k}"${MS.area===k?' selected':''}>${esc(v.name==='farm'?'ฟาร์ม':v.name)}</option>`).join('')}</select>
+    <div class="seg" id="mtype">${[['','ทั้งหมด'],['boss','บอส'],['elite','อีลิท'],['normal','ปกติ']].map(([k,n])=>`<button data-v="${k}" class="${MS.type===k?'on':''}">${n}</button>`).join('')}</div>
+    <select id="mlv"><option value="">ทุกเลเวล</option>${[[1,20],[21,40],[41,60],[61,80],[81,99]].map(([a,b])=>`<option value="${a}-${b}"${MS.lv===a+'-'+b?' selected':''}>Lv ${a}–${b}</option>`).join('')}</select>
+    <select id="msort"><option value="lv">เรียง: เลเวล</option><option value="exp"${MS.sort==='exp'?' selected':''}>เรียง: EXP</option><option value="hp"${MS.sort==='hp'?' selected':''}>เรียง: HP</option></select>
+  </div><div class="count" id="mc"></div><div class="grid g-auto" id="ml"></div><button class="more" id="mmore">แสดงเพิ่ม</button>
+  <div class="sec-h"><h2>บอสเนื้อเรื่อง</h2><p>บอสที่เจอตามเควสหลัก</p></div>
+  <div class="grid g-auto">${Object.values(D.story).sort((a,b)=>a.lv-b.lv).map(b=>`<div class="card mo"><div class="mo-h"><b>${esc(b.name)}</b><span class="lvr">Lv ${b.lv}</span></div><div>${elChip(b.el)} <span class="chip boss">เนื้อเรื่อง</span>${b.quest?` <span class="chip">${esc(b.quest)}</span>`:''}</div><div class="maps">📍 ${esc((D.maps[b.map]||{}).name||b.map)}</div><div class="weak">แพ้ธาตุ: ${weakOf(b.el).map(([e])=>elChip(e)).join(' ')||'<span class="muted">-</span>'}</div></div>`).join('')}</div>`;
+  let shown=60;
+  const bar=(lab,v,mx,c)=>`<span>${lab}</span><i style="--w:${Math.min(100,v/mx*100)}%;--bc:${c}" title="×${v}"></i>`;
+  const draw=()=>{
+    const q=MS.q.trim().toLowerCase(); const [a,b]=MS.lv?MS.lv.split('-').map(Number):[0,999];
+    let L=Object.values(M).filter(m=>{
+      if(MS.el&&m.el!==MS.el) return false;
+      if(MS.type==='boss'&&!m.boss) return false; if(MS.type==='elite'&&!m.elite) return false; if(MS.type==='normal'&&(m.boss||m.elite)) return false;
+      if(MS.area&&!(m.where&&Object.keys(m.where).some(k=>MAP_AREA[k]===MS.area))) return false;
+      if(MS.lv&&!(m.lvr&&m.lvr[1]>=a&&m.lvr[0]<=b)) return false;
+      if(q){const t=[m.name,...Object.keys(m.where||{}).map(k=>(D.maps[k]||{}).name||k),...(m.drops||[]).map(d=>d[0])].join(' ').toLowerCase();if(!t.includes(q))return false}
+      return true});
+    L.sort(MS.sort==='exp'?(x,y)=>y.expK-x.expK:MS.sort==='hp'?(x,y)=>y.hpK-x.hpK:(x,y)=>((x.lvr||[999])[0]-(y.lvr||[999])[0])||x.name.localeCompare(y.name,'th'));
+    $('#mc').textContent=`พบ ${L.length} ชนิด`;
+    $('#ml').innerHTML=L.slice(0,shown).map(m=>{
+      const mp=Object.entries(m.where||{}); const wk=weakOf(m.el), rs=resistOf(m.el);
+      return `<div class="card mo"><div class="mo-h"><b>${esc(m.name)}</b><span class="lvr">${m.lvr?`Lv ${m.lvr[0]}–${m.lvr[1]}`:'<span class="muted">ดันเจี้ยน/อีเวนต์</span>'}</span></div>
+      <div>${elChip(m.el)}${m.atkEl&&m.atkEl!==m.el?` <span class="muted" style="font-size:12px">ตีเป็น</span> ${elChip(m.atkEl)}`:''} ${m.boss?'<span class="chip boss">บอส</span>':''}${m.elite?' <span class="chip boss">อีลิท</span>':''}</div>
+      <div class="bars">${bar('HP',m.hpK,m.boss?60:4,'#e0525a')}${bar('ATK',m.atkK,m.boss?3:2.5,'#e8944a')}${bar('DEF',m.defK,2.5,'#6c8cd6')}${bar('MDEF',m.mdefK,2.5,'#9a6cd6')}${bar('EXP',m.expK,m.boss?60:4,'#3fae6a')}</div>
+      <div class="weak">แพ้: ${wk.map(([e,v])=>elChip(e)+` <span class="muted">${v}%</span>`).join(' ')||'<span class="muted">-</span>'}${rs.length?` · ต้าน: ${rs.slice(0,4).map(([e,v])=>elChip(e)+` <span class="muted">${v}%</span>`).join(' ')}`:''}</div>
+      ${mp.length?`<div class="maps">📍 ${mp.slice(0,5).map(([k,v])=>esc((D.maps[k]||{}).name||k)+(v?` <span>(${v[0]}–${v[1]})</span>`:'')).join(' · ')}${mp.length>5?` +${mp.length-5}`:''}</div>`:''}
+      ${m.drops?`<div class="maps">🎁 ${m.drops.map(([n,r])=>esc(n)+` <span>${Math.round(r*1000)/10}%</span>`).join(' · ')}</div>`:''}
+      </div>`}).join('')||'<div class="empty">ไม่พบมอนสเตอร์</div>';
+    $('#mmore').style.display=L.length>shown?'block':'none';
+  };
+  const bind=(sel,key,ev='change')=>{$(sel).addEventListener(ev,e=>{MS[key]=e.target.value;shown=60;draw()})};
+  bind('#mq','q','input');bind('#mel','el');bind('#marea','area');bind('#mlv','lv');bind('#msort','sort');
+  $('#mtype').onclick=e=>{const b=e.target.closest('button');if(!b)return;MS.type=b.dataset.v;$('#mtype').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));shown=60;draw()};
+  $('#mmore').onclick=()=>{shown+=60;draw()};
+  draw();
+}
+
+/* ================= BASICS ================= */
+function viewBasics(){
+  const ks=D.elKeys;
+  const cls=v=>v===0?'v-0':v>100?'v-hi':v<100?'v-lo':'';
+  app.innerHTML=`
+  <div class="sec-h"><h2>สเตตัส</h2><p>คำอธิบายจากในเกม · ทุกสเตตัสได้ผลเต็มถึง 30 + 0.55 × Base Lv (สูงสุด 80) ส่วนที่เกินได้ผล 40%</p></div>
+  <div class="statinfo">${Object.entries(D.stats).map(([k,v])=>`<div class="card pad"><b>${k.toUpperCase()}</b> <span class="muted">${esc(v.th)}</span><p>${esc(WHY[k])}</p></div>`).join('')}</div>
+  <div class="card pad" style="margin-top:12px"><b style="font-family:var(--display)">เพดานสเตตัสตามเลเวล</b>
+    <div class="kv">${[10,20,30,40,50,60,70,80,90,99].map(l=>`<span class="chip">Lv ${l} → ${Math.min(80,Math.floor(30+0.55*l))}</span>`).join('')}</div></div>
+  <div class="sec-h"><h2>ตารางธาตุ</h2><p>แถว = ธาตุที่เราตี · คอลัมน์ = ธาตุของมอน · ค่าเป็น % ของดาเมจ (เขียว = แรงขึ้น, แดง = เบาลง)</p></div>
+  <div class="tblwrap"><table class="el"><thead><tr><th>ตี ↓ / มอน →</th>${ks.map(k=>`<th>${elChip(k)}</th>`).join('')}</tr></thead>
+  <tbody>${ks.map((a,i)=>`<tr><th>${elChip(a)}</th>${ks.map((b,c)=>`<td class="${cls(D.elTable[i][c])}">${D.elTable[i][c]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  <div class="sec-h"><h2>เซ็ตบอส</h2><p>สวมหมวกบอส + มงกุฎ ได้โบนัสเซ็ต</p></div>
+  <div class="grid g-auto">${Object.values(D.bsets).map(b=>`<div class="card pad"><b style="font-family:var(--display);font-size:16px">${esc(b.name)}</b><div class="kv">${Object.entries(b.stats||{}).map(([k,v])=>`<span class="chip">${esc(statTxt(k,v))}</span>`).join('')}</div><p class="muted" style="margin:6px 0 0;font-size:13.5px">${esc(b.text)}</p></div>`).join('')}</div>`;
+}
+
+/* ================= SYSTEMS ================= */
+let SY=null, SYP=null;
+const num=n=>Number(n).toLocaleString('en-US');
+const kb=s=>esc(s).replace(/&lt;(\/?)kbd&gt;/g,'<$1kbd>');
+const nmOf=id=>{ if(!SY) return id; if(SY.names[id]) return SY.names[id]; const m=D.monsters[id]; if(m) return m.name; const it=D.items[id]; if(it) return it.name;
+  return ({'*fish':'ปลาอะไรก็ได้','*mon3':'วัตถุดิบมอนระดับ 3','*mon4':'วัตถุดิบมอนระดับ 4'})[id]||id.replace(/^(lf|lc|mat|fd|fs|bl)_/,'').replace(/_/g,' '); };
+const matList=m=>Object.entries(m||{}).map(([k,v])=>`${esc(nmOf(k))} ×${v}`).join(', ');
+const rc=v=>v>=70?'r-hi':v>=40?'r-mid':'r-lo';
+const SYS=[
+ ['start','🔥','เริ่มต้นเล่น',sysStart],['lessons','📖','บทเรียนในค่าย',sysLessons],['quests','📜','เควสหลัก',sysQuests],['exp','⭐','EXP & ปาร์ตี้',sysExp],
+ ['refine','🔨','ตีบวก',sysRefine],['grade','💎','ขัดเกรด',sysGrade],['options','🎲','ออปชัน & หินออฟ',sysOptions],['runes','🔷','รูนสกิล',sysRunes],
+ ['elements','🧪','แก่นธาตุ & แปดเปื้อน',sysElements],['sets','🛡️','เซ็ตอุปกรณ์',sysSets],['life','🪓','อาชีพเสริม',sysLife],['cook','🍲','อาหาร & ยา',sysCook],
+ ['craft','⚒️','งานฝีมือ & ตีอาวุธ',sysCraft],['dungeons','🕳️','ดันเจี้ยน & บอสสนาม',sysDungeons],['root','🌳','หอคอยรากมืด',sysRoot],['events','🌕','อีเวนต์',sysEvents],
+ ['guild','⚔️','กิลด์วอร์ & PvP',sysGuild],['cosmetic','🪽','พาหนะ ปีก สัตว์เลี้ยง',sysCosmetic]];
+function viewSystems(arg){
+  if(!SY){ app.innerHTML='<div class="loading">กำลังโหลดข้อมูลระบบเกม…</div>';
+    (SYP=SYP||fetch('nightcamp-systems.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))
+      .then(d=>{SY=d;if(location.hash.startsWith('#systems'))viewSystems(arg)}).catch(e=>{SYP=null;app.innerHTML=`<div class="empty">โหลดข้อมูลไม่สำเร็จ (${esc(e.message)})</div>`}); return; }
+  const cur=SYS.find(s=>s[0]===arg)||SYS[0];
+  let body=''; try{ body=cur[3](); }catch(e){ body=`<div class="empty">แสดงส่วนนี้ไม่ได้ (${esc(e.message)})</div>`; }
+  app.innerHTML=`<div class="sec-h"><h2>ระบบเกม</h2><p>ทุกระบบใน Night Camp อธิบายจากบทเรียนในเกมและตัวเลขจริงในข้อมูลเกม</p></div>
+  <div class="sysgrid"><nav class="card sysnav">${SYS.map(s=>`<a href="#systems/${s[0]}" class="${s===cur?'on':''}"><span>${s[1]}</span>${s[2]}</a>`).join('')}</nav>
+  <div class="sysbody">${body}</div></div>`;
+}
+function sysStart(){
+  const J=SY.journey;
+  return `<h2>🔥 เริ่มต้นเล่น</h2><p class="lead">เส้นทางมือใหม่ (Journey) ในเกม ทำตามทีละขั้นได้เงินทุกขั้น และได้หีบรางวัลเมื่อจบช่วง</p>
+  ${J.map(s=>`<div class="card pad" style="margin-bottom:12px"><div class="sk-h"><b style="font-family:var(--display);font-size:18px">${esc(s.name)}</b><span class="chip">${esc(s.lv)}</span>${s.chest?`<span class="chip boss">หีบจบช่วง: ${num(s.chest.coins||0)} เหรียญ${s.chest.red?` · ยาแดง ×${s.chest.red}`:''}${s.chest.blue?` · ยาฟ้า ×${s.chest.blue}`:''}</span>`:''}</div>
+    <table class="tbl" style="margin-top:8px"><tr><th>#</th><th>ภารกิจ</th><th>ที่ไหน / วิธี</th><th class="n">เหรียญ</th></tr>
+    ${s.steps.map((t,i)=>`<tr><td>${i+1}</td><td><b>${esc(t.title)}</b>${t.say?`<div class="say">“${esc(t.say)}”</div>`:''}</td><td>${esc(t.where||'')}${t.hint?`<div class="muted" style="font-size:12.5px">${kb(t.hint)}</div>`:''}</td><td class="n">${t.coins?num(t.coins):''}</td></tr>`).join('')}</table></div>`).join('')}
+  <h3>ปุ่มลัด</h3><div class="facts">
+   <div class="fact"><b>WASD / คลิกขวา</b><small>เดิน · คลิกพื้นเพื่อเดินไปเอง</small></div>
+   <div class="fact"><b>คลิกค้าง / Space</b><small>ตีปกติ</small></div>
+   <div class="fact"><b>${SY.hotkeys.map(k=>`<kbd>${esc(k.toUpperCase())}</kbd>`).join(' ')}</b><small>ช่องสกิล 8 ช่อง</small></div>
+   <div class="fact"><b><kbd>1</kbd> <kbd>2</kbd></b><small>ยาแดง (HP) · ยาฟ้า (SP)</small></div>
+   <div class="fact"><b><kbd>T</kbd></b><small>คุยกับ NPC</small></div><div class="fact"><b><kbd>B</kbd></b><small>อาชีพเสริม (ตัดไม้ ขุดแร่ ตกปลา ปลูกผัก ทำอาหาร)</small></div>
+   <div class="fact"><b><kbd>I</kbd></b><small>กระเป๋า</small></div><div class="fact"><b><kbd>C</kbd> <kbd>K</kbd> <kbd>M</kbd></b><small>ตัวละคร · สกิล · แผนที่</small></div>
+   <div class="fact"><b><kbd>Y</kbd></b><small>งานฝีมือนอกค่าย</small></div></div>
+  <h3>คำสั่งแชท</h3><div class="kv">${SY.chatCmds.filter(c=>c.startsWith('/')).map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>
+  <p class="muted" style="font-size:13.5px">อีโมต: พิมพ์ ${SY.chatCmds.filter(c=>!c.startsWith('/')).map(c=>esc(c)).join(' · ')}</p>`;
+}
+function sysLessons(){
+  return `<h2>📖 บทเรียนในค่าย</h2><p class="lead">${SY.lessons.length} บทเรียนจาก NPC ในค่าย แต่ละบทสอนระบบหนึ่งอย่าง ทำจบได้รางวัล</p>
+  <div class="grid g-auto">${SY.lessons.map((l,i)=>`<div class="card pad"><span class="tier">บทที่ ${i+1}${l.mq?' · '+esc(l.mq):''}</span>
+   <div style="font-family:var(--display);font-weight:700;font-size:17px">${esc(l.title)}</div><span class="chip">${esc(l.learn)}</span>
+   ${l.line?`<div class="say">“${esc(l.line)}”</div>`:''}
+   <ol class="steps">${(l.steps||[]).filter(s=>s.t).map(s=>`<li>${esc(s.t)}</li>`).join('')}</ol>
+   ${l.gift?`<div class="gift">🎁 ${l.gift.coins?num(l.gift.coins)+' เหรียญ':''}${l.gift.red?` · ยาแดง ×${l.gift.red}`:''}${l.gift.blue?` · ยาฟ้า ×${l.gift.blue}`:''}</div>`:''}</div>`).join('')}</div>`;
+}
+function sysQuests(){
+  const by={}; for(const q of SY.quests)(by[q.ch]=by[q.ch]||[]).push(q);
+  const chn=c=>{const m=/บทที่ (\d+)/.exec(c);return m?+m[1]:0};
+  const chs=Object.keys(by).sort((a,b)=>chn(a)-chn(b));
+  return `<h2>📜 เควสหลัก</h2><p class="lead">${SY.quests.length} เควส ${chs.length} บท เรียงตามเนื้อเรื่อง</p>
+  ${chs.map(c=>`<details class="card pad" style="margin-bottom:8px"${chn(c)<=1?' open':''}><summary style="cursor:pointer;font-family:var(--display);font-weight:600;font-size:16px">${esc(c)} <span class="muted" style="font-size:13px">· ${by[c].length} เควส · Lv ${Math.min(...by[c].map(q=>q.lv))}–${Math.max(...by[c].map(q=>q.lv))}</span></summary>
+   <table class="tbl" style="margin-top:8px"><tr><th>เควส</th><th class="n">Lv</th><th>แผนที่</th><th>เป้าหมาย</th><th class="n">เหรียญ</th></tr>
+   ${by[c].map(q=>`<tr><td><b>${esc(q.title)}</b><div class="muted" style="font-size:12px">${esc(q.id)}</div></td><td class="n">${q.lv}</td><td>${esc(q.map||'')}</td><td>${(q.obj||[]).map(esc).join('<br>')}</td><td class="n">${q.coins?num(q.coins):''}</td></tr>`).join('')}</table></details>`).join('')}`;
+}
+function sysExp(){
+  const P=SY.party, G=SY.levelGap;
+  return `<h2>⭐ EXP & ปาร์ตี้</h2><p class="lead">EXP ที่ได้ขึ้นกับส่วนต่างเลเวลระหว่างเรากับมอน ยิ่งห่างยิ่งได้น้อย</p>
+  <h3>ส่วนต่างเลเวลกับ EXP</h3><table class="tbl" style="max-width:480px"><tr><th>ต่างกันไม่เกิน</th><th class="n">ได้ EXP</th></tr>
+  ${G.map(([g,m],i)=>`<tr><td>${g>=999?'มากกว่า '+G[i-1][0]+' เลเวล':g+' เลเวล'}</td><td class="n rate ${rc(m*100)}">${Math.round(m*100)}%</td></tr>`).join('')}</table>
+  <div class="note">ฟาร์มมอนที่เลเวลห่างจากเราไม่เกิน ±3 จะได้ EXP เต็ม · ดูช่วงเลเวลของแต่ละแผนที่ได้ในแท็บ <a href="#monsters">มอนสเตอร์</a></div>
+  <h3>ปาร์ตี้</h3><div class="facts">
+   <div class="fact"><b>+${Math.round(P.bonus*100)}%</b><small>โบนัสเมื่อเล่นเป็นปาร์ตี้</small></div>
+   <div class="fact"><b>+${Math.round(P.mixBonus*100)}%</b><small>โบนัสเพิ่มเมื่อมีสายอาชีพต่างกัน ${P.mixLines} สายขึ้นไป</small></div>
+   <div class="fact"><b>ด้ายผูกพัน</b><small>เพื่อนอยู่ใกล้กันในระยะ ${P.thread.reach} ผูกได้สูงสุด ${P.thread.max} เส้น: ดาเมจ +${Math.round(P.thread.dmg*100)}% ฟื้นฟู +${Math.round(P.thread.regen*100)}%</small></div>
+   <div class="fact"><b>ดึงเพื่อน</b><small>ดึงเพื่อนที่ล้มกลับมาได้ (คูลดาวน์ ${P.pull.cooldown} วิ)</small></div></div>
+  ${SY.newbie?`<h3>ป้องกันมือใหม่</h3><p class="muted">ตัวละครเลเวลต่ำ (ถึง Lv ${SY.newbie.full} ได้เต็ม และค่อยๆ หมดไปที่ Lv ${SY.newbie.gone}) ได้รับความช่วยเหลือพิเศษ: HP ×${SY.newbie.hp} และดาเมจ ×${SY.newbie.dmg}</p>`:''}`;
+}
+function sysRefine(){
+  const R=SY.refine, tiers=[1,2,3,4], lvs=[1,2,3,4,5,6,7,8,9,10];
+  const tierLv={1:'Lv 1–25',2:'Lv 26–50',3:'Lv 51–75',4:'Lv 76+'};
+  return `<h2>🔨 ตีบวก</h2><p class="lead">ตีบวกอาวุธและชุดได้สูงสุด +10 ที่สถานี “ตีบวก” ในงานฝีมือ ใช้เหรียญ + แร่ตามระดับของไอเทม (แบ่ง 4 ระดับตามเลเวลไอเทม หรือเกรดของอาวุธ)</p>
+  <div class="facts">
+   <div class="fact"><b>+1 ไม่มีพลาด</b><small>จากบทเรียนตีบวกครั้งแรกในเกม</small></div>
+   <div class="fact"><b>พลาดแล้วโอกาสขึ้น</b><small>พลาดแต่ละครั้ง โอกาสของขั้นนั้นคูณ ×1.5 (สูงสุด ${R.LIM.max}%) จนกว่าจะผ่าน</small></div>
+   <div class="fact"><b>+9 / +10 เสี่ยง</b><small>พลาดตั้งแต่ +9 ขั้นลดลง 1 · ค่าเสี่ยงในเกม +9 = ${R.BREAK['9']}% · +10 = ${R.BREAK['10']}% · ใช้ <b>หินนิรภัย</b> กันได้</small></div></div>
+  <h3>อัตราสำเร็จ (โอกาสพื้นฐาน)</h3><div class="tblwrap"><table class="tbl"><tr><th>ระดับไอเทม</th>${lvs.map(l=>`<th class="n">+${l}</th>`).join('')}</tr>
+   ${tiers.map(t=>`<tr><td><b>ระดับ ${t}</b><div class="muted" style="font-size:12px">${tierLv[t]}</div></td>${lvs.map(l=>`<td class="n rate ${rc(R.TAB[t][l])}">${R.TAB[t][l]}%</td>`).join('')}</tr>`).join('')}</table></div>
+  <h3>ค่าใช้จ่ายต่อครั้ง</h3><div class="tblwrap"><table class="tbl"><tr><th>ระดับ / แร่</th>${lvs.map(l=>`<th class="n">+${l}</th>`).join('')}</tr>
+   ${tiers.map(t=>`<tr><td><b>ระดับ ${t}</b><div class="muted" style="font-size:12px">${esc(nmOf(R.ORE[t]))}</div></td>${lvs.map(l=>`<td class="n">${num(R.COINS[t][l])}<div class="muted" style="font-size:11.5px">แร่ ×${(R.oreN[t]||{})[l]||'-'}</div></td>`).join('')}</tr>`).join('')}</table></div>
+  <h3>ต้นทุนเฉลี่ย +0 → +10</h3><p class="muted" style="margin-top:-4px">จำลองตามกติกาในเกม (โอกาสเพิ่มเมื่อพลาด และถอยขั้นเมื่อพลาดตั้งแต่ +9) ไม่ใช้หินนิรภัย</p>
+  <div class="facts">${tiers.map(t=>`<div class="fact"><span class="tier">ระดับ ${t} · ${tierLv[t]}</span><b>${num(R.sim[t].coins)} เหรียญ</b><small>เฉลี่ย ${R.sim[t].tries} ครั้ง</small></div>`).join('')}</div>`;
+}
+function sysGrade(){
+  const G=SY.grade;
+  return `<h2>💎 ขัดเกรด</h2><p class="lead">อุปกรณ์มีเกรดสี 6 ขั้น เกรดยิ่งสูงแถวออปชันยิ่งดี ได้เกรดจากการดรอป หรือ <b>ขัดเกรด</b> ที่เตาตีเหล็ก (ใช้หินขัดเกรด + เหรียญ ขั้นสุดท้ายใช้แก่นราตรีด้วย · ขัดพลาดหลายครั้งจะการันตีผ่าน)</p>
+  <table class="tbl"><tr><th>เกรด</th><th>${esc(G.WH)}</th></tr>${G.G.map((g,i)=>`<tr><td><span class="chip" style="--c:${g.color}"><i></i>${esc(g.name)}</span> <span class="muted" style="font-size:12px">${esc(g.en)}</span></td><td>${esc(G.W[i]||'')}</td></tr>`).join('')}</table>
+  <div class="note">${esc(G.R)}</div>`;
+}
+function sysOptions(){
+  const O=SY.opts, gr={atk:'โจมตี',skill:'สกิล',def:'ป้องกัน',special:'พิเศษ'}, F=SY.forgeCost, S=SY.stoneDrop;
+  const slot=s=>[...s].map(c=>({W:'อาวุธ',D:'ชุด',H:'หมวก',A:'เครื่องประดับ'})[c]||c).join(' · ');
+  return `<h2>🎲 ออปชัน & หินออฟ</h2><p class="lead">อุปกรณ์สุ่มแถวออปชันได้ ${O.length} แบบ แต่ละแบบมี 3 ระดับ (ธรรมดา → ดี → เทพ) · แถว ◆ คือแถวพิเศษของเกรดสูง</p>
+  <div class="facts"><div class="fact"><b>${num(F.STONE.coins)} เหรียญ</b><small>เปลี่ยนออปชัน: ใช้หินออฟ 1 ก้อน</small></div>
+   <div class="fact"><b>${num(F.DRILL.coins)} เหรียญ</b><small>เจาะออฟ (เพิ่มแถว): ใช้หินเจาะ 1 ก้อน</small></div>
+   <div class="fact"><b>หินออฟจากไหน</b><small>บอส ${S.bossOpt}% (${S.bossOptN[0]}–${S.bossOptN[1]} ก้อน) · หีบ ${S.chestOpt}% · มอนทั่วไป ${S.monOpt}%</small></div>
+   <div class="fact"><b>หินเจาะจากไหน</b><small>บอส ${S.bossDrill}% · หีบทอง ${S.goldDrill}% · มอน Lv ${S.monDrillLv}+ ${S.monDrill}%</small></div></div>
+  ${Object.entries(gr).map(([g,n])=>{const L=O.filter(o=>o.g===g);return L.length?`<h3>${n}</h3><div class="tblwrap"><table class="tbl"><tr><th>ออปชัน</th><th>ใส่ได้ที่</th><th>ธรรมดา</th><th>ดี</th><th>เทพ</th></tr>
+   ${L.map(o=>`<tr><td><b>${esc(o.th)}</b>${o.cap?`<div class="muted" style="font-size:12px">รวมสูงสุด ${o.cap}</div>`:''}</td><td>${slot(o.on)}</td>${[0,1,2].map(i=>`<td>${esc(o.t[i]||'')}</td>`).join('')}</tr>`).join('')}</table></div>`:''}).join('')}`;
+}
+function sysRunes(){
+  const R=Object.values(SY.runes), on={proj:'ลูกยิง',attack:'สกิลโจมตี',area:'สกิลวงกว้าง',buff:'บัฟ',heal:'ฮีล',summon:'อัญเชิญ',any:'ทุกสกิล'};
+  return `<h2>🔷 รูนสกิล</h2><p class="lead">ใส่รูนลงสกิลเพื่อเปลี่ยนการทำงาน (ที่เตาตีเหล็ก แท็บรูน) · ${R.length} ชนิด แต่ละชนิด 3 ระดับ</p>
+  <div class="tblwrap"><table class="tbl"><tr><th>รูน</th><th>ใช้กับ</th><th>ระดับ 1</th><th>ระดับ 2</th><th>ระดับ 3</th></tr>
+  ${R.map(r=>`<tr><td><b>${esc(r.n)}</b></td><td>${esc(on[r.on]||r.on||'')}</td>${[0,1,2].map(i=>`<td>${esc((r.t||[])[i]||'')}</td>`).join('')}</tr>`).join('')}</table></div>`;
+}
+function sysElements(){
+  const B=SY.bl, T=Object.values(SY.traits);
+  const row=(g,label,what)=>`<tr><td><b>${label}</b><div class="muted" style="font-size:12px">${what}</div></td><td>${Object.entries(B[g]).map(([el,id])=>`<span title="${esc((SY.blmat[id]||{}).desc||'')}">${elChip(el)}</span>`).join(' ')}</td></tr>`;
+  return `<h2>🧪 แก่นธาตุ น้ำมัน กระสุน & แปดเปื้อน</h2><p class="lead">เปลี่ยนธาตุการโจมตีให้ตรงกับจุดอ่อนมอน (ดู <a href="#basics">ตารางธาตุ</a>) และเติม “ลักษณะแปดเปื้อน” ให้อาวุธ</p>
+  <table class="tbl"><tr><th>ของ</th><th>ธาตุที่มี</th></tr>
+  ${row('ESS','แก่นธาตุ','สกัดจากวัตถุดิบ ใช้ทำน้ำมัน/กระสุน และใส่ธาตุให้อาวุธ')}${row('OIL','น้ำมันเคลือบ','เคลือบอาวุธระยะประชิด ตีเป็นธาตุนั้นชั่วคราว')}${row('AMMO','กระสุนธาตุ','สำหรับธนูและปืน ยิงเป็นธาตุนั้น')}</table>
+  <h3>ลักษณะแปดเปื้อน (${T.length})</h3><p class="muted" style="margin-top:-4px">สุ่มติดอาวุธที่ผ่านการแปดเปื้อน มีทั้งข้อดีและข้อเสีย</p>
+  <div class="tblwrap"><table class="tbl"><tr><th>ลักษณะ</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>${T.map(t=>`<tr><td><b>${esc(t.name)}</b></td><td class="r-hi">${esc(t.up)}</td><td class="r-lo">${esc(t.down)}</td></tr>`).join('')}</table></div>`;
+}
+function sysSets(){
+  const pre={hv:'เกราะหนัก',lt:'เกราะเบา',mg:'ชุดเวท'}; const g={};
+  for(const [k,v] of Object.entries(SY.sets)){const p=k.split('_')[0];(g[p]=g[p]||[]).push([k,v])}
+  return `<h2>🛡️ เซ็ตอุปกรณ์</h2><p class="lead">ใส่ชุดเดียวกันครบได้พาสซีฟเซ็ต · ${Object.keys(SY.sets).length} เซ็ต</p>
+  ${Object.entries(g).map(([p,l])=>`<h3>${esc(pre[p]||p.toUpperCase())} <span class="chip">${l.length}</span></h3><div class="grid g-auto">${l.map(([k,v])=>`<div class="mini"><b>${esc(k.split('_').slice(1).join(' '))}</b><small>${esc(v)}</small></div>`).join('')}</div>`).join('')}
+  <h3>เซ็ตบอส</h3><div class="grid g-auto">${Object.values(D.bsets).map(b=>`<div class="mini" style="--rc:var(--gold)"><b>${esc(b.name)}</b><small>${Object.entries(b.stats||{}).map(([k,v])=>statTxt(k,v)).join(' · ')}</small><small>${esc(b.text)}</small></div>`).join('')}</div>`;
+}
+function sysLife(){
+  const L=SY.life, sk=L.SKILLS, tools=Object.values(L.TOOLS);
+  const crops=Object.values(L.CROPS).sort((a,b)=>a.lv-b.lv);
+  return `<h2>🪓 อาชีพเสริม</h2><p class="lead">อาชีพเสริม 5 อย่าง แต่ละอย่างอัพได้ถึง Lv ${L.MAXLV} · กด <kbd>B</kbd> ใกล้จุดทำงาน · ได้วัตถุดิบไว้ทำอาหาร ต้มยา ตีบวก และขาย</p>
+  ${Object.entries(sk).map(([k,s])=>{const t=tools.find(x=>x.skill===k);const up=(L.UPGRADES[Object.keys(L.TOOLS).find(x=>L.TOOLS[x].skill===k)]||[]);const gd=L.GUIDE[k]||[];
+   return `<div class="card pad" style="margin-bottom:12px"><div class="sk-h"><b style="font-family:var(--display);font-size:19px">${esc(s.name)}</b>${t&&t.mentor?`<span class="chip">อาจารย์: ${esc(t.mentor)}</span>`:''}${s.place?`<span class="chip">📍 ${esc(s.place)}</span>`:''}</div>
+   <p style="font-size:14px;margin:8px 0">${esc(s.how)}</p>
+   ${s.perks?`<div class="kv">${s.perks.map(([lv,t])=>`<span class="chip">Lv ${lv}: ${esc(t)}</span>`).join('')}</div>`:''}
+   ${t?`<h3 style="font-size:15px;margin:14px 0 6px">เครื่องมือ</h3><table class="tbl"><tr><th>เครื่องมือ</th><th class="n">ต้องการ Lv</th><th class="n">เหรียญ</th><th>วัตถุดิบ</th></tr>${t.names.map((n,i)=>`<tr><td><b>${esc(n)}</b></td><td class="n">${i?up[i-1]&&up[i-1].lv:'เริ่มต้น'}</td><td class="n">${i&&up[i-1]?num(up[i-1].coins):'-'}</td><td>${i&&up[i-1]?esc(Object.entries(up[i-1].matN||{}).map(([a,b])=>a+' ×'+b).join(', ')):''}</td></tr>`).join('')}</table>`:''}
+   ${gd.length?`<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">ได้อะไร / หาที่ไหน (${gd.length})</summary><table class="tbl" style="margin-top:6px"><tr><th>ของ</th><th class="n">Lv</th><th>ที่ไหน</th></tr>${gd.map(e=>`<tr><td><b>${esc(e.name)}</b>${e.night?' <span class="chip">กลางคืน</span>':''}</td><td class="n">${e.lv}</td><td>${esc(e.where||'')}</td></tr>`).join('')}</table></details>`:''}</div>`}).join('')}
+  <h3>ผักที่ปลูกได้</h3><table class="tbl"><tr><th>ผัก</th><th class="n">Lv</th><th class="n">เวลาโต</th><th class="n">XP</th><th class="n">ราคาขาย</th></tr>${crops.map(c=>`<tr><td><b>${esc(c.name)}</b></td><td class="n">${c.lv}</td><td class="n">${c.mins} นาที</td><td class="n">${c.xp}</td><td class="n">${c.price}</td></tr>`).join('')}</table>
+  <h3>ปลา (${L.FISH.length})</h3><div class="tblwrap"><table class="tbl"><tr><th>ปลา</th><th class="n">Lv</th><th>แหล่งน้ำ</th><th class="n">ขนาด (ซม.)</th></tr>${L.FISH.sort((a,b)=>a.lv-b.lv).map(f=>`<tr><td><b>${esc(f.name)}</b><div class="muted" style="font-size:12px">${esc(f.desc)}</div></td><td class="n">${f.lv}</td><td>${esc((f.where||[]).map(w=>({pond:'บ่อ',marsh:'บึง',lake:'ทะเลสาบ',river:'แม่น้ำ',sea:'ทะเล',lava:'ลาวา',cave:'ถ้ำ',swamp:'หนอง'})[w]||w).join(', '))}</td><td class="n">${Array.isArray(f.size)?f.size.join('–'):''}</td></tr>`).join('')}</table></div>`;
+}
+function sysCook(){
+  return `<h2>🍲 อาหาร & ยา</h2><p class="lead">ทำอาหารที่เตาข้างกองไฟ (ป้าหมีหม้อดำ) กินแล้วได้บัฟ · ต้มยาได้จากวัตถุดิบมอน หรือซื้อจากร้าน</p>
+  <h3>อาหาร</h3><div class="tblwrap"><table class="tbl"><tr><th>อาหาร</th><th class="n">Lv</th><th>บัฟ</th><th>วัตถุดิบ</th><th class="n">เหรียญ</th></tr>
+  ${SY.dishes.sort((a,b)=>a.lv-b.lv).map(d=>`<tr><td><b>${esc(d.name)}</b><div class="muted" style="font-size:12px">${esc(d.desc||'')}</div></td><td class="n">${d.lv}</td><td><span class="chip ${d.kind==='red'?'k-active':'k-buff'}">${esc(d.tag)}</span></td><td>${esc(Object.entries(d.matN||{}).map(([a,b])=>a+' ×'+b).join(', '))}</td><td class="n">${num(d.coins||0)}</td></tr>`).join('')}</table></div>
+  <h3>ยาจากร้าน</h3><table class="tbl"><tr><th>ยา</th><th>ผล</th><th class="n">ราคา</th></tr>${SY.potions.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.what)}</td><td class="n">${num(p.price)}</td></tr>`).join('')}</table>
+  <h3>ต้มยาเอง</h3><table class="tbl"><tr><th>ยา</th><th class="n">วัตถุดิบมอน (ชิ้น)</th><th class="n">เหรียญ</th></tr>${SY.brew.map(b=>`<tr><td><b>${esc(b.q.name)}</b><div class="muted" style="font-size:12px">${esc(b.q.what)}</div></td><td class="n">${b.junk}</td><td class="n">${num(b.coins)}</td></tr>`).join('')}</table>
+  <div class="note">ต้มยาเองใช้วัตถุดิบมอนที่ไม่ได้ใช้ (ของขยะ) แทนเงินก้อนใหญ่ — คุ้มเมื่อมีวัตถุดิบเหลือเยอะ</div>`;
+}
+function sysCraft(){
+  const R=Object.values(SY.craftR), E=SY.econ;
+  const skn={mine:'ขุดแร่',wood:'ตัดไม้',farm:'ปลูกผัก',fish:'ตกปลา',cook:'ทำอาหาร'};
+  return `<h2>⚒️ งานฝีมือ & ตีอาวุธ</h2><p class="lead">แปรรูปวัตถุดิบเป็นของมีราคา (กด <kbd>Y</kbd> นอกค่าย) และตีอาวุธใหม่ที่เตาตีเหล็ก</p>
+  <h3>สูตรแปรรูป (${R.length})</h3><div class="tblwrap"><table class="tbl"><tr><th>ของที่ได้</th><th>ต้องใช้</th><th>อาชีพเสริม</th><th class="n">เหรียญ</th></tr>
+  ${R.sort((a,b)=>(a.skill||'').localeCompare(b.skill||'')||a.lv-b.lv).map(r=>`<tr><td><b>${esc(nmOf(r.out))}</b>${r.n>1?` ×${r.n}`:''}</td><td>${matList(r.in)}</td><td>${esc(skn[r.skill]||r.skill||'')} Lv ${r.lv}</td><td class="n">${r.coins}</td></tr>`).join('')}</table></div>
+  <h3>ตีดาบใหญ่ที่เตาตีเหล็ก</h3><table class="tbl"><tr><th>อาวุธ</th><th class="n">เหรียญ</th><th>วัตถุดิบ</th></tr>
+  ${Object.entries(E.recipes).map(([k,v])=>`<tr><td><b>${esc(E.names[k]||nmOf(k))}</b></td><td class="n">${num(v.coins)}</td><td>${esc(Object.entries(v.matN||{}).map(([a,b])=>a+' ×'+b).join(', '))||'-'}</td></tr>`).join('')}</table>`;
+}
+function sysDungeons(){
+  const Dg=Object.entries(SY.dungeons), Mi=Object.entries(SY.mines), B=Object.values(SY.bossRespawn).sort((a,b)=>a.respawn-b.respawn);
+  const pn=id=>(D.maps[id]||SY.dungeons[id]||SY.mines[id]||{}).name||id;
+  const mins=s=>s>=3600?(s/3600)+' ชม.':Math.round(s/60)+' นาที';
+  return `<h2>🕳️ ดันเจี้ยน & บอสสนาม</h2><p class="lead">ดันเจี้ยนสร้างห้องสุ่ม มีหีบสมบัติและกับดัก · บางดันมีทางลับไปห้องบอส</p>
+  <h3>ดันเจี้ยน (${Dg.length})</h3><div class="tblwrap"><table class="tbl"><tr><th>ดันเจี้ยน</th><th>เลเวล</th><th>ทางเข้าจาก</th><th class="n">ห้อง</th><th class="n">หีบ</th></tr>
+  ${Dg.map(([k,d])=>`<tr><td><b>${esc(d.name)}</b>${d.mine?' <span class="chip">มีสายแร่</span>':''}</td><td>${esc(d.lvText||'')}</td><td>${esc(pn(d.parent))}</td><td class="n">${d.rooms||''}</td><td class="n">${d.chests||''}</td></tr>`).join('')}</table></div>
+  <h3>เหมือง (${Mi.length})</h3><table class="tbl"><tr><th>เหมือง</th><th>เลเวล</th></tr>${Mi.map(([k,d])=>`<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.lvText||'')}</td></tr>`).join('')}</table>
+  <h3>เวลาเกิดบอส</h3><div class="grid g-auto">${B.map(b=>`<div class="mini" style="--rc:var(--gold)"><b>${esc(b.name)}</b><small>เกิดใหม่ทุก ${mins(b.respawn)}</small></div>`).join('')}</div>`;
+}
+function sysRoot(){
+  const R=SY.root;
+  return `<h2>🌳 หอคอยรากมืด</h2><p class="lead">ดันเจี้ยนไต่ชั้น 100 ชั้น 10 โซน แต่ละชั้นสุ่มเป้าหมาย จบโซนเจอบอส · รีเซ็ตเป็นรอบรายสัปดาห์ มีตารางอันดับ · ไปเป็นปาร์ตี้ได้ (ออกด้วยคำสั่ง <kbd>/ออกราก</kbd>)</p>
+  <div class="facts"><div class="fact"><b>${R.revives} ครั้ง</b><small>ฟื้นได้ต่อรอบ</small></div><div class="fact"><b>เป้าหมายของชั้น</b><small>${Object.values(R.goal).map(esc).join(' · ')}</small></div></div>
+  <table class="tbl"><tr><th>โซน</th><th class="n">ชั้น</th><th>บอส</th><th class="n">มอน</th></tr>
+  ${R.zones.map(([n,a,b,boss,m])=>`<tr><td><b>${esc(n)}</b></td><td class="n">${a}–${b}</td><td>${boss.map(esc).join(', ')}</td><td class="n">${m} ชนิด</td></tr>`).join('')}</table>`;
+}
+function sysEvents(){
+  const B=SY.blood, M=SY.mapev, P=SY.pup;
+  const x=v=>'×'+v;
+  return `<h2>🌕 อีเวนต์</h2>
+  <h3>🩸 พระจันทร์เลือด (Blood Moon)</h3><p class="muted" style="margin-top:-4px">คืนพิเศษ มอนดุขึ้นแต่รางวัลดีขึ้น · เตือนล่วงหน้า ${B.WARN} นาที</p>
+  <div class="facts"><div class="fact"><b>HP ${x(B.HP)} · ATK ${x(B.ATK)}</b><small>มอนแข็งแรงขึ้น</small></div><div class="fact"><b>EXP ${x(B.EXP)}</b><small>EXP มากขึ้น</small></div>
+   <div class="fact"><b>${B.RESPAWN} วิ</b><small>มอนเกิดใหม่เร็วมาก</small></div><div class="fact"><b>วัตถุดิบ +${Math.round(B.MAT*100)}%</b><small>ของดรอปเพิ่ม · หินออฟ +${Math.round(B.STONE*100)}%</small></div>
+   <div class="fact"><b>หัวหน้าฝูง</b><small>มีมอนหัวหน้า ${x(B.LEADER)} โผล่มา</small></div></div>
+  <h3>🌑 อีเวนต์แผนที่</h3><p class="muted" style="margin-top:-4px">เกิดทุก ${M.R.GAP[0]/3600}–${M.R.GAP[1]/3600} ชม. (ช่วงพระจันทร์เลือดทุก ${M.R.GAP_BM/60} นาที) อยู่ ${M.R.DUR/60} นาที ช่วยกันทำให้สำเร็จได้รางวัล</p>
+  <div class="facts">${Object.entries(M.K).map(([k,v])=>`<div class="fact"><b>${esc(v.name)}</b><small>${({root:`รากดำบุกเป็นระลอก (${M.R.WAVES.length} ระลอก) มีหัวหน้าทุก ${M.R.CAPTAIN} ตัว`,thorn:`หนามดำ ${M.R.THORNS} จุดงอกขึ้น ต้องทำลายก่อนโต (${M.R.GROW/60} นาที)`,mist:`หมอกพิษแผ่กว้าง ทำลายหัวใจ ${M.R.HEARTS} ดวง · ในหมอกมอนแรง ×${M.R.MIST_ATK}`})[k]||''}</small></div>`).join('')}</div>
+  <h3>🎭 หอหุ่น</h3><p class="muted">ด่านจับเวลา ${P.halls} ห้องโถง ห้องละ ${P.stage} ด่าน รีเซ็ตรายสัปดาห์ · เหรียญตามเวลาที่ทำได้: ${P.medals.map(([k,n,s])=>`${esc(n)} ภายใน ${s/60} นาที`).join(' · ')}</p>`;
+}
+function sysGuild(){
+  const G=SY.gw, P=SY.pvp; const day=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'][G.schedule.day];
+  return `<h2>⚔️ กิลด์ กิลด์วอร์ & PvP</h2>
+  <h3>กิลด์</h3><p class="muted" style="margin-top:-4px">ตั้งกิลด์ ชวนสมาชิก บริจาคเข้ากองไฟกิลด์ จ่ายค่าบำรุง ทำเควสกิลด์ และปลุกบอสกิลด์ · มีตารางอันดับกิลด์</p>
+  <h3>🔥 ศึกชิงกองไฟ (กิลด์วอร์)</h3><div class="facts">
+   <div class="fact"><b>วัน${day} ${G.schedule.hour}:00</b><small>ทุกสัปดาห์ · เตรียมตัว ${G.prep} วิ · สู้ ${G.minutes} นาที</small></div>
+   <div class="fact"><b>ฝั่งละ ${G.perSide} คน</b><small>ตายแล้วเกิดใหม่ใน ${G.respawnS} วิ</small></div>
+   <div class="fact"><b>จุดไฟ ยึดพื้นที่</b><small>กองไฟเล็กเชื้อ ${G.small.max} · กองไฟใหญ่ ${G.great.max} · ไฟมอดเองตลอด ต้องเติมฟืน</small></div>
+   <div class="fact"><b>ตัดไม้เติมไฟ</b><small>ตัด ${G.chopS} วิได้ฟืน · แบกได้ ${G.carry} ท่อน · ฟืน 1 ท่อน = เชื้อ ${G.wood}</small></div>
+   <div class="fact"><b>ดับไฟศัตรู</b><small>ดับได้ครั้งละ ${G.douse} (ซ้อนได้ ${G.douseCap} คน)</small></div>
+   <div class="fact"><b>รางวัล</b><small>พื้นฐาน ${G.reward.base} + ต่อการฆ่า ${G.reward.perKill} + ต่อฟืน ${G.reward.perWood} + ต่อนาที ${G.reward.perMin} · ชนะ ×${G.reward.win} (สูงสุด ${G.reward.cap})</small></div></div>
+  <h3>🤺 ดวล PvP</h3><p class="muted" style="margin-top:-4px">พิมพ์ <kbd>/ดวล</kbd> ชวนดวล หรือไปเวทีกลางทะเลสาบ · ยอมแพ้ด้วย <kbd>/ยอมแพ้</kbd></p>
+  <div class="facts"><div class="fact"><b>ดาเมจ ×${P.dmg}</b><small>ดาเมจใส่ผู้เล่นลดลง</small></div><div class="fact"><b>คริ ×${P.crit}</b><small>ดาเมจคริลดลง</small></div>
+   <div class="fact"><b>ควบคุม ×${P.cc} · สโลว์ ×${P.slow}</b><small>สถานะควบคุมสั้นลง</small></div><div class="fact"><b>ต้านทาน ${P.immune} วิ</b><small>หลังโดนควบคุม</small></div></div>`;
+}
+function sysCosmetic(){
+  const W=SY.wings, byT={}; for(const w of SY.wingLooks)(byT[w.tier]=byT[w.tier]||[]).push(w.name);
+  return `<h2>🪽 พาหนะ ปีก สัตว์เลี้ยง</h2>
+  <h3>พาหนะ</h3><p class="muted" style="margin-top:-4px">เรียกพาหนะเพื่อวิ่งเร็วขึ้น (+${Math.round(SY.mountRule.bonus*100)}%) · โดนตี ${SY.mountRule.hits} ครั้งภายใน ${SY.mountRule.hitsIn} วิจะตกจากพาหนะ</p>
+  <div class="kv">${SY.mounts.map(m=>`<span class="chip">${esc(m.name)}</span>`).join('')}</div>
+  <h3>ปีก</h3><p class="muted" style="margin-top:-4px">สุ่มปีกได้ 6 ระดับ ยิ่งหายากยิ่งใหญ่และมีเอฟเฟกต์ · ได้ซ้ำแปลงเป็นแต้ม</p>
+  <table class="tbl"><tr><th>ระดับ</th><th class="n">โอกาส</th><th class="n">ได้ซ้ำ</th><th>ปีก</th></tr>${Object.entries(W).map(([k,t])=>`<tr><td><span class="chip" style="--c:${t.col}"><i></i>${esc(t.name)}</span></td><td class="n">${t.odds}%</td><td class="n">${t.dup} แต้ม</td><td>${(byT[k]||[]).map(esc).join(', ')}</td></tr>`).join('')}</table>
+  <h3>สัตว์เลี้ยง / ร่างอัญเชิญ</h3><p class="muted">สัตว์ที่อาชีพอัญเชิญมาช่วยสู้: ${SY.pets.map(p=>esc(({wolf:'หมาป่า (Wolf Hunter)',wyvern:'ไวเวิร์น',lantern:'ตะเกียงวิญญาณ (Warlock)'})[p]||p.replace(/^pp_/,'หุ่นเชิด '))).join(' · ')}</p>`;
+}
+
+/* ---------- boot ---------- */
+fetch('nightcamp-data.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{D=d;prep();$('#ver').textContent='ข้อมูลเกม: '+d.ver;route()})
+.catch(e=>{app.innerHTML=`<div class="empty">โหลดข้อมูลไม่สำเร็จ (${esc(e.message)}) — ลองรีเฟรชอีกครั้ง</div>`});
+</script>
+</body>
+</html>
