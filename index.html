@@ -387,10 +387,11 @@ else{
     const owner=u.email==='tatchapong.gear@gmail.com'&&u.emailVerified;
     const can=id=>owner||(id!=='admin'&&!!(defs[id]||mine[id]||mine.all));
     setTools(can);
-    const next=new URLSearchParams(location.search).get('next'), nid=next&&next.replace('.html','');
-    if(next&&/^[a-z-]+(\.html)?$/.test(next)&&can(nid)){ location.replace(nid); return; }
-    const n=[...document.querySelectorAll('.tool')].filter(a=>can(a.getAttribute('href').replace('.html',''))).length;
-    $('status').innerHTML=(next&&!can(nid)?'<p class="note warn">บัญชีนี้ยังไม่มีสิทธิ์เข้าหน้า <b>'+esc(next)+'</b> — ขอสิทธิ์จาก Penguin ได้</p>':'')+
+    const qs=new URLSearchParams(location.search), next=qs.get('next'), nid=next&&next.replace('.html',''), kid=nid&&(ALIAS[nid]||nid);
+    /* denied=1 = หน้านั้นเพิ่งเด้งกลับมาเพราะเปิดไม่ได้ → ห้ามส่งกลับไปอีก (กันเด้งวน) */
+    if(next&&/^[a-z-]+(\.html)?$/.test(next)&&can(kid)&&!qs.has('denied')){ location.replace(nid); return; }
+    const n=[...document.querySelectorAll('.tool')].filter(a=>!a.hidden).length;
+    $('status').innerHTML=(next&&(!can(kid)||qs.has('denied'))?'<p class="note warn">บัญชีนี้ยังไม่มีสิทธิ์เข้าหน้า <b>'+esc(next)+'</b> — ขอสิทธิ์จาก Penguin ได้</p>':'')+
       '<p class="note">✓ เข้าสู่ระบบเป็น <b>'+esc(u.email)+'</b> · เข้าได้ '+(owner||mine.all?'ทุกหน้า':n+' หน้า')+(owner?'':' — อยากได้หน้าเพิ่ม แจ้ง Penguin')+'</p>';
   });
 }
