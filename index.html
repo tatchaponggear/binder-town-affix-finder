@@ -379,7 +379,9 @@ else{
       setTools(()=>false); return; }
     $('acct').innerHTML='<div class="who">'+(u.photoURL?'<img src="'+esc(u.photoURL)+'" alt="" referrerpolicy="no-referrer">':'')+'<span>'+esc(u.displayName||u.email)+'</span><button class="btn sm" id="lo">ออก</button></div>';
     $('lo').onclick=()=>auth.signOut();
-    try{ await db.ref('users/'+u.uid).set({name:(u.displayName||'').slice(0,80),email:(u.email||'').slice(0,120),photo:(u.photoURL||'').slice(0,500),at:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
+    try{ await db.ref('users/'+u.uid).update({name:(u.displayName||'').slice(0,80),email:(u.email||'').slice(0,120),photo:(u.photoURL||'').slice(0,500),at:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
+    /* เวลาเข้าครั้งแรก = วันที่สร้างบัญชีใน Firebase Auth (เขียนแยก ถ้าไม่ผ่านก็ไม่กระทบข้อมูลหลัก) */
+    try{ const f=Date.parse(u.metadata&&u.metadata.creationTime); if(f) await db.ref('users/'+u.uid+'/first').set(Math.min(f,Date.now()-1000)); }catch(e){}
     let defs={}, mine={};
     try{ defs=(await db.ref('defaults').get()).val()||{}; }catch(e){}
     try{ mine=(await db.ref('perms/'+u.uid).get()).val()||{}; }catch(e){}
