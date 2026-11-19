@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="PenguinzGear — บ้านเพนกวินน้ำแข็งของ Penguin: เครื่องมือ Binder Town, GuinFit และผลงานอื่นๆ">
 <title>PenguinzGear</title>
-<script>(function(){ var h=new Date().getHours(), t=(h<6||h>=18)?'dark':'light'; try{ var o=sessionStorage.getItem('pz.theme'); if(o) t=o; }catch(e){} var q=new URLSearchParams(location.search).get('theme'); if(q==='light'||q==='dark') t=q; document.documentElement.setAttribute('data-theme',t); })();</script>
+<script>(function(){ var t='dark'; try{ var o=localStorage.getItem('pz.theme')||sessionStorage.getItem('pz.theme'); if(o==='light'||o==='dark') t=o; }catch(e){} var q=new URLSearchParams(location.search).get('theme'); if(q==='light'||q==='dark') t=q; document.documentElement.setAttribute('data-theme',t); })();</script>
 <link rel="icon" href="img/penguin-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap">
@@ -338,7 +338,7 @@ $('miniPenguin').innerHTML='<svg viewBox="0 0 200 250"><path d="M100 34C150 34 1
 /* ---------- ice house scene (GuinFit style) ---------- */
 const world=$('home'); let night=document.documentElement.getAttribute('data-theme')==='dark';
 function sky(){ world.classList.toggle('night',night); world.classList.toggle('day',!night); document.documentElement.setAttribute('data-theme',night?'dark':'light'); }
-sky(); $('orb').onclick=e=>{ e.stopPropagation(); night=!night; try{ sessionStorage.setItem('pz.theme',night?'dark':'light'); }catch(x){} sky(); say(night?'ดึกแล้ว ดูแสงเหนือกัน ✨':'เช้าแล้ว! วันนี้ทำอะไรดี ☀️'); };
+sky(); $('orb').onclick=e=>{ e.stopPropagation(); night=!night; try{ localStorage.setItem('pz.theme',night?'dark':'light'); sessionStorage.setItem('pz.theme',night?'dark':'light'); }catch(x){} sky(); say(night?'ดึกแล้ว ดูแสงเหนือกัน ✨':'เช้าแล้ว! วันนี้ทำอะไรดี ☀️'); };
 function penguin(){ const O='#141a22',CR='#f6e7a8',BL='#f4b6b9',SW=3.2, hw=62;
   const body='M100 34C131 34 162 64 162 140C162 212 140 232 100 232C60 232 38 212 38 140C38 64 69 34 100 34Z';
   const front='M100 72C134 64 150 110 148 152C146 208 124 228 100 228C76 228 54 208 52 152C50 110 66 64 100 72Z';
