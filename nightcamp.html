@@ -269,6 +269,9 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.sk-grp{margin:8px 0}.sk-grp .kv{margin-top:4px}
+.presets summary{cursor:pointer}.preset{display:flex;flex-direction:column;gap:6px;padding:14px;text-decoration:none}.preset:hover{border-color:var(--accent)}.preset small{line-height:1.5}
+
 .plgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
 @media (max-width:860px){.plgrid{grid-template-columns:1fr}}
 .plgrid h3{margin:0 0 10px}
@@ -669,6 +672,18 @@ function viewPatch(){
 }
 
 /* ================= BUILD PLANNER ================= */
+const NC_PRESETS=[
+ {t:'กายภาพ',n:'Dragonbound · พุ่งไฟกวาดฝูง',h:'#planner/dragonbound/2r1e281y1y05140o/ln_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10000001000a04a0aa5aaa0a5550aaaaa5',
+  d:'สกิลพุ่งจริง 2 ท่า: จู่โจมพุ่งทะลวง (ชนทุกตัวที่ขวาง CD 4.5) + มังกรทะยาน (พุ่งไปที่เมาส์ ระเบิดวงไฟ CD 4) · ร่างตื่นเดินเร็ว +20% ตีปกติพ่นไฟกรวย · HP ×9 ทนพอบุกเข้ากลางฝูง',
+  s:'STR 80 · AGI 70 · VIT 70 · DEX 40 · LUK ที่เหลือ',w:'หอกยาวดาวเหนือนิรันดร์ (แทงเพลิงมังกร +20% · หอกเกลียว +30%)'},
+ {t:'ดาบเวท (กายภาพ+เวท)',n:'Star Blade · ชักดาบพุ่งผ่ารอย',h:'#planner/starblade/2r1e1y1e1k1y1e05/ds_legend!!hat_infernal_warlock!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_lava_dragon!acc_crown_crypt_lord/1e.10a00001000100aa00a00aaaa5a5aa0aa5',
+  d:'ชักดาบผ่ารอยพุ่งฟันเป็นเส้น 400 ไม่มีคูลดาวน์ ฆ่าได้คืนคูลดาวน์ · ดาบเวทลอย 4 เล่มตีให้ตลอด · ATK กับ MATK ยืมค่ากัน ได้ทั้งสองสาย · สายฝนดาบตีหมู่',
+  s:'STR 70 · INT 70 · DEX 50 · AGI 50 · VIT ที่เหลือ',w:'ดาบคู่แสงเหนือพงไพร (สายฝนดาบ +30%)'},
+ {t:'เวท',n:'Star Shepherd · ดวงไฟรุมทั้งจอ',h:'#planner/starshepherd/2r1e05191o2i1y05/bl_eternal!sh_midnight!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.3005a0051000100aaaaa5505aa55a00aa5',
+  d:'สายเวทไม่มีท่าพุ่งเลยทั้งเกม ตัวนี้ชดเชยด้วย “เพิ่มความเร็ว” เดินเร็ว +20% ของตัวเอง · ฝูงดวงไฟพุ่ง CD 1 ระเบิดวงกว้าง · คืนหิ่งห้อยพันดวงตีทั้งจอ · ตีปกติด้วยกระดิ่งส่งดวงไฟเองทุก 0.8 วิ',
+  s:'INT 90 · DEX 70 · VIT 60 · AGI 45',w:'กระดิ่งวิญญาณราตรีนิรันดร์ (ฝูงดวงไฟพุ่ง +30%) + โล่'},
+];
+
 const SKEY=['str','agi','vit','int','dex','luk'];
 const ptsAt=lv=>{let n=48;for(let L=2;L<=lv;L++)n+=Math.floor((L-1)/5)+3;return n;};
 const sCost=x=>Math.floor((x-1)/10)+2;
@@ -709,6 +724,8 @@ function viewPlanner(arg){
   if(p.lv<minLv)p.lv=minLv; if(p.jl>j.maxJob)p.jl=j.maxJob;
   const main=jobMain(j);
   app.innerHTML=`<div class="sec-h"><h2>สร้างบิลด์ตัวละคร</h2><p>อัปสเตตัสตามแต้มจริงของเกม · เลือกอุปกรณ์ · จัดสกิล แล้วแชร์เป็นลิงก์เดียว (ส่วนที่วิกิทางการไม่มี)</p></div>
+  <details class="card pad presets"${parts.length<=2?' open':''}><summary><b>⭐ บิลด์แนะนำ: สกิลหมู่เยอะ วิ่งไว พุ่งหามอน</b> <span class="muted">กดเพื่อโหลดทั้งสเตตัส สกิล และอุปกรณ์</span></summary>
+   <div class="sumgrid" style="margin-top:12px">${NC_PRESETS.map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(x.t)}</span><b>${esc(x.n)}</b><small>${esc(x.d)}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div></details>
   <div class="jobpick">${jobSelect(id,'pjsel',x=>x.tier>=1)}<a class="more" style="margin:0" href="#summary">📋 สรุปอาชีพ</a></div>
   <div class="plgrid">
    <div class="card pad"><h3>📊 เลเวล & สเตตัส</h3>
@@ -738,7 +755,8 @@ function viewPlanner(arg){
         <span class="muted">${v<99?'อัปต่อ '+sCost(v):'เต็ม'}${g[k]?` · ของ +${g[k]}`:''}${over?` · <span class="bad">ได้ผล ${e.toFixed(1)}</span>`:''}</span></div>`;}).join('');
   }
   function rGear(){
-    $('#pgear').innerHTML=GSLOTS.map(([k,n])=>{const L=slotItems(j,k,p.lv);if(!L.length&&k==='shield')return '';
+    const w0=D.items[p.g.weapon], two=!!(w0&&(D.wtypes[w0.wtype]||{}).h===2); if(two) delete p.g.shield;
+    $('#pgear').innerHTML=GSLOTS.map(([k,n])=>{if(k==='shield'&&two)return `<p class="muted small">อาวุธสองมือ ใส่โล่ไม่ได้</p>`;const L=slotItems(j,k,p.lv);if(!L.length&&k==='shield')return '';
       return `<label class="gsl"><span>${n}</span><select data-g="${k}"><option value="">— ไม่ใส่ —</option>${L.map(it=>`<option value="${it.id}"${p.g[k]===it.id?' selected':''}>Lv${it.lv} ${esc(it.name)}${it.dmg?' ('+it.dmg[0]+'–'+it.dmg[1]+')':''}</option>`).join('')}</select></label>${p.g[k]&&D.items[p.g[k]]?`<div class="gsel">${miniItem(D.items[p.g[k]])}</div>`:''}`;}).join('');
   }
   function rOut(){
@@ -763,7 +781,8 @@ function viewPlanner(arg){
     const st=simOf(id), tot=simTotal(id,st), used=simUsed(id,st), LL=learnList(id);
     const got=LL.map(s=>D.skills[s]).filter(s=>s&&(st.lv[s.id]||0)>freeLv(s.id));
     $('#psk').innerHTML=`<div class="ppts"><span>แต้มสกิล <b>${tot}</b></span><span>ใช้ <b>${used}</b></span><span class="${tot-used<0?'neg':''}">เหลือ <b>${tot-used}</b></span></div>
-      ${got.length?`<div class="kv">${got.map(s=>`<span class="chip">${esc(s.name)} <b>${st.lv[s.id]}</b>/${s.max}</span>`).join('')}</div>`:'<p class="muted">ยังไม่ได้อัปสกิล กด “จัดสกิล” หรือ “อัพตามลำดับแนะนำ”</p>'}`;
+      ${got.length?jobLine(id).slice().reverse().map(x=>{const g2=got.filter(s=>D.jobs[x].skills.includes(s.id)&&!jobLine(id).slice().reverse().slice(0,jobLine(id).slice().reverse().indexOf(x)).some(y=>D.jobs[y].skills.includes(s.id)));return g2.length?`<div class="sk-grp"><span class="tier">${TIER[D.jobs[x].tier]} · ${esc(D.jobs[x].name)}</span><div class="kv">${g2.map(s=>`<span class="chip">${esc(s.name)} <b>${st.lv[s.id]}</b>/${s.max}</span>`).join('')}</div></div>`:'';}).join(''):'<p class="muted">ยังไม่ได้อัปสกิล กด “จัดสกิล” หรือ “อัพตามลำดับแนะนำ”</p>'}
+      <p class="muted small">รวมสกิลทุกคลาสในสาย (${jobLine(id).slice().reverse().map(x=>esc(D.jobs[x].name)).join(' → ')}) ใช้แต้มก้อนเดียวกัน · สกิล Traveler ไม่ติดมาตามกติกาเกม แต่แต้ม ${D.jobs.traveler.maxJob-1} แต้มยังอยู่</p>`;
     $('#pskgo').href='#skills/'+id+'/'+encSim(id,st);
   }
   const all=()=>{rStats();rOut();rSk();save();};
