@@ -269,6 +269,20 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.gslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.gslot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border-radius:12px;border:1px solid var(--line);background:var(--chip);cursor:pointer;text-align:center;min-width:0}
+.gslot small{font-size:11.5px;color:var(--muted);line-height:1.3}.gslot b{font-size:12px;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.gslot.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}.gslot.off{opacity:.55;cursor:default}
+.gslot.rar-rare b{color:var(--r-rare)}.gslot.rar-epic b{color:var(--r-epic)}.gslot.rar-legend b{color:var(--r-legend)}
+#gpick:not(:empty){margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--accent);background:var(--card-2)}
+.gp-h{display:flex;align-items:center;gap:8px}.gp-h button{margin-left:auto;border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--muted)}
+.gp-f{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.gp-f input{flex:1;min-width:160px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:var(--card)}
+.gp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;max-height:430px;overflow:auto;padding:2px}
+.gp-it{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border-radius:10px;border:1px solid var(--line);background:var(--chip);cursor:pointer;min-width:0}
+.gp-it:hover,.gp-it.on{border-color:var(--accent)}.gp-it small{font-size:11px;color:var(--muted)}
+.gp-it span:not(.pic){font-size:11.5px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:center}
+.gp-it.rar-rare span:not(.pic){color:var(--r-rare)}.gp-it.rar-epic span:not(.pic){color:var(--r-epic)}.gp-it.rar-legend span:not(.pic){color:var(--r-legend)}
+
 .sk-grp{margin:8px 0}.sk-grp .kv{margin-top:4px}
 .presets summary{cursor:pointer}.preset{display:flex;flex-direction:column;gap:6px;padding:14px;text-decoration:none}.preset:hover{border-color:var(--accent)}.preset small{line-height:1.5}
 
@@ -676,6 +690,9 @@ const NC_PRESETS=[
  {t:'กายภาพ',n:'Dragonbound · พุ่งไฟกวาดฝูง',h:'#planner/dragonbound/2r1e281y1y05140o/ln_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10000001000a04a0aa5aaa0a5550aaaaa5',
   d:'สกิลพุ่งจริง 2 ท่า: จู่โจมพุ่งทะลวง (ชนทุกตัวที่ขวาง CD 4.5) + มังกรทะยาน (พุ่งไปที่เมาส์ ระเบิดวงไฟ CD 4) · ร่างตื่นเดินเร็ว +20% ตีปกติพ่นไฟกรวย · HP ×9 ทนพอบุกเข้ากลางฝูง',
   s:'STR 80 · AGI 70 · VIT 70 · DEX 40 · LUK ที่เหลือ',w:'หอกยาวดาวเหนือนิรันดร์ (แทงเพลิงมังกร +20% · หอกเกลียว +30%)'},
+ {t:'กายภาพ',n:'Blood Moon · ดึงฝูง กระโดดทุบ',h:'#planner/bloodmoon/2r1e281y1o051415/hm_planet!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10a10001000100a0aaa3a0a55a5aaa5a5',
+  d:'ท่าพุ่ง 3 ท่า: ฟันกากบาท (พุ่งทะลุ ไม่มีคูลดาวน์) · กระโดดทุบธรณี (ไกล 350 ทุบเป็นวง) · ฟันประหาร (กระโดดสับ) · คำรามท้ารบดึงมอนรอบตัว 320 เข้ามาแล้วดาบพายุหมุนกวาด · ยิ่งเลือดน้อยยิ่งแรงและตีเร็ว ระวังเลือด',
+  s:'STR 80 · AGI 70 · VIT 60 · DEX 40 · LUK ที่เหลือ',w:'ค้อนยักษ์ตำนานดาวเคราะห์วงแหวน (กระโดดทุบ +30% · คำรามท้ารบ +20% · ค้อนทำมึน ฟันประหารโดนสองเท่า)'},
  {t:'ดาบเวท (กายภาพ+เวท)',n:'Star Blade · ชักดาบพุ่งผ่ารอย',h:'#planner/starblade/2r1e1y1e1k1y1e05/ds_legend!!hat_infernal_warlock!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_lava_dragon!acc_crown_crypt_lord/1e.10a00001000100aa00a00aaaa5a5aa0aa5',
   d:'ชักดาบผ่ารอยพุ่งฟันเป็นเส้น 400 ไม่มีคูลดาวน์ ฆ่าได้คืนคูลดาวน์ · ดาบเวทลอย 4 เล่มตีให้ตลอด · ATK กับ MATK ยืมค่ากัน ได้ทั้งสองสาย · สายฝนดาบตีหมู่',
   s:'STR 70 · INT 70 · DEX 50 · AGI 50 · VIT ที่เหลือ',w:'ดาบคู่แสงเหนือพงไพร (สายฝนดาบ +30%)'},
@@ -754,11 +771,35 @@ function viewPlanner(arg){
       return `<div class="prow"><b>${STAT_TH[k]}</b><button data-s="${k}" data-d="-10">−10</button><button data-s="${k}" data-d="-1">−</button><input data-in="${k}" type="number" min="5" max="99" value="${v}"><button data-s="${k}" data-d="1">+</button><button data-s="${k}" data-d="10">+10</button>
         <span class="muted">${v<99?'อัปต่อ '+sCost(v):'เต็ม'}${g[k]?` · ของ +${g[k]}`:''}${over?` · <span class="bad">ได้ผล ${e.toFixed(1)}</span>`:''}</span></div>`;}).join('');
   }
+  let PICK=null;
+  const itTip=it=>[it.name,'Lv '+it.lv+' · '+((D.rarity[it.rarity]||{}).name||it.rarity),it.dmg?'ดาเมจ '+it.dmg[0]+'–'+it.dmg[1]:'',it.el?'ธาตุ '+elTh(it.el):'',it.stats?Object.entries(it.stats).map(([a,v])=>statTxt(a,v)).join(', '):'',it.abil?'✦ '+it.abil:'',it.wsk?'✦ '+it.wsk:''].filter(Boolean).join('\n');
   function rGear(){
     const w0=D.items[p.g.weapon], two=!!(w0&&(D.wtypes[w0.wtype]||{}).h===2); if(two) delete p.g.shield;
-    $('#pgear').innerHTML=GSLOTS.map(([k,n])=>{if(k==='shield'&&two)return `<p class="muted small">อาวุธสองมือ ใส่โล่ไม่ได้</p>`;const L=slotItems(j,k,p.lv);if(!L.length&&k==='shield')return '';
-      return `<label class="gsl"><span>${n}</span><select data-g="${k}"><option value="">— ไม่ใส่ —</option>${L.map(it=>`<option value="${it.id}"${p.g[k]===it.id?' selected':''}>Lv${it.lv} ${esc(it.name)}${it.dmg?' ('+it.dmg[0]+'–'+it.dmg[1]+')':''}</option>`).join('')}</select></label>${p.g[k]&&D.items[p.g[k]]?`<div class="gsel">${miniItem(D.items[p.g[k]])}</div>`:''}`;}).join('');
+    $('#pgear').innerHTML=`<p class="muted small">กดรูปช่องที่ต้องการ แล้วเลือกของจากรูปด้านล่าง</p><div class="gslots">${GSLOTS.map(([k,n])=>{
+      if(k==='shield'&&(two||!slotItems(j,k,p.lv).length))return `<div class="gslot off"><span class="pic none" style="--s:48px">🚫</span><small>${n}<br>${two?'อาวุธสองมือ':'ใช้ไม่ได้'}</small></div>`;
+      const it=D.items[p.g[k]];
+      return `<button type="button" class="gslot${PICK===k?' on':''}${it?' rar-'+it.rarity:''}" data-pick="${k}" title="${esc(it?itTip(it):n)}">${it?pic('items',it.id,48,'⚔️'):'<span class="pic none" style="--s:48px">＋</span>'}<small>${n}</small><b>${it?esc(it.name):'— ว่าง —'}</b></button>`;}).join('')}</div><div id="gpick"></div>`;
+    rPick();
   }
+  function rPick(){
+    const box=$('#gpick'); if(!box) return;
+    if(!PICK){box.innerHTML='';return;}
+    const n=(GSLOTS.find(x=>x[0]===PICK)||[])[1], q=(box.dataset.q||'').trim().toLowerCase();
+    let L=slotItems(j,PICK,p.lv); if(PICK==='acc2'||PICK==='acc1'){const o=p.g[PICK==='acc1'?'acc2':'acc1'];L=L.filter(it=>it.id!==o);}
+    const wt=box.dataset.wt||''; const wts=PICK==='weapon'?[...new Set(L.map(it=>it.wtype))]:[];
+    if(wt) L=L.filter(it=>it.wtype===wt);
+    if(q) L=L.filter(it=>itTip(it).toLowerCase().includes(q));
+    box.innerHTML=`<div class="gp-h"><b>เลือก${n}</b> <span class="muted">${L.length} ชิ้น · ใส่ได้ถึง Lv ${p.lv}</span><button type="button" data-close>✕</button></div>
+      <div class="gp-f"><input id="gpq" placeholder="ค้นหา ชื่อ / สเตตัส / ธาตุ" value="${esc(box.dataset.q||'')}">${wts.length>1?`<div class="seg">${[['','ทั้งหมด'],...wts.map(x=>[x,(D.wtypes[x]||{}).name||x])].map(([v,t])=>`<button type="button" data-gwt="${v}" class="${wt===v?'on':''}">${esc(t)}</button>`).join('')}</div>`:''}</div>
+      <div class="gp-grid"><button type="button" class="gp-it none" data-it=""><span class="pic none" style="--s:52px">✕</span><small>ไม่ใส่</small></button>${L.slice(0,400).map(it=>`<button type="button" class="gp-it rar-${it.rarity}${p.g[PICK]===it.id?' on':''}" data-it="${it.id}" title="${esc(itTip(it))}">${pic('items',it.id,52,'⚔️')}<small>Lv${it.lv}</small><span>${esc(it.name)}</span></button>`).join('')}</div>`;
+    const qi=$('#gpq'); qi.oninput=()=>{box.dataset.q=qi.value;const c=qi.selectionStart;rPick();const n2=$('#gpq');n2.focus();n2.setSelectionRange(c,c);};
+  }
+  $('#pgear').onclick=e=>{
+    const sl=e.target.closest('[data-pick]'); if(sl){PICK=PICK===sl.dataset.pick?null:sl.dataset.pick;const b=$('#gpick');rGear();const g=$('#gpick');if(g){g.dataset.q='';g.dataset.wt='';}rPick();if(PICK)$('#gpick').scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+    if(e.target.closest('[data-close]')){PICK=null;rGear();return;}
+    const w=e.target.closest('[data-gwt]'); if(w){$('#gpick').dataset.wt=w.dataset.gwt;rPick();return;}
+    const it=e.target.closest('[data-it]'); if(it&&PICK){if(it.dataset.it)p.g[PICK]=it.dataset.it;else delete p.g[PICK];PICK=null;rGear();all();}
+  };
   function rOut(){
     const {s:g,w}=gearSum(), lv=p.lv, E=k=>effOf(p.st[k],lv)+(g[k]||0);
     const ranged=w?RANGED.has(w.wtype):j.allW.every(x=>RANGED.has(x));
@@ -795,7 +836,6 @@ function viewPlanner(arg){
   const setStat=(k,v)=>{v=Math.max(5,Math.min(99,v|0));const old=p.st[k];p.st[k]=v;if(left()<0&&v>old){while(p.st[k]>old&&left()<0)p.st[k]--;if(p.st[k]===old)toast('แต้มสเตตัสไม่พอ');}all();};
   $('#pstats').onclick=e=>{const b=e.target.closest('[data-s]');if(b)setStat(b.dataset.s,p.st[b.dataset.s]+(+b.dataset.d));};
   $('#pstats').onchange=e=>{const i=e.target.closest('[data-in]');if(i)setStat(i.dataset.in,+i.value);};
-  $('#pgear').onchange=e=>{const s=e.target.closest('[data-g]');if(!s)return;if(s.value)p.g[s.dataset.g]=s.value;else delete p.g[s.dataset.g];rGear();all();};
   $('#preset').onclick=()=>{SKEY.forEach(k=>p.st[k]=5);all();};
   $('#psug').onclick=()=>{
     const plan=statPlan(main,lineRole(chain(id).flatMap(x=>(J[x].lines||[])))), cap=Math.floor(capAt(p.lv));
