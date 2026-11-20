@@ -269,6 +269,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.rstar{color:var(--gold);letter-spacing:1px;white-space:nowrap;font-size:13px}.rstar.big{font-size:16px}.fstar tr.fs1 td{border-top:2px solid var(--line)}
 .ftbl tr[data-lv]{cursor:pointer}.ftbl tr[data-lv]:hover td,.ftbl tr.on td{background:var(--chip)}.ftbl td{vertical-align:top}
 .fctl{display:flex;flex-direction:column;gap:10px;margin:14px 0}.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:14px}
 .fcard ol{margin:6px 0 0;padding-left:22px}.fcard li{margin:6px 0}.fth{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
@@ -764,6 +765,13 @@ function farmBest(L){
   const top=(k,n)=>R.slice().sort((a,b)=>b[k]-a[k]).slice(0,n);
   return {R,pack:top('pack',5),exp:top('expK',5),val:top('valK',5),fast:top('fast',5)};
 }
+function farmStars(R){ // 1–5 stars by rank inside the level band (top 20% = 5 stars)
+  const K=['pack','expK','valK','fast'], st={};
+  for(const k of K){const s=R.slice().sort((a,b)=>b[k]-a[k]);s.forEach((r,i)=>{(st[r.id]=st[r.id]||{})[k]=Math.max(1,5-Math.floor(i/s.length*5));});}
+  for(const r of R){const t=st[r.id];t.all=Math.round((t.pack*2+t.expK+t.valK+t.fast)/5*2)/2;}
+  return st;
+}
+const starTxt=v=>'★'.repeat(Math.floor(v))+(v%1?'½':'')+'☆'.repeat(5-Math.ceil(v));
 function viewFarm(){
   if(!FM){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลที่ฟาร์ม…</div>';loadFarm().then(viewFarm).catch(()=>{FMP=null;app.innerHTML='<div class="card pad">โหลดข้อมูลไม่ได้ ลองรีเฟรช</div>'});return;}
   const L=FST.L, B=farmBest(L);
@@ -786,6 +794,11 @@ function viewFarm(){
   app.innerHTML=`<div class="sec-h"><h2>🌾 ที่ฟาร์ม</h2><p>คิดจากสูตรมอนในเกมบิลด์ ${esc(FM.ver)} · EXP หักตามส่วนต่างเลเวลแล้ว (ห่าง ≤3 = 100% · ≤8 = 70% · ≤14 = 40% · ≤20 = 20% · มากกว่า = 5%) · เงิน = ราคาขายวัตถุดิบ × โอกาสดรอป (เกมนี้มอนไม่ดรอปเหรียญตรง ๆ) · <b>👥 ฝูง×EXP</b> = ความแน่นของมอน (ตัวต่อพื้นที่ ใช้เกณฑ์เดียวกับเกม: ≥7 แน่น · <5 โล่ง) × EXP ต่อตัว ยิ่งมอนเยอะ อยู่ชิดกัน และ EXP สูง ยิ่งได้เยอะ เหมาะกับสายสกิลหมู่</p></div>
   <div class="card pad"><h3>📋 สรุปทุก 10 เลเวล</h3><p class="muted small" style="margin-top:-4px">กดแถวเพื่อดูละเอียดของช่วงนั้น · นับเฉพาะแมพที่มอนเลเวลใกล้ (ได้ EXP เฉลี่ย ≥ 70%)</p>
    <div class="tblwrap"><table class="tbl ftbl"><tr><th>ช่วงเลเวล</th><th>👥 ฝูงแน่น EXP เยอะ (แนะนำ)</th><th>⭐ EXP ต่อ HP ดีสุด</th><th>💰 เงินดีสุด</th><th>⚡ ฟาร์มเร็วสุด (มอนเยอะ HP น้อย)</th></tr>${sumRows}</table></div></div>
+  <div class="card pad"><h3>⭐ จัดอันดับติดดาวทุกช่วงเลเวล</h3><p class="muted small" style="margin-top:-4px">ดาวให้เทียบกันในช่วงเลเวลเดียวกัน (Top 20% = ★★★★★) · ดาวรวม = 👥 ฝูง×EXP นับ 2 เท่า + EXP/HP + เงิน + ความเร็ว · กดแถวเพื่อดูละเอียด</p>
+   <div class="tblwrap"><table class="tbl ftbl fstar"><tr><th>ช่วงเลเวล</th><th>อันดับ</th><th>แมพ</th><th>ดาวรวม</th><th>👥 ฝูง×EXP</th><th>⭐ EXP/HP</th><th>💰 เงิน</th><th>⚡ เร็ว</th></tr>
+   ${BRK.map(([a,b])=>{const m=Math.round((a+b)/2),X=farmBest(m),S=farmStars(X.R),top=X.R.slice().sort((x,y)=>S[y.id].all-S[x.id].all||y.pack-x.pack).slice(0,3);
+     return top.map((r,i)=>`<tr data-lv="${m}" class="${L>=a&&L<=b?'on':''}${i===0?' fs1':''}">${i===0?`<td rowspan="${top.length}"><b>Lv ${a}–${b}</b></td>`:''}<td>${['🥇','🥈','🥉'][i]}</td><td><b>${esc(r.name)}</b><div class="muted small">${esc(r.lvText)} · ${CW[r.cw]}</div></td><td class="rstar big">${starTxt(S[r.id].all)}</td>${['pack','expK','valK','fast'].map(k=>`<td class="rstar">${starTxt(S[r.id][k])}</td>`).join('')}</tr>`).join('');}).join('')}
+   </table></div></div>
   <div class="card pad fctl"><label class="plr">เลเวลตัวละคร <b id="flv">${L}</b><input type="range" id="flvr" min="1" max="99" value="${L}"></label>
    <div class="seg">${BRK.map(([a,b])=>`<button data-flv="${Math.round((a+b)/2)}" class="${L>=a&&L<=b?'on':''}">${a}–${b}</button>`).join('')}</div></div>
   <div class="fcards">${card('👥 ฝูงแน่น EXP เยอะ',B.pack,'pack',r=>`${CW[r.cw]} ${fmtN(r.crowd)} ตัว/พื้นที่ · ${Math.round(r.N)} ตัว · EXP ${fmtN(r.expKill)}/ตัว`)}
