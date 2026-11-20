@@ -269,6 +269,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.plfam{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:10px}.presets[hidden],[data-fam][hidden]{display:none!important}
 .sumf{display:flex;flex-direction:column;gap:10px}.hcl b{color:var(--accent-2)}
 .hctbl td{vertical-align:top}.hctbl .small{font-size:12.5px}.preset b .chip{font-size:11px;vertical-align:middle}
 .gslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
@@ -847,14 +848,15 @@ function viewPlanner(arg){
   if(p.lv<minLv)p.lv=minLv; if(p.jl>j.maxJob)p.jl=j.maxJob;
   const main=jobMain(j);
   app.innerHTML=`<div class="sec-h"><h2>สร้างบิลด์ตัวละคร</h2><p>อัปสเตตัสตามแต้มจริงของเกม · เลือกอุปกรณ์ · จัดสกิล แล้วแชร์เป็นลิงก์เดียว (ส่วนที่วิกิทางการไม่มี)</p></div>
+  <div class="card pad plfam"><b>สายอาชีพ (Class 1)</b> <div class="seg" id="plfam">${[['','ทั้งหมด'],...Object.values(D.jobs).filter(x=>x.tier===1).map(x=>[x.id,(ICON[x.id]||'')+' '+x.name])].map(([v,t])=>`<button type="button" data-v="${v}">${esc(t)}</button>`).join('')}</div><span class="muted small">กรองบิลด์แนะนำและรายชื่ออาชีพด้านล่าง</span></div>
   <details class="card pad presets"${parts.length<=2?' open':''}><summary><b>⭐ บิลด์แนะนำ: สกิลหมู่เยอะ วิ่งไว พุ่งหามอน</b> <span class="muted">กดเพื่อโหลดทั้งสเตตัส สกิล และอุปกรณ์</span></summary>
-   <div class="sumgrid" style="margin-top:12px">${NC_PRESETS.map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(x.t)}</span><b>${esc(x.n)}</b><small>${esc(x.d)}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div></details>
+   <div class="sumgrid" style="margin-top:12px">${NC_PRESETS.map(x=>`<a class="card preset" data-fam="${D.jobs[x.h.split('/')[1]].fam}" href="${x.h}"><span class="tier">${esc(x.t)}</span><b>${esc(x.n)}</b><small>${esc(x.d)}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div></details>
   <details class="card pad presets"><summary><b>🌱 บิลด์แนะนำ Class 2 ทุกอาชีพ (Lv 79 ก่อนเปลี่ยน High Class)</b> <span class="muted">Job 50 · ของใส่ได้ถึง Lv 79</span></summary>
-   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${kids(c1.id).map(c2=>{const x=NC_C2B.find(y=>y.id===c2.id);if(!x)return '';const c3=kids(c2.id)[0],pow=c3?c3.skills.map(t=>D.skills[t]).filter(t=>t&&(t.line==='a'||t.line==='b')).map(t=>D.skills[t.req[0][0]].name):[];const sm=JSUM[c2.id]||{};
-     return `<a class="card preset" href="${x.h}"><span class="tier">Class 2 · ${esc(c1.name)}</span><b>${esc(c2.name)} <span class="chip">${esc(MTAG[x.m])}</span></b><small>${esc(sm.role||'')} · เน้น: ${esc(pow.join(' · '))} (สกิลที่ High Class จะปลุกพลังต่อ)</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`;}).join('')}</div>`).join('')}
+   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<div data-fam="${c1.id}"><h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${kids(c1.id).map(c2=>{const x=NC_C2B.find(y=>y.id===c2.id);if(!x)return '';const c3=kids(c2.id)[0],pow=c3?c3.skills.map(t=>D.skills[t]).filter(t=>t&&(t.line==='a'||t.line==='b')).map(t=>D.skills[t.req[0][0]].name):[];const sm=JSUM[c2.id]||{};
+     return `<a class="card preset" href="${x.h}"><span class="tier">Class 2 · ${esc(c1.name)}</span><b>${esc(c2.name)} <span class="chip">${esc(MTAG[x.m])}</span></b><small>${esc(sm.role||'')} · เน้น: ${esc(pow.join(' · '))} (สกิลที่ High Class จะปลุกพลังต่อ)</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`;}).join('')}</div></div>`).join('')}
    <p class="muted small">Lv 79 เพดานสเตตัสเต็มผล = 73 · ลงสกิล Class 2 สายที่ High Class ปลุกพลังให้เต็มก่อน เปลี่ยนอาชีพแล้วไม่ต้องรีเซ็ต</p></details>
   <details class="card pad presets"><summary><b>📚 บิลด์แนะนำทุก High Class (20 อาชีพ)</b> <span class="muted">Lv 99 · Job 50 · สกิลรวมทุกคลาสในสาย</span></summary>
-   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${allPresets().filter(x=>x.c1===c1).map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(D.jobs[D.jobs[x.id].from].name)} → High Class${x.star?' · ⭐':''}</span><b>${esc(D.jobs[x.id].name)} <span class="chip">${esc(x.t)}</span></b><small>ปลุกพลัง: ${esc(x.pow.join(' · '))}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div>`).join('')}
+   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<div data-fam="${c1.id}"><h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${allPresets().filter(x=>x.c1===c1).map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(D.jobs[D.jobs[x.id].from].name)} → High Class${x.star?' · ⭐':''}</span><b>${esc(D.jobs[x.id].name)} <span class="chip">${esc(x.t)}</span></b><small>ปลุกพลัง: ${esc(x.pow.join(' · '))}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div></div>`).join('')}
    <p class="muted small">บิลด์ที่ไม่มี ⭐ จัดอัตโนมัติด้วยกติกาเดียวกัน: เอกลักษณ์ Lv 3 → ร่างตื่น Lv 5 → สกิล Class 2 ที่ถูกปลุกพลังลงเต็ม + ปลุกพลัง Lv 10 → เอกลักษณ์ Lv 10 → สกิลที่เหลือในสายเดียวกัน (ให้ถึงขั้นความเข้ากันของสาย) · อาวุธเลือกตัวที่บวกสกิลในสาย</p></details>
   <div class="jobpick">${jobSelect(id,'pjsel',x=>x.tier>=1)}<a class="more" style="margin:0" href="#highclass">⭐ ระบบ High Class</a><a class="more" style="margin:0" href="#summary">📋 สรุปอาชีพ</a></div>
   <div class="plgrid">
@@ -873,6 +875,13 @@ function viewPlanner(arg){
   </div>
   <div class="card pad plshare"><div class="simbtn"><button id="pcopy">🔗 คัดลอกลิงก์บิลด์</button><input id="pname" placeholder="ชื่อบิลด์ (บันทึกในเครื่องนี้)"><button id="psave">💾 บันทึก</button></div><div id="psaved"></div></div>`;
   const toast=m=>{let t=$('#simtoast');if(!t){t=document.createElement('div');t.id='simtoast';document.body.appendChild(t)}t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)};
+  const famApply=()=>{let f='';try{f=sessionStorage.getItem('nc.plfam')||''}catch(e){}
+    app.querySelectorAll('#plfam button').forEach(b=>b.classList.toggle('on',b.dataset.v===f));
+    app.querySelectorAll('.presets [data-fam]').forEach(el=>{el.hidden=!!f&&el.dataset.fam!==f;});
+    app.querySelectorAll('.presets').forEach(d=>{d.hidden=false;const any=[...d.querySelectorAll('.preset')].some(a=>!a.closest('[hidden]'));d.hidden=!any;});
+    const sel=$('#pjsel');if(sel)[...sel.options].forEach(o=>{const jj=D.jobs[o.value];o.hidden=!!f&&jj&&jj.fam!==f&&o.value!==id;});};
+  $('#plfam').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;try{sessionStorage.setItem('nc.plfam',b.dataset.v)}catch(x){}famApply();};
+  famApply();
   const save=()=>history.replaceState(null,'',plEnc(id,p,true));
   const gearSum=()=>{const s={};let w=null;for(const [k] of GSLOTS){const it=D.items[p.g[k]];if(!it)continue;if(k==='weapon')w=it;for(const [a,v] of Object.entries(it.stats||{}))s[a]=(s[a]||0)+v;}return {s,w};};
   const left=()=>ptsAt(p.lv)-SKEY.reduce((t,k)=>t+sSpent(p.st[k]),0);
