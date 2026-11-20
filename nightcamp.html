@@ -269,6 +269,12 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.ftbl tr[data-lv]{cursor:pointer}.ftbl tr[data-lv]:hover td,.ftbl tr.on td{background:var(--chip)}.ftbl td{vertical-align:top}
+.fctl{display:flex;flex-direction:column;gap:10px;margin:14px 0}.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:14px}
+.fcard ol{margin:6px 0 0;padding-left:22px}.fcard li{margin:6px 0}.fth{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.ftbl2 th[data-fs]{cursor:pointer;white-space:nowrap}.ftbl2 th.on{color:var(--accent)}.frow{cursor:pointer}.frow:hover td,.frow.on td{background:var(--chip)}
+.fmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;padding:6px 0}.fmob{display:flex;gap:10px;align-items:flex-start}
+
 .padv{margin-bottom:14px}.padv-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.padv-h h3{margin:0 8px 0 0}.padv ul{margin:6px 0 10px;padding-left:20px}.padv li{margin:3px 0}.warn{padding:10px 12px;border-radius:10px;background:rgba(255,90,95,.12);border:1px solid var(--accent);margin:8px 0}
 .plfam{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:10px}.presets[hidden],[data-fam][hidden]{display:none!important}
 .sumf{display:flex;flex-direction:column;gap:10px}.hcl b{color:var(--accent-2)}
@@ -336,6 +342,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
     <a href="#skills" data-t="skills">สกิลทรี</a>
     <a href="#builds" data-t="builds">บิลด์</a>
     <a href="#gear" data-t="gear">อุปกรณ์</a>
+    <a href="#farmspot" data-t="farmspot">🌾 ที่ฟาร์ม</a>
     <a href="#monsters" data-t="monsters">มอนสเตอร์</a>
     <a href="#systems" data-t="systems">ระบบเกม</a>
     <a href="#basics" data-t="basics">สเตตัส &amp; ธาตุ</a>
@@ -392,7 +399,7 @@ const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
 function jobOwnerName(sid){const o=(SK_OWNER[sid]||[]).filter(x=>x!=='traveler');return o.length?D.jobs[o[0]].name:''}
 
 /* ---------- router ---------- */
-const VIEWS={jobs:viewJobs,highclass:viewHighclass,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
+const VIEWS={jobs:viewJobs,farmspot:viewFarm,highclass:viewHighclass,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
 function route(){
   const [t,arg]=(location.hash.slice(1)||'jobs').split('/');
   const v=VIEWS[t]?t:'jobs';
@@ -728,6 +735,74 @@ function viewHighclass(){
     return `<tr><td><b>${esc(j.name)}</b><div class="muted small">จาก ${esc(c2.name)} · ${esc(J[c2.from].name)}</div></td><td><b>${esc(core.name||'')}</b><div class="small">${esc(cut(core.dMax||core.d1||'',140))}</div></td><td class="small">${pow.map(esc).join('<br>')}</td><td class="small">${esc(cut((awk.dMax||awk.d1||'').replace(/^ใช้สกิลที่ปลุกพลังแล้ว วงจันทร์ใต้เท้าเต็ม ร่างตื่นเอง /,''),150))}</td><td class="n small">×${j.hp} / ×${j.sp}<div class="muted">(${esc(c2.name)} ×${c2.hp} / ×${c2.sp})</div></td><td>${h?`<a class="more" style="margin:0" href="${h}">บิลด์</a>`:''}<a class="more" style="margin:4px 0 0" href="#skills/${j.id}">สกิล</a></td></tr>`;}).join('')}
   </table></div>`;
 }
+/* ================= FARM SPOTS ================= */
+let FM=null, FMP=null, FST={L:15,sort:'exp',all:false,open:null};
+const loadFarm=()=>FMP=FMP||fetch('nightcamp-farm.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>FM=d);
+const GAP=[[3,1],[8,0.7],[14,0.4],[20,0.2],[999,0.05]];
+const gapK=d=>{d=Math.abs(d);for(const [m,k] of GAP)if(d<=m)return k;return 0.05;};
+const BRK=[[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,70],[71,80],[81,90],[91,99]];
+function farmCalc(L){
+  const rows=[];
+  for(const [id,[name,area,lvText,mobs]] of Object.entries(FM.maps)){
+    let N=0,hp=0,exp=0,jexp=0,val=0,gk=0,lo=99,hi=1;const ms=[];
+    for(const [sp,n,mlo,H,E,JE] of mobs){
+      const k=H.length;let h=0,e=0,je=0,g=0;
+      for(let i=0;i<k;i++){const gg=gapK(mlo+i-L);h+=H[i];e+=E[i]*gg;je+=JE[i]*gg;g+=gg;}
+      h/=k;e/=k;je/=k;g/=k;const v=(FM.mon[sp]||[])[2]||0;
+      N+=n;hp+=n*h;exp+=n*e;jexp+=n*je;val+=n*v;gk+=n*g;lo=Math.min(lo,mlo);hi=Math.max(hi,mlo+k-1);
+      ms.push({sp,n,lo:mlo,hi:mlo+k-1,hp:h,exp:e,jexp:je,val:v,g});
+    }
+    if(!N)continue;
+    rows.push({id,name,area,lvText,N,lo,hi,hpAvg:hp/N,expKill:exp/N,jexpKill:jexp/N,valKill:val/N,expK:exp/hp*1000,valK:val/hp*1000,gap:gk/N,fast:N/(hp/N)*1000,ms});
+  }
+  return rows;
+}
+const fmtN=v=>v>=100?Math.round(v).toLocaleString('th-TH'):v>=10?v.toFixed(1):v.toFixed(2);
+function farmBest(L){
+  const R=farmCalc(L).filter(r=>r.gap>=0.7);
+  const top=(k,n)=>R.slice().sort((a,b)=>b[k]-a[k]).slice(0,n);
+  return {R,exp:top('expK',5),val:top('valK',5),fast:top('fast',5)};
+}
+function viewFarm(){
+  if(!FM){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลที่ฟาร์ม…</div>';loadFarm().then(viewFarm).catch(()=>{FMP=null;app.innerHTML='<div class="card pad">โหลดข้อมูลไม่ได้ ลองรีเฟรช</div>'});return;}
+  const L=FST.L, B=farmBest(L);
+  const mapLink=r=>`<a href="#farmspot" data-fmap="${r.id}"><b>${esc(r.name)}</b></a><div class="muted small">${esc(r.area||'')} · ${esc(r.lvText)}</div>`;
+  const sumRows=BRK.map(([a,b])=>{const m=Math.round((a+b)/2),X=farmBest(m),e=X.exp[0],v=X.val[0],f=X.fast[0];
+    return `<tr data-lv="${m}" class="${L>=a&&L<=b?'on':''}"><td><b>Lv ${a}–${b}</b><div class="muted small">คิดที่ Lv ${m}</div></td>
+      <td>${e?`${esc(e.name)}<div class="muted small">EXP ${fmtN(e.expK)} / 1,000 HP · ${Math.round(e.N)} ตัว</div>`:'-'}</td>
+      <td>${v?`${esc(v.name)}<div class="muted small">${fmtN(v.valK)} เหรียญ / 1,000 HP</div>`:'-'}</td>
+      <td>${f?`${esc(f.name)}<div class="muted small">${Math.round(f.N)} ตัว · HP เฉลี่ย ${fmtN(f.hpAvg)}</div>`:'-'}</td></tr>`;}).join('');
+  const card=(t,list,k,unit)=>`<div class="card pad fcard"><h3>${t}</h3><ol>${list.map(r=>`<li><a href="#farmspot" data-fmap="${r.id}">${esc(r.name)}</a> <span class="muted small">${esc(r.lvText)}</span><div class="small">${unit(r)}</div></li>`).join('')||'<li class="muted">ไม่มีแมพที่เลเวลใกล้</li>'}</ol></div>`;
+  let rows=(FST.all?farmCalc(L):B.R).slice();
+  const SK={exp:'expK',val:'valK',fast:'fast',n:'N',hp:'hpAvg',ek:'expKill',vk:'valKill'};
+  rows.sort((a,b)=>FST.sort==='hp'?a.hpAvg-b.hpAvg:b[SK[FST.sort]]-a[SK[FST.sort]]);
+  const th=(k,t,tip)=>`<th class="n${FST.sort===k?' on':''}" data-fs="${k}" title="${tip}">${t}</th>`;
+  const mobT=r=>`<tr class="fmobs"><td colspan="9"><div class="fmgrid">${r.ms.slice().sort((a,b)=>b.n-a.n).map(o=>{const M=FM.mon[o.sp]||[];return `<div class="fmob">${pic('mon',o.sp,44,'👾')}<div><b>${esc(M[0]||o.sp)}</b> <span class="muted small">×${fmtN(o.n)} · Lv ${o.lo}–${o.hi} · ${esc(elTh(M[1]))}</span>
+     <div class="small">HP ${fmtN(o.hp)} · EXP ${fmtN(o.exp)} · Job ${fmtN(o.jexp)}${o.g<1?` <span class="bad">(ห่างเลเวล ×${o.g.toFixed(2)})</span>`:''}</div>
+     <div class="small muted">${(M[3]||[]).map(([n,c,p])=>`${esc(n)} ${Math.round(c*100)}% (${p})`).join(' · ')||'ไม่มีของดรอป'}</div></div></div>`;}).join('')}</div></td></tr>`;
+  app.innerHTML=`<div class="sec-h"><h2>🌾 ที่ฟาร์ม</h2><p>คิดจากสูตรมอนในเกมบิลด์ ${esc(FM.ver)} · EXP หักตามส่วนต่างเลเวลแล้ว (ห่าง ≤3 = 100% · ≤8 = 70% · ≤14 = 40% · ≤20 = 20% · มากกว่า = 5%) · เงิน = ราคาขายวัตถุดิบ × โอกาสดรอป (เกมนี้มอนไม่ดรอปเหรียญตรง ๆ)</p></div>
+  <div class="card pad"><h3>📋 สรุปทุก 10 เลเวล</h3><p class="muted small" style="margin-top:-4px">กดแถวเพื่อดูละเอียดของช่วงนั้น · นับเฉพาะแมพที่มอนเลเวลใกล้ (ได้ EXP เฉลี่ย ≥ 70%)</p>
+   <div class="tblwrap"><table class="tbl ftbl"><tr><th>ช่วงเลเวล</th><th>⭐ EXP ดีสุด</th><th>💰 เงินดีสุด</th><th>⚡ ฟาร์มเร็วสุด (มอนเยอะ HP น้อย)</th></tr>${sumRows}</table></div></div>
+  <div class="card pad fctl"><label class="plr">เลเวลตัวละคร <b id="flv">${L}</b><input type="range" id="flvr" min="1" max="99" value="${L}"></label>
+   <div class="seg">${BRK.map(([a,b])=>`<button data-flv="${Math.round((a+b)/2)}" class="${L>=a&&L<=b?'on':''}">${a}–${b}</button>`).join('')}</div></div>
+  <div class="fcards">${card('⭐ EXP ต่อ HP ดีสุด',B.exp,'expK',r=>`EXP ${fmtN(r.expK)} / 1,000 HP · ${fmtN(r.expKill)} ต่อตัว`)}
+   ${card('💰 เงินต่อ HP ดีสุด',B.val,'valK',r=>`${fmtN(r.valK)} เหรียญ / 1,000 HP · ${fmtN(r.valKill)} ต่อตัว`)}
+   ${card('⚡ ฟาร์มเร็ว (มอนเยอะ HP น้อย)',B.fast,'fast',r=>`${Math.round(r.N)} ตัว · HP เฉลี่ย ${fmtN(r.hpAvg)} · EXP ${fmtN(r.expKill)}/ตัว`)}</div>
+  <div class="card pad"><div class="fth"><h3>🗺️ ทุกแมพที่ Lv ${L}</h3><label class="small"><input type="checkbox" id="fall" ${FST.all?'checked':''}> แสดงแมพที่เลเวลห่างด้วย</label></div>
+   <div class="tblwrap"><table class="tbl ftbl2"><tr><th>แมพ</th><th class="n">Lv มอน</th>${th('n','จำนวน','จำนวนมอนในแมพ (ยิ่งเยอะยิ่งหาตีง่าย)')}${th('hp','HP เฉลี่ย','HP เฉลี่ยต่อตัว — ยิ่งน้อยยิ่งตายไว')}${th('ek','EXP/ตัว','EXP ต่อตัวหลังหักส่วนต่างเลเวล')}${th('exp','EXP / 1k HP','EXP ต่อ HP ที่ต้องตี 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('vk','เงิน/ตัว','มูลค่าวัตถุดิบเฉลี่ยต่อตัว')}${th('val','เงิน / 1k HP','มูลค่าวัตถุดิบต่อ HP 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('fast','เร็ว','จำนวนมอน ÷ HP เฉลี่ย — ยิ่งเยอะยิ่งฟาร์มไว')}</tr>
+   ${rows.map(r=>`<tr class="frow${FST.open===r.id?' on':''}" data-fopen="${r.id}"><td>${mapLink(r)}</td><td class="n">${r.lo}–${r.hi}${r.gap<0.7?`<div class="bad small">×${r.gap.toFixed(2)}</div>`:''}</td><td class="n">${Math.round(r.N)}</td><td class="n">${fmtN(r.hpAvg)}</td><td class="n">${fmtN(r.expKill)}</td><td class="n"><b>${fmtN(r.expK)}</b></td><td class="n">${fmtN(r.valKill)}</td><td class="n"><b>${fmtN(r.valK)}</b></td><td class="n">${fmtN(r.fast)}</td></tr>${FST.open===r.id?mobT(r):''}`).join('')}</table></div>
+   <p class="muted small">EXP เป็นค่าพื้นฐานของเกม ยังไม่รวมโบนัสปาร์ตี้ ใบคูณ EXP หรือ Premium · กดแถวเพื่อดูมอนและของดรอปในแมพ</p></div>`;
+  const set=o=>{Object.assign(FST,o);viewFarm();};
+  $('#flvr').oninput=e=>{$('#flv').textContent=e.target.value;};
+  $('#flvr').onchange=e=>set({L:+e.target.value});
+  app.querySelectorAll('[data-flv]').forEach(b=>b.onclick=()=>set({L:+b.dataset.flv}));
+  app.querySelectorAll('.ftbl tr[data-lv]').forEach(t=>t.onclick=()=>{set({L:+t.dataset.lv});$('.fctl').scrollIntoView({behavior:'smooth'});});
+  app.querySelectorAll('[data-fs]').forEach(t=>t.onclick=()=>set({sort:t.dataset.fs}));
+  $('#fall').onchange=e=>set({all:e.target.checked});
+  app.querySelectorAll('[data-fmap]').forEach(a=>a.onclick=e=>{e.preventDefault();e.stopPropagation();set({open:a.dataset.fmap});setTimeout(()=>{const r=app.querySelector(`.frow[data-fopen="${a.dataset.fmap}"]`);r&&r.scrollIntoView({behavior:'smooth',block:'center'})},50);});
+  app.querySelectorAll('.frow').forEach(t=>t.onclick=()=>set({open:FST.open===t.dataset.fopen?null:t.dataset.fopen}));
+}
+
 /* ================= PATCH ================= */
 function viewPatch(){
   const L=(t,a)=>`<div class="card pad"><h3>${t}</h3><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
