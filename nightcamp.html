@@ -269,6 +269,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* planner · summary · patch */
+.hctbl td{vertical-align:top}.hctbl .small{font-size:12.5px}.preset b .chip{font-size:11px;vertical-align:middle}
 .gslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
 .gslot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border-radius:12px;border:1px solid var(--line);background:var(--chip);cursor:pointer;text-align:center;min-width:0}
 .gslot small{font-size:11.5px;color:var(--muted);line-height:1.3}.gslot b{font-size:12px;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -310,7 +311,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
 .pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px}.pc ul{margin:4px 0 0;padding-left:18px}
 .good{color:#3fb37f}.bad{color:var(--accent)}
 .hcl{font-size:13px;margin:8px 0 0}.ptag{font-size:13px;margin:8px 0 0;padding:8px 10px;border-radius:10px;background:var(--chip)}
-.sum-a{display:flex;gap:8px;margin-top:10px}.sum-a .more{margin:0}
+.sum-a{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.sum-a .more{margin:0}
 .patchgrid ul{padding-left:18px;margin:6px 0 0}.patchgrid li{margin:4px 0}.patchgrid h3{margin:0 0 6px}
 @media (max-width:420px){.pc{grid-template-columns:1fr}}
 </style>
@@ -328,6 +329,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
     <a href="#jobs" data-t="jobs">อาชีพ</a>
     <a href="#planner" data-t="planner">🧩 สร้างบิลด์</a>
     <a href="#summary" data-t="summary">สรุปอาชีพ</a>
+    <a href="#highclass" data-t="highclass">⭐ High Class</a>
     <a href="#skills" data-t="skills">สกิลทรี</a>
     <a href="#builds" data-t="builds">บิลด์</a>
     <a href="#gear" data-t="gear">อุปกรณ์</a>
@@ -387,7 +389,7 @@ const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
 function jobOwnerName(sid){const o=(SK_OWNER[sid]||[]).filter(x=>x!=='traveler');return o.length?D.jobs[o[0]].name:''}
 
 /* ---------- router ---------- */
-const VIEWS={jobs:viewJobs,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
+const VIEWS={jobs:viewJobs,highclass:viewHighclass,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
 function route(){
   const [t,arg]=(location.hash.slice(1)||'jobs').split('/');
   const v=VIEWS[t]?t:'jobs';
@@ -660,7 +662,7 @@ function viewSummary(){
      <div class="pc"><div><b class="good">จุดเด่น</b><ul>${s.pro.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><b class="bad">ข้อด้อย</b><ul>${s.con.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
      ${s.hc?`<p class="muted hcl">⭐ ${esc(s.hc)}</p>`:''}
      ${s.patch?`<p class="ptag">แพทช์ 20 พ.ย.: ${esc(s.patch)}</p>`:''}
-     <div class="sum-a"><a class="more" href="#planner/${hc?hc.id:j.id}">🧩 สร้างบิลด์</a><a class="more" href="#skills/${j.id}">สกิลทรี</a></div></div>`;};
+     <div class="sum-a">${(()=>{const c=NC_C2B.find(x=>x.id===j.id);return c?`<a class="more" href="${c.h}">🌱 บิลด์ Class 2</a>`:''})()}<a class="more" href="${(hc&&presetOf(hc.id))||'#planner/'+(hc?hc.id:j.id)}">${hc&&presetOf(hc.id)?'⭐ บิลด์ '+esc(hc.name):'🧩 สร้างบิลด์'}</a><a class="more" href="#skills/${j.id}">สกิลทรี</a></div></div>`;};
   let c2=Object.values(J).filter(j=>j.tier===2);
   if(SUMSORT>=0) c2=c2.slice().sort((a,b)=>(JSUM[b.id]||{r:[0,0,0,0,0]}).r[SUMSORT]-(JSUM[a.id]||{r:[0,0,0,0,0]}).r[SUMSORT]);
   app.innerHTML=`<div class="sec-h"><h2>สรุปอาชีพ</h2><p>จุดเด่น ข้อด้อย และคะแนน 5 ด้านของทุก Class 2 (High Class เล่นต่อจาก Class 2 สายเดียวกัน) · คะแนนเป็นความเห็นของเว็บนี้จากสกิลและค่าในข้อมูลเกม ไม่ใช่ตัวเลขทางการ</p></div>
@@ -670,6 +672,28 @@ function viewSummary(){
   app.querySelectorAll('#ssort button').forEach(b=>b.onclick=()=>{SUMSORT=+b.dataset.v;viewSummary()});
 }
 
+
+/* ================= HIGH CLASS ================= */
+function viewHighclass(){
+  const J=D.jobs, c3=Object.values(J).filter(j=>j.tier===3);
+  const sk=id=>D.skills[id]||{};
+  const L=(t,a)=>`<div class="card pad"><h3>${t}</h3><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  app.innerHTML=`<div class="sec-h"><h2>ระบบ High Class</h2><p>Class 3 ของทุกสาย · อ่านจากโค้ดเกมบิลด์ ${esc(D.ver)} (class3_core.js / skilltree.js)</p></div>
+  <div class="patchgrid">
+   ${L('🚪 เปลี่ยนอาชีพ',[`Class 2 <b>Job Lv 50</b> + <b>Base Lv ${D.c3Lv}</b> (เดิม 99 ลดเหลือ 80 ตั้งแต่ 20 ต.ค.)`,'Class 2 แต่ละอาชีพมี High Class ได้ทางเดียว','เปลี่ยนแล้ว Job Lv เริ่มที่ 1 ใหม่ (สูงสุด 50) · สกิลทุกอันที่เรียนไว้อยู่ครบ','ยังนับเป็นอาชีพ Class 2 / Class 1 เดิมด้วย อาวุธและสกิลเดิมใช้ได้ทั้งหมด'])}
+   ${L('🎯 แต้มสกิล 156 แต้ม',[`Traveler ${J.traveler.maxJob-1} + Class 1 49 + Class 2 49 + High Class 49`,'ลงได้ทั้ง 3 คลาสในสาย (สกิล Traveler ไม่ติดมา แต่แต้มยังอยู่)','High Class มีสกิลของตัวเอง 6 อัน เป็น<b>ติดตัวทั้งหมด</b> ไม่มีปุ่มกดเพิ่ม: เอกลักษณ์ 10 Lv · ปลุกพลัง 4 อัน (2 เลน) อันละ 10 Lv · ร่างตื่น 5 Lv = 55 แต้ม'])}
+   ${L('⚡ ปลุกพลัง (สกิล Class 2 แรงขึ้น)',['ต้องเรียนสกิล Class 2 ตัวนั้นก่อน Lv 1 · ปลุกพลังทีละ 1 สกิล','ต่อเลเวล: ฮิตแรงขึ้น +3% (บางสกิลลดคูลดาวน์แทน แล้วแรง +2.5%) · วงกว้างขึ้น +2%','ทุกครั้งที่ใช้ ปล่อยเอฟเฟกต์เสริม (เสาแสง ระเบิด ฝน ลูกโซ่ เศษ หนาม ดาบตก) แรง 15% + 1.5% ต่อ Lv ของฮิต · Lv 1 / 5 / 10 = 1 / 2 / 3 ครั้งต่อการใช้','Lv 5 ขึ้นไป เอฟเฟกต์ใหญ่ขึ้น'])}
+   ${L('🌕 ร่างตื่น',['ต้องมีสกิลเอกลักษณ์ Lv 3','ใช้สกิลที่ถูกปลุกพลัง วงจันทร์ใต้เท้าเต็มขึ้น <b>10% ต่อครั้ง</b> (สกิลอัลติ 25%) · เต็ม 100% ตื่นเองอัตโนมัติ','ตื่นอยู่ <b>8 + 2 × Lv วินาที</b> (Lv 5 = 18 วิ) · สกิลที่ปลุกพลังแรงขึ้นอีก (Lv 5 = +20%) เอฟเฟกต์เสริมออก +1 ครั้ง และได้ความสามารถพิเศษของแต่ละอาชีพ','หมดร่างตื่นแล้วพัก 5 วิก่อนเกจขึ้นใหม่ · ไม่ใช้สกิลที่ปลุกพลังเกิน 6 วิ เกจลดวิละ 8%'])}
+   ${L('🔗 ความเข้ากันของสาย (ทุกคลาส)',['เลเวลสกิลที่ลงในสายเดียวกันรวมกัน <b>15 / 30 / 45</b> → ขั้น I / II / III','สกิลในสายนั้นแรงขึ้น <b>+10% / +20% / +30%</b> · ขั้น II วงกว้างขึ้น ×1.15 · ขั้น III มีออร่า','สายของ Class 2 ที่ต่อจากสาย Class 1 นับเลเวลรวมกัน · High Class คิดตามสายของ Class 2','เคล็ดลับ: ลงสกิลให้กระจุกในสายเดียวกันจะได้โบนัสสูงกว่ากระจายหลายสาย'])}
+  </div>
+  <h3 class="jsec">High Class ทั้ง 20 อาชีพ</h3>
+  <div class="tblwrap"><table class="tbl hctbl"><tr><th>High Class</th><th>เอกลักษณ์</th><th>ปลุกพลัง (สกิล Class 2)</th><th>ร่างตื่น Lv 5</th><th>HP / SP</th><th></th></tr>
+  ${c3.map(j=>{const ss=j.skills.map(sk),core=ss.find(s=>s.line==='core')||{},awk=ss.find(s=>s.line==='awaken')||{},c2=J[j.from];
+    const pow=ss.filter(s=>s.line==='a'||s.line==='b').map(s=>{const b=((s.req||[])[0]||[])[0];return b?D.skills[b].name:''}).filter(Boolean);
+    const h=presetOf(j.id);
+    return `<tr><td><b>${esc(j.name)}</b><div class="muted small">จาก ${esc(c2.name)} · ${esc(J[c2.from].name)}</div></td><td><b>${esc(core.name||'')}</b><div class="small">${esc(cut(core.dMax||core.d1||'',140))}</div></td><td class="small">${pow.map(esc).join('<br>')}</td><td class="small">${esc(cut((awk.dMax||awk.d1||'').replace(/^ใช้สกิลที่ปลุกพลังแล้ว วงจันทร์ใต้เท้าเต็ม ร่างตื่นเอง /,''),150))}</td><td class="n small">×${j.hp} / ×${j.sp}<div class="muted">(${esc(c2.name)} ×${c2.hp} / ×${c2.sp})</div></td><td>${h?`<a class="more" style="margin:0" href="${h}">บิลด์</a>`:''}<a class="more" style="margin:4px 0 0" href="#skills/${j.id}">สกิล</a></td></tr>`;}).join('')}
+  </table></div>`;
+}
 /* ================= PATCH ================= */
 function viewPatch(){
   const L=(t,a)=>`<div class="card pad"><h3>${t}</h3><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
@@ -685,6 +709,56 @@ function viewPatch(){
   <h3 class="jsec">แยกตามอาชีพ</h3><div class="patchgrid">${jobs.map(j=>`<div class="card pad"><h3><a href="#skills/${j.id}">${esc(j.name)}</a></h3><p>${esc(JSUM[j.id].patch)}</p></div>`).join('')}</div>`;
 }
 
+const NC_ALLB=[
+{id:"dawnwarden",h:"#planner/dawnwarden/2r1e281428050u1j/mc_morningstar!sh_midnight!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10500005a0110000aaa5800a5555aaaaaa5",s:"STR 80 · VIT 80 · LUK 55 · AGI 40 · DEX 30",w:"กระบองตำนานดาวรุ่งอรุณ (แสงกากบาทเผาผลาญ +30% · ดาบสวรรค์พิพากษา +20%)",m:"p"},
+{id:"starcore",h:"#planner/starcore/2r1e05061k2r2805/st_moontree!!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.4351001001000000aaa5aaaaa52aaaaa5",s:"INT 99 · DEX 80 · VIT 56",w:"คทาพฤกษาจันทร์เพ็ญ (อุกกาบาตถล่ม +30% · เสาเพลิง +20%)",m:"m"},
+{id:"winterlord",h:"#planner/winterlord/2r1e05051w2r1y05/ob_jellyfish!sh_midnight!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1005031001000010aa55aaaaaa5aaaaa5",s:"INT 99 · DEX 70 · VIT 68",w:"ออร์บแมงกะพรุน + โล่ (พายุหิมะ +10% · คูลดาวน์ −15%)",m:"m"},
+{id:"astral",h:"#planner/astral/2r1e05061k2r2805/st_lavadragon!!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1001005a05500000aa5aaa5a800aaaaa5",s:"INT 99 · DEX 80 · VIT 56",w:"คทามังกรลาวา (ลูกไฟ +25% · ร่ายเร็วขึ้น 20%)",m:"m"},
+{id:"hexlord",h:"#planner/hexlord/2r1e051y0v2p1o07/lt_everflame!!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1001001003000000aa55aa55a5aa5aaaaa5",s:"INT 97 · AGI 70 · DEX 60 · VIT 31",w:"ตะเกียงไฟแรกแห่งแคมป์ (ไฟวิญญาณ +30% · เรียกวิญญาณ +20%) · ถือตะเกียง MATK +1 ต่อ AGI",m:"m"},
+{id:"moonsniper",h:"#planner/moonsniper/2r1e051z0u052p1o/xb_legend!!hat_horned_king!glasses_visor!top_of_rg_windwalk!pants_of_rg_windwalk!robe_bartho!cape_shadow_knight!acc_of_rg_windwalk!acc_of_rg_campking/1e.1053a301053000000aa55a55aa5aaaaa5",s:"DEX 97 · AGI 71 · LUK 60 · VIT 30",w:"หน้าไม้ทางช้างเผือก (กับดักระเบิด +30% · จุดระเบิดกับดัก +20%)",m:"r"},
+{id:"packalpha",h:"#planner/packalpha/2r1e051w1o052r0u/bw_legend!!hat_horned_king!glasses_visor!top_of_rg_windwalk!pants_of_rg_windwalk!robe_bartho!cape_shadow_knight!acc_of_rg_windwalk!acc_of_rg_campking/1e.00010001010000aa55aa5a554a5aaaaaa5",s:"DEX 99 · AGI 68 · VIT 60 · LUK 30",w:"ธนูจันทร์เงินนิรันดร์ (ธนูพายุทะลวง +30% · ห่าฝนธนู +20%)",m:"r"},
+{id:"maestro",h:"#planner/maestro/2r1e051q141o2r05/in_legend!!hat_horned_king!glasses_visor!top_of_rg_windwalk!pants_of_rg_windwalk!robe_bartho!cape_shadow_knight!acc_of_rg_windwalk!acc_of_rg_campking/1e.00030001010020aaa5aaa5aa55aaaaa5",s:"DEX 99 · AGI 62 · INT 60 · VIT 40",w:"เครื่องดนตรีเพลงกองไฟนิรันดร์ (มหกรรมรอบกองไฟ +30% · โน้ตเด้ง +20%) · INT เพิ่มผลเพลง",m:"r"},
+{id:"outlaw",h:"#planner/outlaw/2r1e051z0u052p1o/ps_moonlight!!hat_horned_king!glasses_visor!top_of_rg_windwalk!pants_of_rg_windwalk!robe_bartho!cape_shadow_knight!acc_of_rg_windwalk!acc_of_rg_campking/1e.00013001010010aaa5aaa5a5a5aaaaa5",s:"DEX 97 · AGI 71 · LUK 60 · VIT 30",w:"ปืนพกคู่แสงจันทร์นิรันดร์ (ยิงดาวตก +30% · รัวค้อนปืน +20%)",m:"r"},
+{id:"eclipse",h:"#planner/eclipse/2r1e282808050u1z/kt_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.5a503303300000aa5aa50a03a0aaaaa5",s:"STR 80 · AGI 80 · LUK 71 · DEX 30",w:"คาทาร์ใจกองไฟนิรันดร์ (มีดพิษกระจาย +30% · อุกกาบาตเงา +20%)",m:"p"},
+{id:"shadowlord",h:"#planner/shadowlord/2r1e2r1y08051e14/hu_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.30001005300000aaaa5aaaa5300aaaaa5",s:"STR 99 · AGI 70 · DEX 50 · LUK 40",w:"ดาวยักษ์หัวใจพงไพรราตรี (คุไนระเบิด +30% · ดาวชิ่ง +20%)",m:"p"},
+{id:"harvester",h:"#planner/harvester/2r1e2r1y1f051405/sc_aurora!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.03001001000060aaa5aaaaa55aaaaa5",s:"STR 99 · AGI 70 · VIT 51 · DEX 40",w:"เคียวใหญ่แสงเหนือ (พายุวิญญาณ +30% · ฟันเก็บเกี่ยว +20%)",m:"p"},
+{id:"showmaster",h:"#planner/showmaster/2r1e2n1o1e051o05/pp_fireflyqueen!sh_midnight!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.03001003100030aa5aaa5aaa5aaaaa5",s:"STR 95 · AGI 60 · DEX 60 · VIT 50",w:"ไม้เชิดหุ่นราชินีหิ่งห้อย + โล่ (สลับร่างหุ่น +30% · โรงละครหุ่นเชิด +20%)",m:"p"},
+{id:"starsaint",h:"#planner/starsaint/2r1e0506252r1o05/bk_legend!sh_midnight!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.a00aa001500000000aa55aa00000a5500aaaaa5",s:"INT 99 · VIT 77 · DEX 60",w:"คัมภีร์แสงดาวนิรันดร์ + โล่ (ปาฏิหาริย์ +30% · ขับไล่อมตะ +20%)",m:"s"},
+{id:"meteorfist",h:"#planner/meteorfist/2r1e2h281o050v05/kn_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10010000100030050aaa55a5a55aaaaaaa5",s:"STR 89 · AGI 80 · VIT 60 · DEX 31",w:"สนับมือทางช้างเผือก (ชุดหมัดพายุ +30% · ฝ่ามือทะลวงปราณ +20%)",m:"p"},
+{id:"beacon",h:"#planner/beacon/2r1e0u061w2r1o05/tc_legend!sh_midnight!hat_infernal_warlock!glasses_visor!top_of_mg_prism!pants_of_rg_windwalk!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.10010000300010060aa5aa5aaaa5aaaaa5",s:"INT 99 · VIT 68 · DEX 60 · STR 30",w:"คบเพลิงดวงใจกองไฟ + โล่ (ฟาดเปลวไฟ +30% · ปักคบเพลิง +20%)",m:"s"},
+];
+const NC_C2B=[
+{id:"paladin",h:"#planner/paladin/271e210z21050l06/aw_tar_blob!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.10530005a0110000aaa5a00a5555a",s:"STR 73 · VIT 73 · AGI 35 · DEX 21",w:"กระบองก้อนน้ำมันดิน Lv76 (โล่พิฆาต +15%) · ใส่โล่ได้",m:"p"},
+{id:"dragonknight",h:"#planner/dragonknight/271e211o1n050705/ln_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.1000000100050090aa5aaa5a555a",s:"STR 73 · AGI 60 · VIT 59",w:"หอกยาวเสาหลุมราชาสุสาน Lv75 (มังกรทะยาน +25% · CD −20%)",m:"p"},
+{id:"swordmaster",h:"#planner/swordmaster/271e1t19081o1905/ds_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.1033000100010030aaa55aaaa5a5",s:"STR 65 · INT 60 · AGI 45 · DEX 45",w:"ดาบคู่มงกุฎราชาสุสาน Lv74 (จันทร์พันดาบ +25% · CD −20%)",m:"p"},
+{id:"berserker",h:"#planner/berserker/271e211o1j050h06/hm_cryptstone!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.10310001000100a0aaaaaaa55a5",s:"STR 73 · AGI 60 · VIT 55 · DEX 17",w:"ค้อนยักษ์ศิลาสุสาน Lv74 (กระโดดทุบธรณี +25% · CD −20%)",m:"p"},
+{id:"archmage",h:"#planner/archmage/271e05071b211y05/st_rootheart!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1001005a05500000aa5aaa5aa30",s:"INT 73 · DEX 70 · VIT 47",w:"คทาหัวใจพงไพร Lv77",m:"m"},
+{id:"warlock",h:"#planner/warlock/271e051o0h211j06/lt_cryptlord!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1001001003000050aa55aa55a5aa5",s:"INT 73 · AGI 60 · DEX 55 · VIT 17",w:"ตะเกียงราชาสุสาน Lv74 (ไฟวิญญาณ +25% · ร่ายเร็ว 20%)",m:"m"},
+{id:"firemage",h:"#planner/firemage/271e05071b211y05/st_cryptlord!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.4351001001000020aaa5aaaaa55",s:"INT 73 · DEX 70 · VIT 47",w:"คทาราชาสุสาน Lv74 (กำแพงไฟ +25% · ร่ายเร็ว 20%)",m:"m"},
+{id:"icemage",h:"#planner/icemage/271e05071n211o05/ob_mushking!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.1005031001000060aa55aaaaaa5",s:"INT 73 · DEX 60 · VIT 59",w:"ออร์บราชาเห็ดเรืองแสง Lv46 (ผลึกระเบิด +25% · CD −20%) · ใส่โล่ได้",m:"m"},
+{id:"ranger",h:"#planner/ranger/271e051o0r05211e/xb_cryptlord!!hat_hc_boss_werewolf!glasses_monocle!top_of_rg_voyager!pants_of_lt_phantom!robe_falk!cape_shadow_knight!acc_of_rg_voyager!acc_crown_bat_king/1e.1053a301053000500aa55a55aa5",s:"DEX 73 · AGI 60 · LUK 50 · VIT 27",w:"หน้าไม้ราชาสุสาน Lv75 (ยิงสไนป์ +25% · ร่ายเร็ว 20%)",m:"r"},
+{id:"wolfhunter",h:"#planner/wolfhunter/271e051k1j05210p/bw_cryptlord!!hat_hc_boss_werewolf!glasses_monocle!top_of_rg_voyager!pants_of_lt_phantom!robe_falk!cape_shadow_knight!acc_of_rg_voyager!acc_crown_bat_king/1e.00010001010000aa55aa5a559a5a",s:"DEX 73 · AGI 56 · VIT 55 · LUK 25",w:"ธนูราชาสุสาน Lv75 (สั่งขย้ำ +25% · CD −20%)",m:"r"},
+{id:"bard",h:"#planner/bard/271e051j0r1j2105/in_cryptlord!!hat_hc_boss_werewolf!glasses_monocle!top_of_rg_voyager!pants_of_lt_phantom!robe_falk!cape_shadow_knight!acc_of_rg_voyager!acc_crown_bat_king/1e.00030001010070aaa5aaa5aa55",s:"DEX 73 · AGI 55 · INT 55 · VIT 27",w:"เครื่องดนตรีราชาสุสาน Lv75 (ฝนโน้ต +25% · CD −20%)",m:"r"},
+{id:"gunslinger",h:"#planner/gunslinger/271e051o0r05211e/ps_cryptlord!!hat_hc_boss_werewolf!glasses_monocle!top_of_rg_voyager!pants_of_lt_phantom!robe_falk!cape_shadow_knight!acc_of_rg_voyager!acc_crown_bat_king/1e.00013001010060aaa5aaa5a5a5",s:"DEX 73 · AGI 60 · LUK 50 · VIT 27",w:"ปืนพกคู่ราชาสุสาน Lv74 (ยิงดาวตก +25% · CD −20%)",m:"r"},
+{id:"assassin",h:"#planner/assassin/271e212105050617/kt_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.5a503303300000aa5aaa0a03a0",s:"STR 73 · AGI 73 · LUK 43",w:"คาทาร์ตะปูราชาสุสาน Lv74 (เขี้ยวคู่ +25% · CD −20%)",m:"p"},
+{id:"shinobi",h:"#planner/shinobi/271e211o0705190x/hu_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.30001005300000aaaa5aaaa5800",s:"STR 73 · AGI 60 · DEX 45 · LUK 33",w:"ดาวยักษ์นิ้วกระดูกราชาสุสาน Lv75 (พายุชูริเคน +25% · CD −20%)",m:"p"},
+{id:"reaper",h:"#planner/reaper/271e211o19050x07/sc_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.030010010000a1aaa5aaaaa55",s:"STR 73 · AGI 60 · VIT 45 · DEX 33",w:"เคียวใหญ่ราชาสุสาน Lv73 (ฟันเก็บเกี่ยว +25% · CD −20%)",m:"p"},
+{id:"puppeteer",h:"#planner/puppeteer/271e211j0r051j05/pp_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.03001003100080aa5aaa5aaa5",s:"STR 73 · AGI 55 · DEX 55 · VIT 27",w:"ไม้เชิดหุ่นราชาสุสาน Lv74 (สลับร่างหุ่น +25% · CD −20%) · ใส่โล่ได้",m:"p"},
+{id:"bishop",h:"#planner/bishop/271e05051s211j05/bk_cryptlord!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.a00aa003500000000aa55aa30000a5500",s:"INT 73 · VIT 64 · DEX 55",w:"คัมภีร์ราชาสุสาน Lv73 (ตราแสงตรึง +25% · ร่ายเร็ว 20%) · ใส่โล่ได้",m:"s"},
+{id:"monk",h:"#planner/monk/271e212117050605/kn_cryptlord!!hat_elwin!glasses_flame!top_of_hv_moon!pants_of_hv_moon!robe_elwin!cape_shadow_knight!acc_crown_ant_queen!acc_crown_bat_king/1e.100100001000300a0aaa55a5a55aa",s:"STR 73 · AGI 73 · VIT 43",w:"สนับมือราชาสุสาน Lv74 (หมัดสิ้นปราณ +25% · ร่ายเร็ว 20%)",m:"p"},
+{id:"lightkeeper",h:"#planner/lightkeeper/271e0p061k211j05/tc_cryptlord!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.100100003000100a1aa5aa5aaaa5",s:"INT 73 · VIT 56 · DEX 55 · STR 25",w:"คบเพลิงราชาสุสาน Lv73 (รุ่งอรุณ +25% · CD −20%) · ใส่โล่ได้",m:"s"},
+{id:"wisp",h:"#planner/wisp/271e05051i211t05/bl_cryptlord!!hat_infernal_warlock!glasses_ice!top_of_mg_dream!pants_of_mg_dream!robe_infernal_warlock!cape_infernal_warlock!acc_crown_crypt_lord!acc_crown_mushking/1e.100100001000100a3aaa5aaaaa55",s:"INT 73 · DEX 65 · VIT 54",w:"กระดิ่งวิญญาณราชาสุสาน Lv74 (ดวงไฟติดศัตรู +25% · CD −20%) · ใส่โล่ได้",m:"s"}];
+const MTAG={p:'กายภาพ',m:'เวท',r:'ยิงไกล',s:'ซัพพอร์ต'};
+function presetOf(id){const a=NC_PRESETS.find(x=>x.h.split('/')[1]===id);if(a)return a.h;const b=NC_ALLB.find(x=>x.id===id);return b?b.h:null;}
+function allPresets(){ // every High Class: the hand-written four first, the rest generated the same way
+  const out=[];for(const c1 of Object.values(D.jobs).filter(j=>j.tier===1))for(const c2 of kids(c1.id))for(const c3 of kids(c2.id)){
+    const a=NC_PRESETS.find(x=>x.h.split('/')[1]===c3.id), b=NC_ALLB.find(x=>x.id===c3.id);
+    const pow=c3.skills.map(s=>D.skills[s]).filter(s=>s&&(s.line==='a'||s.line==='b')).map(s=>((s.req||[])[0]||[])[0]).filter(Boolean).map(x=>D.skills[x].name);
+    if(a) out.push({id:c3.id,c1,h:a.h,t:a.t,s:a.s,w:a.w,pow,star:1});
+    else if(b) out.push({id:c3.id,c1,h:b.h,t:MTAG[b.m],s:b.s,w:b.w,pow});
+  }
+  return out;
+}
 /* ================= BUILD PLANNER ================= */
 const NC_PRESETS=[
  {t:'กายภาพ',n:'Dragonbound · พุ่งไฟกวาดฝูง',h:'#planner/dragonbound/2r1e281y1y05140o/ln_legend!!hat_horned_king!glasses_visor!top_of_hv_guardian!pants_of_rg_windwalk!robe_talon!cape_shadow_knight!acc_crown_lava_dragon!acc_crown_ant_queen/1e.10000001000a04a0aa5aaa0a5550aaaaa5',
@@ -743,7 +817,14 @@ function viewPlanner(arg){
   app.innerHTML=`<div class="sec-h"><h2>สร้างบิลด์ตัวละคร</h2><p>อัปสเตตัสตามแต้มจริงของเกม · เลือกอุปกรณ์ · จัดสกิล แล้วแชร์เป็นลิงก์เดียว (ส่วนที่วิกิทางการไม่มี)</p></div>
   <details class="card pad presets"${parts.length<=2?' open':''}><summary><b>⭐ บิลด์แนะนำ: สกิลหมู่เยอะ วิ่งไว พุ่งหามอน</b> <span class="muted">กดเพื่อโหลดทั้งสเตตัส สกิล และอุปกรณ์</span></summary>
    <div class="sumgrid" style="margin-top:12px">${NC_PRESETS.map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(x.t)}</span><b>${esc(x.n)}</b><small>${esc(x.d)}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div></details>
-  <div class="jobpick">${jobSelect(id,'pjsel',x=>x.tier>=1)}<a class="more" style="margin:0" href="#summary">📋 สรุปอาชีพ</a></div>
+  <details class="card pad presets"><summary><b>🌱 บิลด์แนะนำ Class 2 ทุกอาชีพ (Lv 79 ก่อนเปลี่ยน High Class)</b> <span class="muted">Job 50 · ของใส่ได้ถึง Lv 79</span></summary>
+   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${kids(c1.id).map(c2=>{const x=NC_C2B.find(y=>y.id===c2.id);if(!x)return '';const c3=kids(c2.id)[0],pow=c3?c3.skills.map(t=>D.skills[t]).filter(t=>t&&(t.line==='a'||t.line==='b')).map(t=>D.skills[t.req[0][0]].name):[];const sm=JSUM[c2.id]||{};
+     return `<a class="card preset" href="${x.h}"><span class="tier">Class 2 · ${esc(c1.name)}</span><b>${esc(c2.name)} <span class="chip">${esc(MTAG[x.m])}</span></b><small>${esc(sm.role||'')} · เน้น: ${esc(pow.join(' · '))} (สกิลที่ High Class จะปลุกพลังต่อ)</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`;}).join('')}</div>`).join('')}
+   <p class="muted small">Lv 79 เพดานสเตตัสเต็มผล = 73 · ลงสกิล Class 2 สายที่ High Class ปลุกพลังให้เต็มก่อน เปลี่ยนอาชีพแล้วไม่ต้องรีเซ็ต</p></details>
+  <details class="card pad presets"><summary><b>📚 บิลด์แนะนำทุก High Class (20 อาชีพ)</b> <span class="muted">Lv 99 · Job 50 · สกิลรวมทุกคลาสในสาย</span></summary>
+   ${Object.values(D.jobs).filter(x=>x.tier===1).map(c1=>`<h3 class="jsec">${ICON[c1.id]||''} สาย ${esc(c1.name)}</h3><div class="sumgrid">${allPresets().filter(x=>x.c1===c1).map(x=>`<a class="card preset" href="${x.h}"><span class="tier">${esc(D.jobs[D.jobs[x.id].from].name)} → High Class${x.star?' · ⭐':''}</span><b>${esc(D.jobs[x.id].name)} <span class="chip">${esc(x.t)}</span></b><small>ปลุกพลัง: ${esc(x.pow.join(' · '))}</small><small class="muted">สเตตัส: ${esc(x.s)}</small><small class="muted">อาวุธ: ${esc(x.w)}</small></a>`).join('')}</div>`).join('')}
+   <p class="muted small">บิลด์ที่ไม่มี ⭐ จัดอัตโนมัติด้วยกติกาเดียวกัน: เอกลักษณ์ Lv 3 → ร่างตื่น Lv 5 → สกิล Class 2 ที่ถูกปลุกพลังลงเต็ม + ปลุกพลัง Lv 10 → เอกลักษณ์ Lv 10 → สกิลที่เหลือในสายเดียวกัน (ให้ถึงขั้นความเข้ากันของสาย) · อาวุธเลือกตัวที่บวกสกิลในสาย</p></details>
+  <div class="jobpick">${jobSelect(id,'pjsel',x=>x.tier>=1)}<a class="more" style="margin:0" href="#highclass">⭐ ระบบ High Class</a><a class="more" style="margin:0" href="#summary">📋 สรุปอาชีพ</a></div>
   <div class="plgrid">
    <div class="card pad"><h3>📊 เลเวล & สเตตัส</h3>
      <label class="plr">Base Lv <b id="plv">${p.lv}</b><input type="range" id="plvr" min="${minLv}" max="${D.lvMax}" value="${p.lv}"></label>
