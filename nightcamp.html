@@ -736,14 +736,14 @@ function viewHighclass(){
   </table></div>`;
 }
 /* ================= FARM SPOTS ================= */
-let FM=null, FMP=null, FST={L:15,sort:'exp',all:false,open:null};
+let FM=null, FMP=null, FST={L:15,sort:'pack',all:false,open:null};
 const loadFarm=()=>FMP=FMP||fetch('nightcamp-farm.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>FM=d);
 const GAP=[[3,1],[8,0.7],[14,0.4],[20,0.2],[999,0.05]];
 const gapK=d=>{d=Math.abs(d);for(const [m,k] of GAP)if(d<=m)return k;return 0.05;};
 const BRK=[[1,10],[11,20],[21,30],[31,40],[41,50],[51,60],[61,70],[71,80],[81,90],[91,99]];
 function farmCalc(L){
   const rows=[];
-  for(const [id,[name,area,lvText,mobs]] of Object.entries(FM.maps)){
+  for(const [id,[name,area,lvText,mobs,crowd,dg]] of Object.entries(FM.maps)){
     let N=0,hp=0,exp=0,jexp=0,val=0,gk=0,lo=99,hi=1;const ms=[];
     for(const [sp,n,mlo,H,E,JE] of mobs){
       const k=H.length;let h=0,e=0,je=0,g=0;
@@ -753,7 +753,8 @@ function farmCalc(L){
       ms.push({sp,n,lo:mlo,hi:mlo+k-1,hp:h,exp:e,jexp:je,val:v,g});
     }
     if(!N)continue;
-    rows.push({id,name,area,lvText,N,lo,hi,hpAvg:hp/N,expKill:exp/N,jexpKill:jexp/N,valKill:val/N,expK:exp/hp*1000,valK:val/hp*1000,gap:gk/N,fast:N/(hp/N)*1000,ms});
+    const mult=FM.mult||1;
+    rows.push({id,name,area,lvText,crowd:crowd||0,dg:!!dg,cw:dg?'halls':crowd>=7?'dense':crowd<5?'sparse':'normal',pack:(crowd||0)*exp/N,N:N*mult,lo,hi,hpAvg:hp/N,expKill:exp/N,jexpKill:jexp/N,valKill:val/N,expK:exp/hp*1000,valK:val/hp*1000,gap:gk/N,fast:N/(hp/N)*1000,ms});
   }
   return rows;
 }
@@ -761,36 +762,39 @@ const fmtN=v=>v>=100?Math.round(v).toLocaleString('th-TH'):v>=10?v.toFixed(1):v.
 function farmBest(L){
   const R=farmCalc(L).filter(r=>r.gap>=0.7);
   const top=(k,n)=>R.slice().sort((a,b)=>b[k]-a[k]).slice(0,n);
-  return {R,exp:top('expK',5),val:top('valK',5),fast:top('fast',5)};
+  return {R,pack:top('pack',5),exp:top('expK',5),val:top('valK',5),fast:top('fast',5)};
 }
 function viewFarm(){
   if(!FM){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลที่ฟาร์ม…</div>';loadFarm().then(viewFarm).catch(()=>{FMP=null;app.innerHTML='<div class="card pad">โหลดข้อมูลไม่ได้ ลองรีเฟรช</div>'});return;}
   const L=FST.L, B=farmBest(L);
   const mapLink=r=>`<a href="#farmspot" data-fmap="${r.id}"><b>${esc(r.name)}</b></a><div class="muted small">${esc(r.area||'')} · ${esc(r.lvText)}</div>`;
-  const sumRows=BRK.map(([a,b])=>{const m=Math.round((a+b)/2),X=farmBest(m),e=X.exp[0],v=X.val[0],f=X.fast[0];
+  const CW={dense:'🟢 ฝูงแน่น',normal:'🟡 ปกติ',sparse:'🔴 โล่ง',halls:'🏰 ดันเจี้ยน (เป็นห้อง)'};
+  const sumRows=BRK.map(([a,b])=>{const m=Math.round((a+b)/2),X=farmBest(m),pk=X.pack[0],e=X.exp[0],v=X.val[0],f=X.fast[0];
     return `<tr data-lv="${m}" class="${L>=a&&L<=b?'on':''}"><td><b>Lv ${a}–${b}</b><div class="muted small">คิดที่ Lv ${m}</div></td>
+      <td>${pk?`<b>${esc(pk.name)}</b><div class="muted small">${CW[pk.cw]} ${fmtN(pk.crowd)} ตัว/พื้นที่ · ${Math.round(pk.N)} ตัว · EXP ${fmtN(pk.expKill)}/ตัว</div>`:'-'}</td>
       <td>${e?`${esc(e.name)}<div class="muted small">EXP ${fmtN(e.expK)} / 1,000 HP · ${Math.round(e.N)} ตัว</div>`:'-'}</td>
       <td>${v?`${esc(v.name)}<div class="muted small">${fmtN(v.valK)} เหรียญ / 1,000 HP</div>`:'-'}</td>
       <td>${f?`${esc(f.name)}<div class="muted small">${Math.round(f.N)} ตัว · HP เฉลี่ย ${fmtN(f.hpAvg)}</div>`:'-'}</td></tr>`;}).join('');
   const card=(t,list,k,unit)=>`<div class="card pad fcard"><h3>${t}</h3><ol>${list.map(r=>`<li><a href="#farmspot" data-fmap="${r.id}">${esc(r.name)}</a> <span class="muted small">${esc(r.lvText)}</span><div class="small">${unit(r)}</div></li>`).join('')||'<li class="muted">ไม่มีแมพที่เลเวลใกล้</li>'}</ol></div>`;
   let rows=(FST.all?farmCalc(L):B.R).slice();
-  const SK={exp:'expK',val:'valK',fast:'fast',n:'N',hp:'hpAvg',ek:'expKill',vk:'valKill'};
+  const SK={exp:'expK',val:'valK',fast:'fast',n:'N',hp:'hpAvg',ek:'expKill',vk:'valKill',pack:'pack',crowd:'crowd'};
   rows.sort((a,b)=>FST.sort==='hp'?a.hpAvg-b.hpAvg:b[SK[FST.sort]]-a[SK[FST.sort]]);
   const th=(k,t,tip)=>`<th class="n${FST.sort===k?' on':''}" data-fs="${k}" title="${tip}">${t}</th>`;
-  const mobT=r=>`<tr class="fmobs"><td colspan="9"><div class="fmgrid">${r.ms.slice().sort((a,b)=>b.n-a.n).map(o=>{const M=FM.mon[o.sp]||[];return `<div class="fmob">${pic('mon',o.sp,44,'👾')}<div><b>${esc(M[0]||o.sp)}</b> <span class="muted small">×${fmtN(o.n)} · Lv ${o.lo}–${o.hi} · ${esc(elTh(M[1]))}</span>
+  const mobT=r=>`<tr class="fmobs"><td colspan="11"><div class="fmgrid">${r.ms.slice().sort((a,b)=>b.n-a.n).map(o=>{const M=FM.mon[o.sp]||[];return `<div class="fmob">${pic('mon',o.sp,44,'👾')}<div><b>${esc(M[0]||o.sp)}</b> <span class="muted small">×${fmtN(o.n)} · Lv ${o.lo}–${o.hi} · ${esc(elTh(M[1]))}</span>
      <div class="small">HP ${fmtN(o.hp)} · EXP ${fmtN(o.exp)} · Job ${fmtN(o.jexp)}${o.g<1?` <span class="bad">(ห่างเลเวล ×${o.g.toFixed(2)})</span>`:''}</div>
      <div class="small muted">${(M[3]||[]).map(([n,c,p])=>`${esc(n)} ${Math.round(c*100)}% (${p})`).join(' · ')||'ไม่มีของดรอป'}</div></div></div>`;}).join('')}</div></td></tr>`;
-  app.innerHTML=`<div class="sec-h"><h2>🌾 ที่ฟาร์ม</h2><p>คิดจากสูตรมอนในเกมบิลด์ ${esc(FM.ver)} · EXP หักตามส่วนต่างเลเวลแล้ว (ห่าง ≤3 = 100% · ≤8 = 70% · ≤14 = 40% · ≤20 = 20% · มากกว่า = 5%) · เงิน = ราคาขายวัตถุดิบ × โอกาสดรอป (เกมนี้มอนไม่ดรอปเหรียญตรง ๆ)</p></div>
+  app.innerHTML=`<div class="sec-h"><h2>🌾 ที่ฟาร์ม</h2><p>คิดจากสูตรมอนในเกมบิลด์ ${esc(FM.ver)} · EXP หักตามส่วนต่างเลเวลแล้ว (ห่าง ≤3 = 100% · ≤8 = 70% · ≤14 = 40% · ≤20 = 20% · มากกว่า = 5%) · เงิน = ราคาขายวัตถุดิบ × โอกาสดรอป (เกมนี้มอนไม่ดรอปเหรียญตรง ๆ) · <b>👥 ฝูง×EXP</b> = ความแน่นของมอน (ตัวต่อพื้นที่ ใช้เกณฑ์เดียวกับเกม: ≥7 แน่น · <5 โล่ง) × EXP ต่อตัว ยิ่งมอนเยอะ อยู่ชิดกัน และ EXP สูง ยิ่งได้เยอะ เหมาะกับสายสกิลหมู่</p></div>
   <div class="card pad"><h3>📋 สรุปทุก 10 เลเวล</h3><p class="muted small" style="margin-top:-4px">กดแถวเพื่อดูละเอียดของช่วงนั้น · นับเฉพาะแมพที่มอนเลเวลใกล้ (ได้ EXP เฉลี่ย ≥ 70%)</p>
-   <div class="tblwrap"><table class="tbl ftbl"><tr><th>ช่วงเลเวล</th><th>⭐ EXP ดีสุด</th><th>💰 เงินดีสุด</th><th>⚡ ฟาร์มเร็วสุด (มอนเยอะ HP น้อย)</th></tr>${sumRows}</table></div></div>
+   <div class="tblwrap"><table class="tbl ftbl"><tr><th>ช่วงเลเวล</th><th>👥 ฝูงแน่น EXP เยอะ (แนะนำ)</th><th>⭐ EXP ต่อ HP ดีสุด</th><th>💰 เงินดีสุด</th><th>⚡ ฟาร์มเร็วสุด (มอนเยอะ HP น้อย)</th></tr>${sumRows}</table></div></div>
   <div class="card pad fctl"><label class="plr">เลเวลตัวละคร <b id="flv">${L}</b><input type="range" id="flvr" min="1" max="99" value="${L}"></label>
    <div class="seg">${BRK.map(([a,b])=>`<button data-flv="${Math.round((a+b)/2)}" class="${L>=a&&L<=b?'on':''}">${a}–${b}</button>`).join('')}</div></div>
-  <div class="fcards">${card('⭐ EXP ต่อ HP ดีสุด',B.exp,'expK',r=>`EXP ${fmtN(r.expK)} / 1,000 HP · ${fmtN(r.expKill)} ต่อตัว`)}
+  <div class="fcards">${card('👥 ฝูงแน่น EXP เยอะ',B.pack,'pack',r=>`${CW[r.cw]} ${fmtN(r.crowd)} ตัว/พื้นที่ · ${Math.round(r.N)} ตัว · EXP ${fmtN(r.expKill)}/ตัว`)}
+   ${card('⭐ EXP ต่อ HP ดีสุด',B.exp,'expK',r=>`EXP ${fmtN(r.expK)} / 1,000 HP · ${fmtN(r.expKill)} ต่อตัว`)}
    ${card('💰 เงินต่อ HP ดีสุด',B.val,'valK',r=>`${fmtN(r.valK)} เหรียญ / 1,000 HP · ${fmtN(r.valKill)} ต่อตัว`)}
    ${card('⚡ ฟาร์มเร็ว (มอนเยอะ HP น้อย)',B.fast,'fast',r=>`${Math.round(r.N)} ตัว · HP เฉลี่ย ${fmtN(r.hpAvg)} · EXP ${fmtN(r.expKill)}/ตัว`)}</div>
   <div class="card pad"><div class="fth"><h3>🗺️ ทุกแมพที่ Lv ${L}</h3><label class="small"><input type="checkbox" id="fall" ${FST.all?'checked':''}> แสดงแมพที่เลเวลห่างด้วย</label></div>
-   <div class="tblwrap"><table class="tbl ftbl2"><tr><th>แมพ</th><th class="n">Lv มอน</th>${th('n','จำนวน','จำนวนมอนในแมพ (ยิ่งเยอะยิ่งหาตีง่าย)')}${th('hp','HP เฉลี่ย','HP เฉลี่ยต่อตัว — ยิ่งน้อยยิ่งตายไว')}${th('ek','EXP/ตัว','EXP ต่อตัวหลังหักส่วนต่างเลเวล')}${th('exp','EXP / 1k HP','EXP ต่อ HP ที่ต้องตี 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('vk','เงิน/ตัว','มูลค่าวัตถุดิบเฉลี่ยต่อตัว')}${th('val','เงิน / 1k HP','มูลค่าวัตถุดิบต่อ HP 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('fast','เร็ว','จำนวนมอน ÷ HP เฉลี่ย — ยิ่งเยอะยิ่งฟาร์มไว')}</tr>
-   ${rows.map(r=>`<tr class="frow${FST.open===r.id?' on':''}" data-fopen="${r.id}"><td>${mapLink(r)}</td><td class="n">${r.lo}–${r.hi}${r.gap<0.7?`<div class="bad small">×${r.gap.toFixed(2)}</div>`:''}</td><td class="n">${Math.round(r.N)}</td><td class="n">${fmtN(r.hpAvg)}</td><td class="n">${fmtN(r.expKill)}</td><td class="n"><b>${fmtN(r.expK)}</b></td><td class="n">${fmtN(r.valKill)}</td><td class="n"><b>${fmtN(r.valK)}</b></td><td class="n">${fmtN(r.fast)}</td></tr>${FST.open===r.id?mobT(r):''}`).join('')}</table></div>
+   <div class="tblwrap"><table class="tbl ftbl2"><tr><th>แมพ</th><th class="n">Lv มอน</th>${th('pack','👥 ฝูง×EXP','ความแน่นของมอน × EXP ต่อตัว = EXP ที่ได้ต่อพื้นที่ — ยิ่งเยอะยิ่งดี (แนะนำ)')}${th('crowd','ความแน่น','มอนต่อพื้นที่ 1,000×1,000 (เกม: ≥7 แน่น · <5 โล่ง)')}${th('n','จำนวน','จำนวนมอนจริงในแมพ (×4 ตามเกม)')}${th('hp','HP เฉลี่ย','HP เฉลี่ยต่อตัว — ยิ่งน้อยยิ่งตายไว')}${th('ek','EXP/ตัว','EXP ต่อตัวหลังหักส่วนต่างเลเวล')}${th('exp','EXP / 1k HP','EXP ต่อ HP ที่ต้องตี 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('vk','เงิน/ตัว','มูลค่าวัตถุดิบเฉลี่ยต่อตัว')}${th('val','เงิน / 1k HP','มูลค่าวัตถุดิบต่อ HP 1,000 — ยิ่งเยอะยิ่งคุ้ม')}${th('fast','เร็ว','จำนวนมอน ÷ HP เฉลี่ย — ยิ่งเยอะยิ่งฟาร์มไว')}</tr>
+   ${rows.map(r=>`<tr class="frow${FST.open===r.id?' on':''}" data-fopen="${r.id}"><td>${mapLink(r)}</td><td class="n">${r.lo}–${r.hi}${r.gap<0.7?`<div class="bad small">×${r.gap.toFixed(2)}</div>`:''}</td><td class="n"><b>${fmtN(r.pack)}</b></td><td class="n">${fmtN(r.crowd)}<div class="small">${CW[r.cw].split(' ')[0]}</div></td><td class="n">${Math.round(r.N)}</td><td class="n">${fmtN(r.hpAvg)}</td><td class="n">${fmtN(r.expKill)}</td><td class="n"><b>${fmtN(r.expK)}</b></td><td class="n">${fmtN(r.valKill)}</td><td class="n"><b>${fmtN(r.valK)}</b></td><td class="n">${fmtN(r.fast)}</td></tr>${FST.open===r.id?mobT(r):''}`).join('')}</table></div>
    <p class="muted small">EXP เป็นค่าพื้นฐานของเกม ยังไม่รวมโบนัสปาร์ตี้ ใบคูณ EXP หรือ Premium · กดแถวเพื่อดูมอนและของดรอปในแมพ</p></div>`;
   const set=o=>{Object.assign(FST,o);viewFarm();};
   $('#flvr').oninput=e=>{$('#flv').textContent=e.target.value;};
