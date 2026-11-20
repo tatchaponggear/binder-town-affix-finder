@@ -267,6 +267,35 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-betw
 kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 5px;background:var(--card-2)}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* planner · summary · patch */
+.plgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+@media (max-width:860px){.plgrid{grid-template-columns:1fr}}
+.plgrid h3{margin:0 0 10px}
+.plr{display:flex;align-items:center;gap:10px;margin:6px 0}.plr input{flex:1}
+.ppts{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0;font-size:14px}.ppts .neg,.ppts .neg b{color:var(--accent)}
+.prow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:5px 0;border-top:1px solid var(--line)}
+.prow>b{width:40px}.prow button{min-width:34px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--chip);cursor:pointer}
+.prow input{width:56px;height:30px;text-align:center;border-radius:8px;border:1px solid var(--line);background:var(--card-2)}
+.prow .muted{font-size:12.5px;flex-basis:100%;padding-left:45px}
+.gsl{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.gsl select{width:100%;min-width:0;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card-2)}
+.gsel{margin:0 0 8px 128px}.gsel .mini{margin:0}
+@media (max-width:520px){.gsl{grid-template-columns:1fr}.gsel{margin-left:0}}
+.pout td{padding:5px 8px}.small{font-size:12.5px}
+.plshare{margin-top:14px}.plshare input{flex:1;min-width:160px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:var(--card-2)}
+.plshare .chip button{border:0;background:transparent;cursor:pointer;color:var(--muted)}
+.planback{display:block;margin:10px 0;text-align:center}
+.sumgrid,.patchgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.sumc{padding:16px}.sum-h h3{margin:2px 0 6px}
+.rgrid{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px;margin:10px 0;align-items:center}
+.rbar{display:flex;gap:3px}.rbar i{width:18px;height:7px;border-radius:4px;background:var(--chip);border:1px solid var(--line)}.rbar i.on{background:var(--accent-2);border-color:transparent}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:14px}.pc ul{margin:4px 0 0;padding-left:18px}
+.good{color:#3fb37f}.bad{color:var(--accent)}
+.hcl{font-size:13px;margin:8px 0 0}.ptag{font-size:13px;margin:8px 0 0;padding:8px 10px;border-radius:10px;background:var(--chip)}
+.sum-a{display:flex;gap:8px;margin-top:10px}.sum-a .more{margin:0}
+.patchgrid ul{padding-left:18px;margin:6px 0 0}.patchgrid li{margin:4px 0}.patchgrid h3{margin:0 0 6px}
+@media (max-width:420px){.pc{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -280,12 +309,15 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
   </div>
   <nav class="tabs" id="tabs" aria-label="หมวดไกด์">
     <a href="#jobs" data-t="jobs">อาชีพ</a>
+    <a href="#planner" data-t="planner">🧩 สร้างบิลด์</a>
+    <a href="#summary" data-t="summary">สรุปอาชีพ</a>
     <a href="#skills" data-t="skills">สกิลทรี</a>
     <a href="#builds" data-t="builds">บิลด์</a>
     <a href="#gear" data-t="gear">อุปกรณ์</a>
     <a href="#monsters" data-t="monsters">มอนสเตอร์</a>
     <a href="#systems" data-t="systems">ระบบเกม</a>
     <a href="#basics" data-t="basics">สเตตัส &amp; ธาตุ</a>
+    <a href="#patch" data-t="patch">แพทช์ 20 พ.ย.</a>
   </nav>
 </div></header>
 
@@ -338,7 +370,7 @@ const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
 function jobOwnerName(sid){const o=(SK_OWNER[sid]||[]).filter(x=>x!=='traveler');return o.length?D.jobs[o[0]].name:''}
 
 /* ---------- router ---------- */
-const VIEWS={jobs:viewJobs,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
+const VIEWS={jobs:viewJobs,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
 function route(){
   const [t,arg]=(location.hash.slice(1)||'jobs').split('/');
   const v=VIEWS[t]?t:'jobs';
@@ -470,6 +502,7 @@ function viewSkills(arg){
   <div class="sec-h"><h2>สกิลทรี</h2><p>เลือกอาชีพตามระดับ Class · ${sim?'แตะการ์ดสกิล = +1 · กดค้าง/คลิกขวา = −1 · อัพสกิลปลายทางได้เลย สกิลทางผ่านอัพให้อัตโนมัติ':'ค่าตัวเลขคือ Lv1 และเลเวลสูงสุด'} · กดชื่อสกิลที่ต้องการเพื่อกระโดดไปดู</p></div>
   <div class="jobpick">${jobSelect(id)}<div class="modesw"><button data-mode="sim" class="${sim?'on':''}">🧪 ทดลองอัพ</button><button data-mode="view" class="${sim?'':'on'}">📖 ดูอย่างเดียว</button></div></div>
   ${tierMap(id)}
+  ${(()=>{let r='';try{r=sessionStorage.getItem('nc.planRet')||''}catch(e){}return sim&&r&&r.split('/')[1]===id?`<a class="more planback" href="${esc(r)}">↩ ใช้สกิลชุดนี้ในบิลด์ แล้วกลับไปหน้าสร้างบิลด์</a>`:''})()}
   <div class="card pad jinfo"><div><span class="tier">${TIER[j.tier]}</span><h2>${ICON[j.fam]||''} ${esc(j.name)}</h2><div class="muted" style="margin-top:4px">${esc(j.desc)}</div>
     <div class="kv">${j.allW.map(w=>`<span class="chip">${esc((D.wtypes[w]||{}).name||w)}</span>`).join('')}<span class="chip">HP ×${j.hp}</span><span class="chip">SP ×${j.sp}</span><span class="chip">Job Lv ${j.maxJob}</span><span class="chip">${j.skills.length} สกิล</span></div></div>
     ${j.tier>=1?`<a class="more" style="margin:0" href="#builds/${id}">⚔️ ดูบิลด์</a>`:''}</div>
@@ -569,6 +602,204 @@ function viewSkills(arg){
   };
   $('#scopy').onclick=()=>{save();navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>toast('คัดลอกลิงก์บิลด์แล้ว'),()=>toast(location.href))};
   refresh();
+}
+
+/* ================= JOB SUMMARY ================= */
+// r: [ฟาร์มฝูง, บอส/เป้าเดียว, ความทน, ช่วยทีม, เล่นง่าย] 1–5 · ส่วนตัว (ไม่ใช่ตัวเลขจากเกม) อ่านจากสกิลและค่าในข้อมูลเกม
+const JSUM={
+ knight:{role:'แนวหน้า',r:[3,3,4,2,5],pro:['HP สูงสุดใน Class 1','ตีหมู่ได้ (หมุนฟาด / ระเบิดเพลิงรอบกาย)','ตะโกนท้าทายดึงมอนให้ทีม'],con:['ตีได้แค่ระยะประชิด','ไม่มีฮีลตัวเอง']},
+ mage:{role:'เวทหมู่',r:[4,3,1,1,3],pro:['ดาเมจหมู่แรง ไฟ / น้ำแข็ง / สายฟ้า','SP เยอะ ร่ายอัตโนมัติจากการตีปกติ','วงน้ำแข็งแช่แข็งคุมมอน'],con:['HP น้อย โดนรุมแล้วตายง่าย','ต้องคุมระยะตลอด']},
+ archer:{role:'ยิงไกล',r:[3,4,1,1,4],pro:['ยิงไกล ปลอดภัย','ห่าฝนธนูตีหมู่','กับดักเถาวัลย์ตรึงศัตรู'],con:['HP น้อย','โดนประชิดแล้วลำบาก']},
+ rogue:{role:'คริเร็ว',r:[2,4,2,1,4],pro:['ตีเร็ว คริสูง','ซ่อนตัว + แทงข้างหลัง','ขโมยวัตถุดิบจากมอน'],con:['ตีหมู่น้อย','ทนน้อยกว่าสายอัศวิน']},
+ priest:{role:'ฮีล / บัฟ',r:[1,2,2,5,4],pro:['ฮีล ชุบชีวิต บัฟทั้งทีม','เวทแสงแรงกับอมตะและความมืด','ปาร์ตี้ต้องการ'],con:['ดาเมจต่ำ เล่นเดี่ยวช้า']},
+ paladin:{role:'แทงก์',r:[2,3,5,4,4],pro:['ทนที่สุดในเกม (HP ×8.5)','โล่อีจิส / โล่สะท้อน ปกป้องทั้งทีม','ฮีลตัวเองและเพื่อนได้'],con:['ดาเมจต่ำ ฟาร์มช้า','ใช้ได้แค่กระบอง'],hc:'Dawn Warden: ดาเมจที่รับสะสมเป็นแสงตะวัน แล้วปล่อยเป็นตะวันแตก',patch:'⬇ ดาบแสงสถิตไม่ฟื้น HP แล้ว · ดาบแห่งศรัทธาฮีลได้ทุก 3.5 วิ · ⬆ ศรัทธาร้อนแรง ออร่าเผาตาม HP สูงสุด'},
+ dragonknight:{role:'ดาเมจระเบิด',r:[4,4,4,1,3],pro:['ดาเมจระเบิดสูง','พุ่ง / กระโดดเข้าหาเป้าเร็ว','ไวเวิร์นช่วยตี · HP ×8'],con:['หอกยาวสองมือ ใส่โล่ไม่ได้','ต้องอยู่ประชิด'],hc:'Dragonbound: สกิลทิ้งเกล็ดไฟ ครบ 5 ชั้นระเบิดไฟมังกร',patch:'⬇ หอกเกลียวสว่าน Lv10 330% → 304%'},
+ swordmaster:{role:'ดาบคู่ / ดาบเวท',r:[4,4,3,1,2],pro:['ฟันทิ้งรอยดาบแล้วระเบิดทีเดียว ดาเมจสูง','เล่นได้ทั้งดาบคู่กายภาพ และดาบเวท ATK+MATK'],con:['ต้องสร้างรอยก่อน เล่นยาก','ใช้ได้แค่ดาบคู่'],hc:'Star Blade: รอยดาบครบ 5 รอยต่อเป็นดาวห้าแฉกแล้วระเบิด',patch:'⬆ ดาบคู่ประสาน มือซ้าย 50% → 100% · จันทร์พันดาบนาน 8 → 16 วิ (CD 6 → 10) · ชำนาญดาบนับดาบคู่แล้ว'},
+ berserker:{role:'คลั่งแลกเลือด',r:[4,5,3,1,3],pro:['ท่าปิดแรงตามช่องโทสะ','ยิ่งเลือดน้อยยิ่งแรงและตีเร็ว','ค้อน / ขวานยักษ์ทำมอนมึนล้ม'],con:['ต้องเล่นเลือดต่ำ เสี่ยงตาย','ดูดเลือดน้อยลงหลังแพทช์'],hc:'Blood Moon: เลือดยิ่งน้อยยิ่งตีแรงและดูดเลือด',patch:'⬆ กระโดดทุบ 400% → 500% · สัญญาเลือดตีเร็วขึ้นด้วย · ตีเบิ้ล 25% → 33% · พิโรธไททัน CD 30 → 16 · ⬇ บ้าคลั่งดูดเลือด 4.5% → 1%'},
+ archmage:{role:'ผสมธาตุ',r:[5,3,1,1,2],pro:['ปฏิกิริยาธาตุแรงที่สุดในเกม','ลูกแก้ว 3 ธาตุให้ร่ายอัตโนมัติวนธาตุ','สายฟ้าลูกโซ่กวาดฝูง'],con:['บาง','ต้องเข้าใจการสลับธาตุ'],hc:'Astral Mage: ร่ายธาตุไหนได้ดาวเคราะห์ธาตุนั้น ครบ 3 ธาตุระเบิด',patch:'🔄 ระบบใหม่: ลูกแก้วน้ำ / ลม / ไฟ แทนลูกแก้วสองธาตุและจำเวทผสม · เวทผสมเหลือ 3 แบบ ออกเองอัตโนมัติ'},
+ warlock:{role:'สาป / ซัมมอน',r:[4,4,2,2,3],pro:['สาปหลายตัว เผาต่อเนื่อง','เรียกวิญญาณ / ภูตตะเกียงช่วยสู้','แพทช์นี้แรงขึ้นมาก'],con:['ดาเมจค่อย ๆ เข้า ไม่ระเบิดทันที','บาง ดูดเลือดน้อยลง'],hc:'Dark Moon Lord: ศัตรูที่โดนสาปตาย ไฟผีกระโดดไปตัวข้าง ๆ',patch:'⬆ ไฟวิญญาณ 400% → 625% · คำสาปเผาวิญญาณ 102% → 475% · เก็บเกี่ยว MATK +4%/ดวง · ⬇ ดูดวิญญาณ HP 10% → 2% · สัญญาความมืดเสีย HP 30%'},
+ firemage:{role:'เวทไฟฝูง',r:[5,3,2,1,3],pro:['เก่งฝูงที่สุด ทะเลเพลิง / วงแหวน / อุกกาบาต','ความร้อนเกิน 80 ฟื้น HP แทนการเผาตัวเอง'],con:['ต้องคุมแถบความร้อน','HP น้อย'],hc:'Star Core: ระบายความร้อนตอนเต็มเป็นซูเปอร์โนวา (แพทช์ 600% → 1350%)',patch:'⬆ ทุกสกิลไฟแรงขึ้น: วงแหวน 105% → 194% · ระบาย 6% → 11% · CD สั้นลง · ร้อนเกิน 80 ฟื้น HP · อุกกาบาต 16 ลูก (ลูกละ 230%)'},
+ icemage:{role:'คุมมอน / เวททน',r:[4,3,3,2,3],pro:['แช่แข็งคุมมอน ทุบแตกเป็นลูกโซ่','เกราะ / กำแพงน้ำแข็ง','เลนออร์บ + โล่ ทนที่สุดในสายเวท'],con:['ดาเมจต่ำกว่าสายไฟ','บอสแช่แข็งยาก'],hc:'Winter Lord: ศัตรูที่ตายตอนแข็งเป็นรูปปั้นยิงเศษใส่ตัวอื่น',patch:'⬇ เกราะน้ำแข็ง CD 1 → 20 วิ · ยุคน้ำแข็งไม่แถมเกราะแล้ว'},
+ ranger:{role:'ซุ่มยิง / กับดัก',r:[4,4,1,1,4],pro:['ยิงไกลปลอดภัย','สไนป์คริแรง','กับดักระเบิด / น้ำแข็ง'],con:['บาง','ใช้หน้าไม้อย่างเดียว'],hc:'Silent Moon Hunter: ยืนนิ่งสะสมสมาธิ นัดถัดไปทะลุทั้งแนว',patch:'ไม่มีการเปลี่ยนสกิลโดยตรง'},
+ wolfhunter:{role:'ซัมมอนสัตว์',r:[3,4,3,2,5],pro:['หมาป่าตีแทนและช่วยรับดาเมจ','เหยี่ยวโฉบไม่สน DEF','เล่นง่ายที่สุดสายหนึ่ง'],con:['ดาเมจขึ้นกับสัตว์','ฝูงใหญ่คุมยาก'],hc:'Full Moon Alpha: หมาป่าวิญญาณพุ่งทะลุเป้าเอง',patch:'ไม่มีการเปลี่ยนสกิลโดยตรง'},
+ bard:{role:'บัฟเพลง',r:[3,2,2,5,3],pro:['บัฟทั้งทีม ยิ่งเล่นยิ่งแรง','แส้ทำให้ศัตรูอ่อนแรง','INT เพิ่มผลเพลงแล้ว'],con:['ดาเมจตัวเองต่ำ','ต้องเล่นเพลงต่อเนื่อง'],hc:'Forest Maestro: วงดนตรีสัตว์ป่ายิงโน้ตทองใส่ศัตรูเอง',patch:'⬆ โน้ตเด้ง 150% → 275% · ฝนโน้ต 57% → 120% · วงดนตรี +1% ต่อ INT 3'},
+ gunslinger:{role:'มือปืน',r:[3,4,1,1,3],pro:['ปืนพกคู่ยิงเป้าเดียวแรง นัดที่หก','ลูกซองยิงกระจายทะลุแนว','รูนปืนใหม่ 8 แบบ'],con:['ต้องบรรจุกระสุน มีดวงเกี่ยว','บาง'],hc:'Midnight Gunslinger: ยิงครบ 12 นัด เวลาช้าลงแล้วยิงหลายเป้า',patch:'🔄 ยิงสามนัด → รัวค้อนปืน ยิงทั้งโม่รวดเดียว (CD 1.5) · ลูกปรายทะลุทุกตัวในแนว'},
+ assassin:{role:'ฆ่าเป้าเดียว',r:[2,5,2,1,3],pro:['ดาเมจเป้าเดียวสูงสุด','คริสูง อำพรางกาย'],con:['ตีหมู่น้อย','แพทช์นี้โดนลด'],hc:'Eclipse Assassin: คริสะสมความมืด ครบ 10 ฟันสามเป้าในพริบตา',patch:'⬇ เขี้ยวคู่ 530% → 430% + CD 2.5 ไม่คริแน่นอนแล้ว · อาบพิษมรณะ ATK 30% → 20% · ชำนาญมีด ATK 20% → 10%'},
+ shinobi:{role:'นินจาคล่องตัว',r:[4,3,2,1,2],pro:['หลบเก่ง คล่องตัว','ดาวยักษ์โดนทั้งขาไปขากลับ ชิ่งหลายตัว','คาถาไฟ / สายฟ้า'],con:['เล็งยาก','ต้องต่อคอมโบสกิล'],hc:'Lord of Shadows: ร่างเงาทำท่าซ้ำตามสกิล',patch:'⬆ คอมโบซัดเงา: ใช้สกิลซัดต่างตัวติดกันใน 3 วิ แรง ×1.05 / ×1.1'},
+ reaper:{role:'เคียวกวาดหมู่',r:[4,3,3,1,2],pro:['เคียวใหญ่กวาดหมู่','ดวงวิญญาณเพิ่ม ATK สูงสุด 20 ดวง','ร่างวิญญาณพุ่งทะลุ'],con:['ระบบวิญญาณใหม่ต้องตีติดรอยก่อนเกี่ยว','ดูดเลือดลดลง'],hc:'Moon Harvester: เกี่ยววิญญาณทำให้จันทร์ขึ้น เต็มดวงฟันเสี้ยวจันทร์ยักษ์',patch:'🔄 เก็บวิญญาณ: ตีติดรอย 5 ครั้งแล้วตีเกี่ยว (เดิมได้จากการฆ่า) · ⬇ พายุวิญญาณดูดเลือด 10% → 3%'},
+ puppeteer:{role:'เชิดหุ่น',r:[3,3,3,2,2],pro:['หุ่นรบสู้แทนและรับดาเมจ','เชิดมอนให้ตีพวกเดียวกัน','ด้ายเหล็กเป็นกับดัก'],con:['ต้องคุมหุ่นและตำแหน่ง เล่นยาก'],hc:'Night Showmaster: ใช้สกิลครบสามองก์ ม่านทองปิดฉากระเบิด',patch:'⬇ รัดด้ายต้องร่าย 0.6 วิ ไม่รัดค้างแล้ว CD 1 → 2.5'},
+ bishop:{role:'ซัพพอร์ต',r:[1,2,2,5,4],pro:['ฮีลหมู่ บาเรีย บัฟทั้งทีม','ปาร์ตี้ต้องการที่สุด'],con:['ดาเมจต่ำ ฟาร์มเดี่ยวช้า','แพทช์นี้ฮีลโดนลด'],hc:'Star Saint: ฮีลที่ล้นหลอดเก็บเป็นศรัทธา เต็มแล้วดาวพิพากษาตก',patch:'⬇ วงแสงเยียวยาฮีล 10% HP คงที่ (เดิมสูงสุด 30%) · ปีกแสงลดดาเมจ 30% → 15% · ม่านแสง CD 1 → 10 · มือเมตตาไม่ฮีลแล้ว'},
+ monk:{role:'หมัดประชิด',r:[3,4,4,1,3],pro:['คอมโบหมัดเร็ว','HP ×7.5 กายเหล็กทน','หมัดสิ้นปราณระเบิดแรง'],con:['ต้องสะสมลูกปราณ','ประชิดเท่านั้น'],hc:'Meteor Fist: ทุก 20 ฮิตดาวตกลงใส่เป้า',patch:'ไม่มีการเปลี่ยนสกิลโดยตรง'},
+ lightkeeper:{role:'ฮีลพื้นที่',r:[3,2,3,4,3],pro:['เขตแสงฮีลพวกเรา','เผาผี อมตะ และธาตุมืด','กลางคืนแสงกว้างขึ้น'],con:['ต้องยืนในแสง','ดาเมจกับมอนทั่วไปปานกลาง'],hc:'Beacon Keeper: ลำแสงหมุนรอบตัว เผาศัตรู ฮีลเพื่อน',patch:'⬇ รุ่งอรุณ จากทั้งจอเหลือรัศมี 1000 และ CD 8 → 30'},
+ wisp:{role:'ดวงไฟ ฮีล/ตี',r:[3,3,1,4,4],pro:['ดวงไฟยิงเอง','ส่งดวงไฟฮีล / กันดาเมจเพื่อน','เล่นได้ทั้งฮีลและตี'],con:['HP น้อย','ดาเมจกระจาย'],hc:'Star Shepherd: ดวงไฟครบ 3 ดวงหลอมเป็นดาวใหญ่',patch:'⬆ ฝูงหิ่งห้อยยิงถี่ตามความเร็วโจมตี · ดวงไฟติดศัตรูแปะทั้งวง CD 6 → 2'},
+};
+const RLAB=['ฟาร์มฝูง','บอส / เป้าเดียว','ความทน','ช่วยทีม','เล่นง่าย'];
+let SUMSORT=-1;
+function viewSummary(){
+  const J=D.jobs, bar=v=>`<span class="rbar">${[1,2,3,4,5].map(i=>`<i class="${i<=v?'on':''}"></i>`).join('')}</span>`;
+  const card=j=>{const s=JSUM[j.id];if(!s)return '';const hc=kids(j.id)[0];
+    return `<div class="card sumc"><div class="sum-h"><span class="tier">${TIER[j.tier]} · ${esc(J[j.fam].name)}</span><h3>${esc(j.name)}</h3><span class="chip">${esc(s.role)}</span></div>
+     <div class="rgrid">${RLAB.map((l,i)=>`<span>${l}</span>${bar(s.r[i])}`).join('')}</div>
+     <div class="pc"><div><b class="good">จุดเด่น</b><ul>${s.pro.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><b class="bad">ข้อด้อย</b><ul>${s.con.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
+     ${s.hc?`<p class="muted hcl">⭐ ${esc(s.hc)}</p>`:''}
+     ${s.patch?`<p class="ptag">แพทช์ 20 พ.ย.: ${esc(s.patch)}</p>`:''}
+     <div class="sum-a"><a class="more" href="#planner/${hc?hc.id:j.id}">🧩 สร้างบิลด์</a><a class="more" href="#skills/${j.id}">สกิลทรี</a></div></div>`;};
+  let c2=Object.values(J).filter(j=>j.tier===2);
+  if(SUMSORT>=0) c2=c2.slice().sort((a,b)=>(JSUM[b.id]||{r:[0,0,0,0,0]}).r[SUMSORT]-(JSUM[a.id]||{r:[0,0,0,0,0]}).r[SUMSORT]);
+  app.innerHTML=`<div class="sec-h"><h2>สรุปอาชีพ</h2><p>จุดเด่น ข้อด้อย และคะแนน 5 ด้านของทุก Class 2 (High Class เล่นต่อจาก Class 2 สายเดียวกัน) · คะแนนเป็นความเห็นของเว็บนี้จากสกิลและค่าในข้อมูลเกม ไม่ใช่ตัวเลขทางการ</p></div>
+   <div class="card pad"><b>เรียงตาม</b> <div class="seg" id="ssort"><button data-v="-1" class="${SUMSORT<0?'on':''}">สายอาชีพ</button>${RLAB.map((l,i)=>`<button data-v="${i}" class="${SUMSORT===i?'on':''}">${l}</button>`).join('')}</div></div>
+   ${SUMSORT<0?Object.values(J).filter(j=>j.tier===1).map(c1=>`<h3 class="jsec">${ICON[c1.id]||''} ${esc(c1.name)} <small class="muted">${esc(JSUM[c1.id]?JSUM[c1.id].role:'')}</small></h3><div class="sumgrid">${kids(c1.id).map(card).join('')}</div>`).join(''):`<div class="sumgrid">${c2.map(card).join('')}</div>`}
+   <h3 class="jsec">Class 1</h3><div class="sumgrid">${Object.values(J).filter(j=>j.tier===1).map(card).join('')}</div>`;
+  app.querySelectorAll('#ssort button').forEach(b=>b.onclick=()=>{SUMSORT=+b.dataset.v;viewSummary()});
+}
+
+/* ================= PATCH ================= */
+function viewPatch(){
+  const L=(t,a)=>`<div class="card pad"><h3>${t}</h3><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  const jobs=Object.values(D.jobs).filter(j=>JSUM[j.id]&&JSUM[j.id].patch&&!/ไม่มีการเปลี่ยน/.test(JSUM[j.id].patch));
+  app.innerHTML=`<div class="sec-h"><h2>แพทช์ 20 พ.ย. 2026</h2><p>เทียบข้อมูลเกมบิลด์ game-20261120-0404 กับบิลด์ 9 พ.ย. · ตัวเลขทุกตัวในเว็บอัปเดตแล้ว</p></div>
+  <div class="patchgrid">
+  ${L('🔨 ตีบวก (เปลี่ยนหนักสุด)',['โอกาสสำเร็จลดทุกขั้น เช่น ระดับ 1: +1 90% → 80% · +5 85% → 40% · +9 45% → 10% · +10 25% → 5%','+9 / +10 พลาดแล้ว ลด 1 ขั้น หรือ<b>ของแตกหาย</b> (25% / 40% ของครั้งที่พลาด) · ใช้หินนิรภัยกันได้','ต้นทุนเฉลี่ย +0 → +10 (ตัวจำลองของเกม ไม่นับของแตก): ระดับ 1 ≈ 14.7 ล้าน · ระดับ 4 ≈ 2,228 ล้านเหรียญ'])}
+  ${L('✨ Trait อุปกรณ์ ลดครึ่ง',['เช่น ดาเมจ +35% → +18% · ดาเมจสกิล +25% → +12% · ATK/MATK +25% → +12% · คูลดาวน์ −20% → −10% · รับดาเมจ −20% → −10%','Trait ใหม่: เงาจาง (ความแค้น −15%) · ใจสิงห์ (ความแค้น +10%) · หนังหนา (ฟื้น HP ตอนบอสหมายหัว)'])}
+  ${L('🔷 รูนใหม่ 15 แบบ',['รูนสายเวท/สกิล: อุกกาบาตถล่ม · สายฟ้าฟาด · วงน้ำแข็ง · หินแหลมพสุธา · วงเวทแสงขับมาร · ดาบพายุหมุน · เจ้าแห่งอสนี · อุกกาบาตเงา (ร่ายแล้ว 10% ปล่อยเวทเพิ่ม)','รูนสายปืน: ระเบิดมือ · กระสุนชิ่ง · หัวกระสุนระเบิด · ดวลปืน · ลูกปรายเพลิง · สองลำกล้อง · แรงถีบ','รูนเดิมทุกอันมีค่าสุ่มโบนัส (roll) แล้ว'])}
+  ${L('🛡️ อุปกรณ์ & อื่น ๆ',['เซ็ตใหม่ “ปราการ”: โล่ เกราะ หมวก ผ้าคลุม (ปราการ: DEF +10%)','ยาใหม่: ยาท้ารบ · ผงเงียบ · ยาว่องไว','บอสเนื้อเรื่องดรอปแก่นราก 100% → 30% · บอสบางตัวย้ายแมพ','กิลด์วอร์มีประมูล (ขั้นต่ำ 100,000) · ผู้ถือได้ EXP ×3','ปีก: ลบเกรด Uncommon · Common 40% → 68% · Legendary 4% → 5% · Mystic → Mythic','แครอทโตเร็ว 12 → 4 นาที · STR แบกของ +20 ต่อแต้ม'])}
+  ${L('🔮 สาย Class 1',['Mage: ชำนาญคทาทำให้ตีปกติเป็นดาเมจเวท + นำ ATK 20% มาเป็น MATK (ใช้ได้กับออร์บ) · ร่ายอัตโนมัติเสีย SP ครึ่งหนึ่ง · ฟื้นมานาคืน SP 1% → 0.3%','Knight: เร่งเพลงดาบ / ชำนาญดาบ ใช้ได้กับดาบคู่และขวานยักษ์ · แทงสามจังหวะใช้ SP มากขึ้น','Rogue: ชำนาญมีด ATK 20% → 10%','Priest: ชำนาญกระบองต้องถือกระบอง'])}
+  </div>
+  <h3 class="jsec">แยกตามอาชีพ</h3><div class="patchgrid">${jobs.map(j=>`<div class="card pad"><h3><a href="#skills/${j.id}">${esc(j.name)}</a></h3><p>${esc(JSUM[j.id].patch)}</p></div>`).join('')}</div>`;
+}
+
+/* ================= BUILD PLANNER ================= */
+const SKEY=['str','agi','vit','int','dex','luk'];
+const ptsAt=lv=>{let n=48;for(let L=2;L<=lv;L++)n+=Math.floor((L-1)/5)+3;return n;};
+const sCost=x=>Math.floor((x-1)/10)+2;
+const sSpent=x=>{let n=0;for(let v=5;v<x;v++)n+=sCost(v);return n;};
+const capAt=lv=>Math.min(80,30+0.55*lv);
+const effOf=(v,lv)=>{const c=capAt(lv);return v<=c?v:c+(v-c)*0.4;};
+const GSLOTS=[['weapon','อาวุธ'],['shield','โล่ / มือซ้าย'],['hat','หมวก'],['glasses','แว่น'],['top','เสื้อ'],['pants','กางเกง+รองเท้า'],['robe','คลุม'],['cape','ผ้าคลุมหลัง'],['acc1','เครื่องประดับ 1'],['acc2','เครื่องประดับ 2']];
+const PL={};
+function plOf(id){
+  if(PL[id]) return PL[id];
+  const j=D.jobs[id];
+  return PL[id]={lv:j.tier===3?99:Math.max(D.c3Lv-1,60),jl:j.maxJob,st:{str:5,agi:5,vit:5,int:5,dex:5,luk:5},g:{}};
+}
+const b36=(n,w)=>n.toString(36).padStart(w,'0');
+function plEnc(id,p,withSk){
+  const head=b36(p.lv,2)+b36(p.jl,2)+SKEY.map(k=>b36(p.st[k],2)).join('');
+  const g=GSLOTS.map(([k])=>p.g[k]||'').join('!');
+  return '#planner/'+id+'/'+head+'/'+g+(withSk?'/'+encSim(id,simOf(id)):'');
+}
+function plDec(id,parts){
+  const p=plOf(id), h=parts[2]||'';
+  if(h.length===16){const n=i=>parseInt(h.substr(i,2),36);p.lv=n(0)||p.lv;p.jl=n(2)||p.jl;SKEY.forEach((k,i)=>{const v=n(4+i*2);if(v>=5&&v<=99)p.st[k]=v;});}
+  if(parts[3]!=null){const g=parts[3].split('!');GSLOTS.forEach(([k],i)=>{if(g[i]&&D.items[g[i]])p.g[k]=g[i];else delete p.g[k];});}
+  if(parts[4]) decSim(id,parts[4]);
+}
+function slotItems(j,slot,lv){
+  const s=slot.startsWith('acc')?'acc':slot, W=new Set(j.allW);
+  const oneH=j.allW.some(x=>(D.wtypes[x]||{}).h===1);
+  if(s==='shield'&&!oneH) return [];
+  return Object.values(D.items).filter(it=>it.slot===s&&it.lv<=lv&&(s!=='weapon'||W.has(it.wtype))).sort((a,b)=>b.lv-a.lv||a.name.localeCompare(b.name));
+}
+function viewPlanner(arg){
+  const J=D.jobs, parts=location.hash.slice(1).split('/').map(decodeURIComponent);
+  const id=J[arg]&&J[arg].tier>=1?arg:'dawnwarden', j=J[id];
+  if(!SKL){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลสกิล…</div>';loadSkl().then(()=>viewPlanner(arg)).catch(()=>{app.innerHTML='<div class="card pad">โหลดข้อมูลสกิลไม่ได้ ลองรีเฟรช</div>'});return;}
+  plDec(id,parts);
+  const p=plOf(id), minLv=j.tier===3?D.c3Lv:1;
+  if(p.lv<minLv)p.lv=minLv; if(p.jl>j.maxJob)p.jl=j.maxJob;
+  const main=jobMain(j);
+  app.innerHTML=`<div class="sec-h"><h2>สร้างบิลด์ตัวละคร</h2><p>อัปสเตตัสตามแต้มจริงของเกม · เลือกอุปกรณ์ · จัดสกิล แล้วแชร์เป็นลิงก์เดียว (ส่วนที่วิกิทางการไม่มี)</p></div>
+  <div class="jobpick">${jobSelect(id,'pjsel',x=>x.tier>=1)}<a class="more" style="margin:0" href="#summary">📋 สรุปอาชีพ</a></div>
+  <div class="plgrid">
+   <div class="card pad"><h3>📊 เลเวล & สเตตัส</h3>
+     <label class="plr">Base Lv <b id="plv">${p.lv}</b><input type="range" id="plvr" min="${minLv}" max="${D.lvMax}" value="${p.lv}"></label>
+     <label class="plr">Job Lv <b id="pjl">${p.jl}</b><input type="range" id="pjlr" min="1" max="${j.maxJob}" value="${p.jl}"></label>
+     <div class="ppts" id="ppts"></div>
+     <div id="pstats"></div>
+     <div class="simbtn"><button id="psug">✨ แนะนำตามอาชีพ</button><button id="preset">รีเซ็ตสเตตัส</button></div>
+     <p class="muted small">แต้มสเตตัส = 48 + ทุกเลเวลได้ floor((Lv−1)/5)+3 · อัป 1 แต้มจาก x ใช้ floor((x−1)/10)+2 · เกินเพดาน (30 + 0.55 × Lv สูงสุด 80) ได้ผลแค่ 40%</p></div>
+   <div class="card pad"><h3>🛡️ อุปกรณ์</h3><div id="pgear"></div></div>
+   <div class="card pad"><h3>⚔️ ค่าที่ได้ (ประมาณ)</h3><div id="pout"></div>
+     <p class="muted small">คำนวณจากสูตรสเตตัสที่เกมอธิบายไว้ ไม่รวมบัฟ สกิลติดตัว ตีบวก ออปชัน และการ์ด</p></div>
+   <div class="card pad"><h3>🌳 สกิล</h3><div id="psk"></div>
+     <div class="simbtn"><a class="more" id="pskgo" href="#">✏️ จัดสกิล</a><button id="pskauto">อัพตามลำดับแนะนำ</button></div></div>
+  </div>
+  <div class="card pad plshare"><div class="simbtn"><button id="pcopy">🔗 คัดลอกลิงก์บิลด์</button><input id="pname" placeholder="ชื่อบิลด์ (บันทึกในเครื่องนี้)"><button id="psave">💾 บันทึก</button></div><div id="psaved"></div></div>`;
+  const toast=m=>{let t=$('#simtoast');if(!t){t=document.createElement('div');t.id='simtoast';document.body.appendChild(t)}t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)};
+  const save=()=>history.replaceState(null,'',plEnc(id,p,true));
+  const gearSum=()=>{const s={};let w=null;for(const [k] of GSLOTS){const it=D.items[p.g[k]];if(!it)continue;if(k==='weapon')w=it;for(const [a,v] of Object.entries(it.stats||{}))s[a]=(s[a]||0)+v;}return {s,w};};
+  const left=()=>ptsAt(p.lv)-SKEY.reduce((t,k)=>t+sSpent(p.st[k]),0);
+  function rStats(){
+    const L=left(), cap=capAt(p.lv);
+    $('#ppts').innerHTML=`<span>แต้มทั้งหมด <b>${ptsAt(p.lv)}</b></span><span class="${L<0?'neg':''}">เหลือ <b>${L}</b></span><span>เพดานเต็มผล <b>${Math.floor(cap)}</b></span>`;
+    const g=gearSum().s;
+    $('#pstats').innerHTML=SKEY.map(k=>{const v=p.st[k],e=effOf(v,p.lv),over=v>cap;
+      return `<div class="prow"><b>${STAT_TH[k]}</b><button data-s="${k}" data-d="-10">−10</button><button data-s="${k}" data-d="-1">−</button><input data-in="${k}" type="number" min="5" max="99" value="${v}"><button data-s="${k}" data-d="1">+</button><button data-s="${k}" data-d="10">+10</button>
+        <span class="muted">${v<99?'อัปต่อ '+sCost(v):'เต็ม'}${g[k]?` · ของ +${g[k]}`:''}${over?` · <span class="bad">ได้ผล ${e.toFixed(1)}</span>`:''}</span></div>`;}).join('');
+  }
+  function rGear(){
+    $('#pgear').innerHTML=GSLOTS.map(([k,n])=>{const L=slotItems(j,k,p.lv);if(!L.length&&k==='shield')return '';
+      return `<label class="gsl"><span>${n}</span><select data-g="${k}"><option value="">— ไม่ใส่ —</option>${L.map(it=>`<option value="${it.id}"${p.g[k]===it.id?' selected':''}>Lv${it.lv} ${esc(it.name)}${it.dmg?' ('+it.dmg[0]+'–'+it.dmg[1]+')':''}</option>`).join('')}</select></label>${p.g[k]&&D.items[p.g[k]]?`<div class="gsel">${miniItem(D.items[p.g[k]])}</div>`:''}`;}).join('');
+  }
+  function rOut(){
+    const {s:g,w}=gearSum(), lv=p.lv, E=k=>effOf(p.st[k],lv)+(g[k]||0);
+    const ranged=w?RANGED.has(w.wtype):j.allW.every(x=>RANGED.has(x));
+    const wavg=w&&w.dmg?(w.dmg[0]+w.dmg[1])/2:0, mag=w&&w.magic;
+    const sk=simOf(id).lv, body=sk.body||0, mind=sk.mind||0;
+    const atk=Math.round((1.6*E(ranged?'dex':'str')+0.6*lv+(mag?0:wavg))*(1+(g.atk||0)));
+    const matk=Math.round(1.6*E('int')+0.6*lv+(mag?wavg:0));
+    const hp=Math.round((35+lv*j.hp+lv*lv*0.04)*(1+E('vit')/100)*(1+body*0.02))+(g.hp||0);
+    const sp=Math.round((10+lv*j.sp+lv*lv*0.01)*(1+E('int')/100)*(1+mind*0.02))+(g.sp||0);
+    const pc=x=>(Math.round(x*10)/10)+'%';
+    const rows=[['ATK '+(ranged?'(ธนู/ปืน · DEX)':'(ประชิด · STR)'),atk],['MATK',matk],['HP สูงสุด',num(hp)],['SP สูงสุด',num(sp)],
+      ['ความเร็วโจมตี','×'+Math.min(1.5,1+0.005*E('agi')).toFixed(2)],['ร่ายเร็วขึ้น',pc(Math.min(50,0.6*E('dex')))],['ความแม่น',pc(88+0.15*E('dex'))],
+      ['คริติคอล',pc(0.3*E('luk')+(g.crit||0)*100)],['แรงคริ','×'+(1.4+0.004*E('luk')).toFixed(2)],['หลบ (MISS)',pc(Math.min(20,0.15*E('agi')))],['เฉียด (โดน 30%)',pc(0.3*E('agi'))],
+      ['รับดาเมจลดลง',pc(Math.min(30,0.2*E('vit')))],['รับฮีลเพิ่ม',pc(0.5*E('vit'))],['DEF / MDEF',(g.def||0)+' / '+(g.mdef||0)],
+      ['HIT / FLEE (ของ)','+'+(g.hit||0)+' / +'+(g.flee||0)],['แรงสกิล (ของ)','+'+Math.round((g.skill||0)*100)+'%'],['ลดคูลดาวน์ (ของ)',Math.round(Math.min(0.6,g.cdr||0)*100)+'%'],['วิ่งเร็ว (ของ)','+'+Math.round((g.spd||0)*100)+'%']];
+    $('#pout').innerHTML=`<table class="tbl pout">${rows.map(([a,b])=>`<tr><td>${a}</td><td class="n"><b>${b}</b></td></tr>`).join('')}</table>
+      <p class="muted small">สเตตัสหลักแนะนำของอาชีพนี้: <b>${STAT_TH[main]}</b> · ${esc(WHY[main])}</p>`;
+  }
+  function rSk(){
+    const st=simOf(id), tot=simTotal(id,st), used=simUsed(id,st), LL=learnList(id);
+    const got=LL.map(s=>D.skills[s]).filter(s=>s&&(st.lv[s.id]||0)>freeLv(s.id));
+    $('#psk').innerHTML=`<div class="ppts"><span>แต้มสกิล <b>${tot}</b></span><span>ใช้ <b>${used}</b></span><span class="${tot-used<0?'neg':''}">เหลือ <b>${tot-used}</b></span></div>
+      ${got.length?`<div class="kv">${got.map(s=>`<span class="chip">${esc(s.name)} <b>${st.lv[s.id]}</b>/${s.max}</span>`).join('')}</div>`:'<p class="muted">ยังไม่ได้อัปสกิล กด “จัดสกิล” หรือ “อัพตามลำดับแนะนำ”</p>'}`;
+    $('#pskgo').href='#skills/'+id+'/'+encSim(id,st);
+  }
+  const all=()=>{rStats();rOut();rSk();save();};
+  rGear();all();
+  $('#pjsel').onchange=e=>location.hash='planner/'+e.target.value;
+  $('#plvr').oninput=e=>{p.lv=+e.target.value;$('#plv').textContent=p.lv;all();};
+  $('#plvr').onchange=()=>{for(const [k] of GSLOTS){const it=D.items[p.g[k]];if(it&&it.lv>p.lv)delete p.g[k];}rGear();all();};
+  $('#pjlr').oninput=e=>{p.jl=+e.target.value;$('#pjl').textContent=p.jl;simOf(id).jl=p.jl;all();};
+  simOf(id).jl=p.jl;
+  const setStat=(k,v)=>{v=Math.max(5,Math.min(99,v|0));const old=p.st[k];p.st[k]=v;if(left()<0&&v>old){while(p.st[k]>old&&left()<0)p.st[k]--;if(p.st[k]===old)toast('แต้มสเตตัสไม่พอ');}all();};
+  $('#pstats').onclick=e=>{const b=e.target.closest('[data-s]');if(b)setStat(b.dataset.s,p.st[b.dataset.s]+(+b.dataset.d));};
+  $('#pstats').onchange=e=>{const i=e.target.closest('[data-in]');if(i)setStat(i.dataset.in,+i.value);};
+  $('#pgear').onchange=e=>{const s=e.target.closest('[data-g]');if(!s)return;if(s.value)p.g[s.dataset.g]=s.value;else delete p.g[s.dataset.g];rGear();all();};
+  $('#preset').onclick=()=>{SKEY.forEach(k=>p.st[k]=5);all();};
+  $('#psug').onclick=()=>{
+    const plan=statPlan(main,lineRole(chain(id).flatMap(x=>(J[x].lines||[])))), cap=Math.floor(capAt(p.lv));
+    SKEY.forEach(k=>p.st[k]=5);
+    for(const {k,target} of plan){const t=Math.min(cap,Math.round(target*cap/80));while(p.st[k]<t&&left()>=sCost(p.st[k]))p.st[k]++;}
+    for(const {k} of plan){while(p.st[k]<cap&&left()>=sCost(p.st[k]))p.st[k]++;}
+    for(const {k} of plan){while(p.st[k]<99&&left()>=sCost(p.st[k]))p.st[k]++;break;}
+    all();toast('จัดสเตตัสตามอาชีพแล้ว · เกินเพดานได้ผล 40% ปรับต่อได้');
+  };
+  $('#pskauto').onclick=()=>{
+    const st=simOf(id),LL=learnList(id);for(const s of LL)st.lv[s]=freeLv(s);
+    const sel=new Set();for(const q of chain(id).map(x=>J[x]).filter(x=>x.tier>=1)){const L=linesOf(q).filter(l=>l.id!=='_');if(L[0])sel.add(q.id+':'+L[0].id);if(q.tier===3)L.forEach(l=>sel.add(q.id+':'+l.id));}
+    let lf=simTotal(id,st)-simUsed(id,st);
+    for(const [s,to] of skillPath(j,sel)){if(!LL.includes(s.id))continue;while(lf>0&&(st.lv[s.id]||0)<to&&reqOk(s,st)){st.lv[s.id]=(st.lv[s.id]||0)+1;lf--}}
+    all();toast('อัพสกิลตามลำดับแนะนำแล้ว');
+  };
+  $('#pskgo').onclick=()=>{try{sessionStorage.setItem('nc.planRet',plEnc(id,p,false))}catch(e){}};
+  $('#pcopy').onclick=()=>{save();navigator.clipboard&&navigator.clipboard.writeText(location.href).then(()=>toast('คัดลอกลิงก์บิลด์แล้ว'),()=>toast(location.href))};
+  const KEY='nc.builds', getB=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}};
+  const rSaved=()=>{const B=getB();$('#psaved').innerHTML=B.length?`<div class="kv">${B.map((b,i)=>`<span class="chip"><a href="${esc(b.h)}">${esc(b.n)}</a> <button data-del="${i}" aria-label="ลบ">✕</button></span>`).join('')}</div>`:'';};
+  $('#psave').onclick=()=>{save();const B=getB();const n=($('#pname').value||'').trim()||(j.name+' Lv'+p.lv);B.unshift({n,h:location.hash});try{localStorage.setItem(KEY,JSON.stringify(B.slice(0,30)));toast('บันทึกแล้ว')}catch(e){toast('เบราว์เซอร์นี้บันทึกไม่ได้ ใช้ลิงก์แทน')}rSaved();};
+  $('#psaved').onclick=e=>{const d=e.target.closest('[data-del]');if(!d)return;e.preventDefault();const B=getB();B.splice(+d.dataset.del,1);try{localStorage.setItem(KEY,JSON.stringify(B))}catch(x){}rSaved();};
+  rSaved();
 }
 
 /* ================= BUILDS ================= */
@@ -881,12 +1112,12 @@ function sysRefine(){
   <div class="facts">
    <div class="fact"><b>+1 ไม่มีพลาด</b><small>จากบทเรียนตีบวกครั้งแรกในเกม</small></div>
    <div class="fact"><b>พลาดแล้วโอกาสขึ้น</b><small>พลาดแต่ละครั้ง โอกาสของขั้นนั้นคูณ ×1.5 (สูงสุด ${R.LIM.max}%) จนกว่าจะผ่าน</small></div>
-   <div class="fact"><b>+9 / +10 เสี่ยง</b><small>พลาดตั้งแต่ +9 ขั้นลดลง 1 · ค่าเสี่ยงในเกม +9 = ${R.BREAK['9']}% · +10 = ${R.BREAK['10']}% · ใช้ <b>หินนิรภัย</b> กันได้</small></div></div>
+   <div class="fact"><b>+9 / +10 เสี่ยง</b><small>พลาดตั้งแต่ +9 ขั้นลดลง 1 หรือ<b>ของแตกหาย</b> (${R.BREAK['9']}% / ${R.BREAK['10']}% ของครั้งที่พลาด) · ใช้ <b>หินนิรภัย</b> กันได้ · แพทช์ 20 พ.ย. ลดโอกาสสำเร็จทุกขั้น</small></div></div>
   <h3>อัตราสำเร็จ (โอกาสพื้นฐาน)</h3><div class="tblwrap"><table class="tbl"><tr><th>ระดับไอเทม</th>${lvs.map(l=>`<th class="n">+${l}</th>`).join('')}</tr>
    ${tiers.map(t=>`<tr><td><b>ระดับ ${t}</b><div class="muted" style="font-size:12px">${tierLv[t]}</div></td>${lvs.map(l=>`<td class="n rate ${rc(R.TAB[t][l])}">${R.TAB[t][l]}%</td>`).join('')}</tr>`).join('')}</table></div>
   <h3>ค่าใช้จ่ายต่อครั้ง</h3><div class="tblwrap"><table class="tbl"><tr><th>ระดับ / แร่</th>${lvs.map(l=>`<th class="n">+${l}</th>`).join('')}</tr>
    ${tiers.map(t=>`<tr><td><b>ระดับ ${t}</b><div class="muted" style="font-size:12px">${esc(nmOf(R.ORE[t]))}</div></td>${lvs.map(l=>`<td class="n">${num(R.COINS[t][l])}<div class="muted" style="font-size:11.5px">แร่ ×${(R.oreN[t]||{})[l]||'-'}</div></td>`).join('')}</tr>`).join('')}</table></div>
-  <h3>ต้นทุนเฉลี่ย +0 → +10</h3><p class="muted" style="margin-top:-4px">จำลองตามกติกาในเกม (โอกาสเพิ่มเมื่อพลาด และถอยขั้นเมื่อพลาดตั้งแต่ +9) ไม่ใช้หินนิรภัย</p>
+  <h3>ต้นทุนเฉลี่ย +0 → +10</h3><p class="muted" style="margin-top:-4px">จำลองตามกติกาในเกม (โอกาสเพิ่มเมื่อพลาด และถอยขั้นเมื่อพลาดตั้งแต่ +9) ไม่ใช้หินนิรภัย · ตัวเลขจากตัวจำลองของเกมเอง (ยังไม่นับโอกาสของแตก)</p>
   <div class="facts">${tiers.map(t=>`<div class="fact"><span class="tier">ระดับ ${t} · ${tierLv[t]}</span><b>${num(R.sim[t].coins)} เหรียญ</b><small>เฉลี่ย ${R.sim[t].tries} ครั้ง</small></div>`).join('')}</div>`;
 }
 function sysGrade(){
