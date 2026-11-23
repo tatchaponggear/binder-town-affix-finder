@@ -260,6 +260,16 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-betw
 .rate{font-weight:700}
 .r-hi{color:#2a9d57}.r-mid{color:#c58a12}.r-lo{color:#d04545}
 [data-theme="dark"] .r-hi{color:#6fe0a0}[data-theme="dark"] .r-mid{color:#ffc94d}[data-theme="dark"] .r-lo{color:#ff7b7b}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px;margin:6px 0 12px}
+.mgrid label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;color:var(--muted)}
+.mgrid label b{color:var(--text,inherit)}
+.mgrid input[type=number],.mgrid select{font:inherit;color:inherit;background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:7px 9px;min-width:0;width:100%}
+.mgrid input[type=range]{width:100%}
+.mres{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:4px 0 10px;font-size:15px}
+.mres b{font-family:var(--display);font-size:30px;color:var(--accent)}
+.mres.ok b{color:#1f9d6b}
+.mjob .chip{white-space:normal;max-width:100%}
+.mplan{margin:6px 0 0;padding-left:20px;line-height:1.65}.mplan li{margin-bottom:6px}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:10px 0}
 .fact{border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:9px 12px}
 .fact b{display:block;font-family:var(--display);font-size:19px}
@@ -344,6 +354,7 @@ kbd{font-family:ui-monospace,monospace;font-size:12px;border:1px solid var(--lin
     <a href="#builds" data-t="builds">บิลด์</a>
     <a href="#gear" data-t="gear">อุปกรณ์</a>
     <a href="#farmspot" data-t="farmspot">🌾 ที่ฟาร์ม</a>
+    <a href="#money" data-t="money">💰 หาเงิน</a>
     <a href="#monsters" data-t="monsters">มอนสเตอร์</a>
     <a href="#systems" data-t="systems">ระบบเกม</a>
     <a href="#basics" data-t="basics">สเตตัส &amp; ธาตุ</a>
@@ -400,7 +411,7 @@ const kids=id=>Object.values(D.jobs).filter(j=>j.from===id);
 function jobOwnerName(sid){const o=(SK_OWNER[sid]||[]).filter(x=>x!=='traveler');return o.length?D.jobs[o[0]].name:''}
 
 /* ---------- router ---------- */
-const VIEWS={jobs:viewJobs,farmspot:viewFarm,highclass:viewHighclass,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
+const VIEWS={jobs:viewJobs,farmspot:viewFarm,money:viewMoney,highclass:viewHighclass,planner:viewPlanner,summary:viewSummary,patch:viewPatch,skills:viewSkills,builds:viewBuilds,gear:viewGear,monsters:viewMonsters,systems:viewSystems,basics:viewBasics};
 function route(){
   const [t,arg]=(location.hash.slice(1)||'jobs').split('/');
   const v=VIEWS[t]?t:'jobs';
@@ -1123,6 +1134,153 @@ function viewPlanner(arg){
   $('#psave').onclick=()=>{save();const B=getB();const n=($('#pname').value||'').trim()||(j.name+' Lv'+p.lv);B.unshift({n,h:location.hash});try{localStorage.setItem(KEY,JSON.stringify(B.slice(0,30)));toast('บันทึกแล้ว')}catch(e){toast('เบราว์เซอร์นี้บันทึกไม่ได้ ใช้ลิงก์แทน')}rSaved();};
   $('#psaved').onclick=e=>{const d=e.target.closest('[data-del]');if(!d)return;e.preventDefault();const B=getB();B.splice(+d.dataset.del,1);try{localStorage.setItem(KEY,JSON.stringify(B))}catch(x){}rSaved();};
   rSaved();
+}
+
+/* ================= MONEY ================= */
+let MY=null,MYP=null;
+const MST={L:99,map:null,kpm:10,hrs:3,bset:'old5',bk:15,drill:50000,goal:1000000};
+try{Object.assign(MST,JSON.parse(localStorage.getItem('nc.money')||'{}'))}catch(e){}
+const saveMST=()=>{try{localStorage.setItem('nc.money',JSON.stringify(MST))}catch(e){}};
+const loadMoney=()=>MYP=MYP||Promise.all([loadFarm(),fetch('nightcamp-money.json').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()})]).then(([,m])=>MY=m);
+const BSETS={
+  none:{name:'ไม่ล่าบอส',ids:[]},
+  old5:{name:'5 บอสเก่า (หินเจาะ 25%)',ids:['bat_king','mushking','ant_queen','crypt_lord','lava_dragon']},
+  lv99:{name:'บอส Lv 98–99 (ของ G4 + ตำนาน)',ids:['lava_dragon','dragon_mother','hundred_string']},
+};
+// one map's money per kill at level L: materials (NPC base price) + gear (expected NPC price)
+function moneyRows(L){
+  return farmCalc(L).filter(r=>r.gap>=0.7).map(r=>{
+    let n=0,gv=0,gp=0;for(const m of r.ms){n+=m.n;const g=MY.gear[m.sp];if(g){gv+=m.n*g[0];gp+=m.n*g[1]/100}}
+    return {...r,matKill:r.valKill,gearKill:gv/n,gearP:gp/n,perKill:r.valKill+gv/n};
+  }).sort((a,b)=>b.perKill-a.perKill);
+}
+// selling q pieces of one material in a day: the first 400 at full price, then down 1/5000 a piece to 40%
+function matSale(q,price){
+  const R=MY.rule,full=Math.min(q,R.matFull);let v=full*price;
+  if(q>R.matFull){const end=R.matFull+(1-R.matFloor)*R.matSlope,d=Math.min(q,end)-R.matFull;v+=price*(d-d*d/(2*R.matSlope));if(q>end)v+=price*R.matFloor*(q-end);}
+  return v;
+}
+// gear sold to the NPC in a day: 15 pieces at full price, then −2.5% a piece down to 20% (dearest pieces sold first)
+function gearSale(groups){
+  const R=MY.rule,f=i=>i<R.gearFull?1:Math.max(R.gearFloor,1-(i-R.gearFull+1)/R.gearDrop);
+  let i=0,tot=0;
+  for(const g of groups.filter(g=>g.n>0).sort((a,b)=>b.avg-a.avg)){let left=g.n;while(left>1e-9){const p=Math.min(1,left);tot+=p*g.avg*f(Math.floor(i));i+=p;left-=p;}}
+  return {tot,pieces:i};
+}
+function moneyDay(row,hrs){
+  const R=MY.rule,kills=MST.kpm*60*hrs,out={kills};
+  // materials
+  const q={};let n=0;for(const m of row.ms)n+=m.n;
+  for(const m of row.ms){const share=m.n/n;for(const [nm,ch,pr] of (FM.mon[m.sp]||[])[3]||[]){const e=q[nm]||(q[nm]={q:0,p:pr});e.q+=kills*share*ch;}}
+  out.mat=Object.values(q).reduce((s,e)=>s+matSale(e.q,e.p),0);
+  out.matFull=Object.values(q).reduce((s,e)=>s+e.q*e.p,0);
+  // bosses
+  const B=BSETS[MST.bset].ids.map(id=>MY.bosses.find(b=>b.id===id)).filter(Boolean),bk=B.length?MST.bk:0;
+  const avg=k=>B.length?B.reduce((s,b)=>s+b[k],0)/B.length:0;
+  const bPieces=bk*avg('pc'),bEv=bk*avg('ev');
+  // gear: the bosses' pieces first, then the map's
+  const g=gearSale([{n:bPieces,avg:bPieces?bEv/bPieces:0},{n:kills*row.gearP,avg:row.gearP?row.gearKill/row.gearP:0}]);
+  out.gear=g.tot;out.gearPieces=g.pieces;
+  const net=MST.drill*(1-R.shopTax);
+  out.drillN=bk*avg('drill')/100+(row.hi>=R.monDrillLv?kills*R.monDrill/100:0);
+  out.drill=out.drillN*net;
+  out.optN=bk*2+kills*R.monOpt/100;out.opt=out.optN*R.optPrice;
+  out.total=out.mat+out.gear+out.drill+out.opt;
+  return out;
+}
+const hoursFor=(row,goal)=>{if(moneyDay(row,24).total<goal)return null;let a=0,b=24;for(let i=0;i<40;i++){const m=(a+b)/2;if(moneyDay(row,m).total>=goal)b=m;else a=m;}return b;};
+const fmtC=v=>Math.round(v).toLocaleString('th-TH');
+const fmtH=h=>h==null?'เกิน 24 ชม.':h<1?Math.round(h*60)+' นาที':Math.floor(h)+' ชม.'+(Math.round(h%1*60)?' '+Math.round(h%1*60)+' นาที':'');
+
+function viewMoney(){
+  if(!MY||!FM){app.innerHTML='<div class="card pad">กำลังโหลดข้อมูลหาเงิน…</div>';loadMoney().then(viewMoney).catch(()=>{MYP=null;app.innerHTML='<div class="card pad">โหลดข้อมูลไม่ได้ ลองรีเฟรช</div>'});return;}
+  const R=MY.rule, best=NC_MODE.find(x=>x.id==='dragonbound'&&x.o==='farm');
+  const band=BRK.map(([a,b])=>{const rows=moneyRows(Math.round((a+b)/2));return {a,b,r:rows[0],r2:rows[1]};});
+  const bossRows=MY.bosses.map(b=>({...b,kill:b.drill/100*MST.drill*(1-R.shopTax)+b.ev+2*R.optPrice})).map(b=>({...b,hr:b.kill*3600/b.re}));
+  app.innerHTML=`
+  <div class="sec-h"><h2>💰 หาเงิน</h2><p>เงินในเกมมาจากไหน อาชีพไหนหาเงินไว และต้องทำอะไรบ้างถึงได้วันละ 1M+ · คิดจากสูตรและราคาฐานในไฟล์เกม ${esc(MY.ver)}</p></div>
+  <div class="card pad sysbody">
+    <h3 style="margin-top:0">เงินมาจากไหน</h3>
+    <div class="facts">
+      <div class="fact"><b>มอนไม่ดรอปเหรียญ</b><small>เงินมาจากการขายวัตถุดิบ อุปกรณ์ และหิน ให้ NPC (ลุงโคโค่) หรือผู้เล่นคนอื่น</small></div>
+      <div class="fact"><b>วัตถุดิบ ${R.matFull} ชิ้นแรก/ชนิด/วัน</b><small>ได้ราคาเต็ม เกินจากนั้นราคาลดทีละนิด (ขายเพิ่ม 1,000 ชิ้น ≈ −20%) ต่ำสุด ${R.matFloor*100}% · ฟาร์มหลายแมพ = ขายได้เต็มราคาหลายชนิด</small></div>
+      <div class="fact"><b>อุปกรณ์ ${R.gearFull} ชิ้นแรก/วัน</b><small>ได้ราคาเต็ม ชิ้นต่อไปลดชิ้นละ 2.5% ต่ำสุด ${R.gearFloor*100}% · ขายชิ้นแพงก่อน</small></div>
+      <div class="fact"><b>วัตถุดิบประจำสัปดาห์ ×${R.week}</b><small>ทุกสัปดาห์เกมสุ่มวัตถุดิบ 5 ชนิดให้ขายได้แพงขึ้น ดูที่ตลาดในเกม แล้วเลือกฟาร์มแมพที่ดรอปของพวกนั้น</small></div>
+      <div class="fact"><b>หินเจาะออฟ ≈ ${fmtC(R.drillRef)}</b><small>ขาย NPC ไม่ได้ ขายได้แค่ร้านผู้เล่น (หักภาษี ${R.shopTax*100}%) · ดรอปจากบอส 15–25% ต่อตัว · มอน Lv ${R.monDrillLv}+ 0.02%</small></div>
+      <div class="fact"><b>ของมีออฟสวย ขายร้านผู้เล่น</b><small>ชิ้นที่มีแถว ◆ พิเศษหรือแถวเทพ ผู้เล่นให้ราคามากกว่า NPC หลายเท่า · NPC คิดราคาตามเกรด ชนิด จำนวนแถว และตีบวก (+15%/ขั้น)</small></div>
+    </div>
+  </div>
+  <div class="card pad mjob" style="margin-top:12px">
+    <h3 style="margin-top:0">อาชีพที่หาเงินไวที่สุด: ${esc(D.jobs.dragonbound.name)}</h3>
+    <p class="muted" style="margin:4px 0 10px">Knight → Dragon Knight → Dragonbound · ฟาร์มฝูง 5/5 · ความทน 4/5 · บอส 4/5 — อาชีพเดียวที่ทั้งกวาดฝูงไวและทนพอจะไม่ต้องหยุดกินยา (ยาก็คือเงิน) · ตัวหลักคือ <b>ลมหายใจมังกร</b> (พ่นไฟกรวย 8 ครั้ง ครั้งละ 340%) กับ <b>แทงสามจังหวะ</b> · ล่าบอสเร็วด้วย</p>
+    ${best?`<div class="kv"><span class="chip">${esc(best.s)}</span><span class="chip">${esc(best.w)}</span></div><div class="kv">${best.k.map(k=>`<span class="chip">${esc(k)}</span>`).join('')}</div><a class="more" href="${best.h}">🧩 เปิดบิลด์ฟาร์ม Dragonbound (ชุด + สกิลครบ)</a>`:''}
+    <p class="note">ตัวเลือกอื่น: <b>Star Core / Astral Mage / Dark Moon Lord</b> กวาดฝูงไวพอกัน แต่ตัวบาง ต้องเลือกจุดยืนดี ๆ · <b>Blood Moon / Meteor Fist</b> ทนและตีบอสแรง แต่กวาดฝูงช้ากว่าเล็กน้อย</p>
+  </div>
+  <div class="card pad" style="margin-top:12px" id="mcalc">
+    <h3 style="margin-top:0">🧮 คำนวณเงินต่อวัน</h3>
+    <div class="mgrid">
+      <label><span>เลเวลตัวละคร</span><input type="number" id="mL" min="1" max="99" value="${MST.L}"></label>
+      <label><span>แมพที่ฟาร์ม</span><select id="mMap"></select></label>
+      <label><span>ฆ่าได้ <b id="mKv">${MST.kpm}</b> ตัว/นาที</span><input type="range" id="mK" min="2" max="40" value="${MST.kpm}"></label>
+      <label><span>ฟาร์มวันละ <b id="mHv">${MST.hrs}</b> ชม.</span><input type="range" id="mH" min="0.5" max="12" step="0.5" value="${MST.hrs}"></label>
+      <label><span>ล่าบอส</span><select id="mB">${Object.entries(BSETS).map(([k,v])=>`<option value="${k}"${k===MST.bset?' selected':''}>${esc(v.name)}</option>`).join('')}</select></label>
+      <label><span>บอสที่ล่าได้/วัน</span><input type="number" id="mBk" min="0" max="200" value="${MST.bk}"></label>
+      <label><span>ราคาหินเจาะในร้านผู้เล่น</span><input type="number" id="mD" min="0" step="1000" value="${MST.drill}"></label>
+      <label><span>เป้าหมายต่อวัน</span><input type="number" id="mG" min="0" step="100000" value="${MST.goal}"></label>
+    </div>
+    <div id="mOut"></div>
+    <p class="note">วัดความเร็วฆ่าของตัวเอง: ฟาร์ม 5 นาทีแล้วดูจำนวนที่ฆ่าในสมุดมอน หาร 5 · Dragonbound บิลด์ฟาร์มในแมพมอนแน่น (หอระฆัง) ประมาณ 10–20 ตัว/นาที ขึ้นกับอุปกรณ์</p>
+  </div>
+  <div class="card pad" style="margin-top:12px">
+    <h3 style="margin-top:0">📋 แผนหาเงินวันละ 1M (Lv 94+)</h3>
+    <ol class="mplan">
+      <li><b>รอบบอสเก็บหินเจาะ (~1 ชม.)</b> — วน ${['bat_king','mushking','ant_queen','crypt_lord','lava_dragon'].map(id=>esc((MY.bosses.find(b=>b.id===id)||{}).name||id)).join(' → ')} เกิดใหม่ทุก 8 นาที (มังกรลาวา 15 นาที) ตัวละ 25% ได้หินเจาะออฟ · ล่า 15 ตัว ≈ หินเจาะ 3–4 ก้อน ≈ ${fmtC(15*0.25*MST.drill*(1-R.shopTax))} เมื่อขายร้านผู้เล่น · Lv 99 ตีบอสเลเวลต่ำตายไว แต่ EXP แทบไม่ได้</li>
+      <li><b>ฟาร์มหอระฆัง ชั้น 4–7 (2–3 ชม.)</b> — วัตถุดิบ ~300 + อุปกรณ์ ~120 ต่อตัว (ดีที่สุดในเกม) · ได้ EXP Lv 99 ไปด้วย · ถ้าวัตถุดิบชนิดไหนเกิน ${R.matFull} ชิ้น ย้ายไปหลุมดาวหรือทะเลสาบไข่มังกรเพื่อขายชนิดอื่นเต็มราคา</li>
+      <li><b>ขายให้ถูกที่</b> — วัตถุดิบขายลุงโคโค่ทุกวัน (ไม่ต้องเก็บ ราคาไม่เพิ่ม) · อุปกรณ์ขาย NPC แค่ ${R.gearFull} ชิ้นแพงสุด ที่เหลือที่มีแถวดีตั้งร้าน · หินเจาะออฟ / ของตำนาน ขายร้านผู้เล่นเท่านั้น</li>
+      <li><b>ลดรายจ่าย</b> — อย่าใช้ยาเกินจำเป็น (Dragonbound ฮีลตัวเองได้จากเลือดมังกร) · ใช้ลูกไฟนำทางเฉพาะตอนวนบอส · อย่าตีบวกของที่จะขาย</li>
+    </ol>
+    <div id="mPlan"></div>
+  </div>
+  <div class="card pad" style="margin-top:12px">
+    <h3 style="margin-top:0">🗺️ แมพหาเงินดีที่สุดตามเลเวล</h3>
+    <div class="tblwrap"><table class="tbl"><tr><th>เลเวล</th><th>แมพ</th><th class="n">เงิน/ตัว</th><th class="n">วัตถุดิบ</th><th class="n">อุปกรณ์</th><th>ทางเลือก</th></tr>
+    ${band.map(x=>x.r?`<tr><td><b>Lv ${x.a}–${x.b}</b></td><td><b>${esc(x.r.name)}</b><div class="muted small">${esc(x.r.lvText)}</div></td><td class="n"><b>${fmtC(x.r.perKill)}</b></td><td class="n">${fmtC(x.r.matKill)}</td><td class="n">${fmtC(x.r.gearKill)}</td><td class="small">${x.r2?`${esc(x.r2.name)} · ${fmtC(x.r2.perKill)}`:'-'}</td></tr>`:'').join('')}</table></div>
+    <p class="note">เงิน/ตัว = วัตถุดิบ (ราคาฐาน × โอกาสดรอป) + อุปกรณ์ (ราคาขาย NPC โดยประมาณ × โอกาสดรอป) · ยังไม่รวมหินออฟ / หินเจาะ · เลือกเฉพาะแมพที่เลเวลห่างไม่เกิน 8 (EXP ≥ 70%)</p>
+  </div>
+  <div class="card pad" style="margin-top:12px">
+    <h3 style="margin-top:0">👑 บอสกับเงินที่ได้</h3>
+    <div class="tblwrap"><table class="tbl"><tr><th>บอส</th><th>ที่</th><th class="n">เกิดใหม่</th><th class="n">หินเจาะ</th><th class="n">อุปกรณ์/ตัว</th><th class="n">รวม/ตัว</th><th class="n">ถ้าเฝ้าตัวเดียว/ชม.</th></tr>
+    ${bossRows.sort((a,b)=>b.kill-a.kill).map(b=>`<tr><td>${pic('mon',b.id,32,'👑')} <b>${esc(b.name)}</b></td><td class="small">${esc(b.loc)} · Lv ${b.lv}</td><td class="n">${b.re/60} นาที</td><td class="n">${b.drill}%</td><td class="n">${fmtC(b.ev)}${b.leg?`<div class="muted small">ตำนาน ${Math.round(b.leg*100)}%</div>`:''}</td><td class="n"><b>${fmtC(b.kill)}</b></td><td class="n">${fmtC(b.hr)}</td></tr>`).join('')}</table></div>
+    <p class="note">รวม/ตัว = หินเจาะ (ราคาที่ตั้งไว้ด้านบน หักภาษี 15%) + อุปกรณ์ที่คาดว่าจะได้ (ราคา NPC) + หินออฟ 1–3 ก้อน · ทุกบอสดรอปหินออฟแน่นอน · บอสมีคนแย่งได้ ตัวเลขต่อชั่วโมงคือกรณีได้ทุกตัวที่เกิด</p>
+  </div>
+  <p class="note">⚠️ ตัวเลขทั้งหมดเป็นค่าเฉลี่ยจากสูตรในไฟล์เกม ไม่ได้จับเวลาฟาร์มจริง · ในเซิร์ฟเวอร์ออนไลน์ราคาวัตถุดิบที่ลุงโคโค่อาจขยับตามตลาดรายวัน (ดูราคาจริงที่หน้าตลาด) · ราคาร้านผู้เล่นขึ้นกับคนซื้อ · ห้ามใช้บอท (นอกจาก AUTO ของเกม) และห้ามใช้หลายบัญชีโอนของให้กัน ตามกฎเกม</p>`;
+  const sel=$('#mMap');
+  const fill=()=>{const rows=moneyRows(MST.L);if(!rows.find(r=>r.id===MST.map))MST.map=rows[0]&&rows[0].id;
+    sel.innerHTML=rows.slice(0,30).map(r=>`<option value="${r.id}"${r.id===MST.map?' selected':''}>${esc(r.name)} · ${fmtC(r.perKill)}/ตัว</option>`).join('');return rows;};
+  let rows=fill();
+  const calc=()=>{
+    const row=rows.find(r=>r.id===MST.map);if(!row){$('#mOut').innerHTML='<p class="muted">ไม่มีแมพที่เลเวลใกล้</p>';return;}
+    const d=moneyDay(row,MST.hrs),h=hoursFor(row,MST.goal),ok=d.total>=MST.goal;
+    const line=(t,v,s)=>`<tr><td>${t}${s?`<div class="muted small">${s}</div>`:''}</td><td class="n"><b>${fmtC(v)}</b></td></tr>`;
+    $('#mOut').innerHTML=`<div class="mres ${ok?'ok':''}"><span>ได้ประมาณ</span><b>${fmtC(d.total)}</b><span>เหรียญ/วัน</span>${ok?'<span class="chip">✔ ถึงเป้า</span>':''}</div>
+      <div class="tblwrap"><table class="tbl">
+      ${line('วัตถุดิบ (ขาย NPC)',d.mat,`${fmtC(d.kills)} ตัว · ${d.matFull>d.mat+1?`ราคาลดเพราะขายชนิดเดียวกันเกิน ${R.matFull} ชิ้น (ถ้าไม่ลดได้ ${fmtC(d.matFull)})`:'ทุกชนิดยังได้ราคาเต็ม'}`)}
+      ${line('อุปกรณ์ (ขาย NPC)',d.gear,`≈ ${d.gearPieces.toFixed(1)} ชิ้น · ${R.gearFull} ชิ้นแรกราคาเต็ม`)}
+      ${line('หินเจาะออฟ (ร้านผู้เล่น −15%)',d.drill,`≈ ${d.drillN.toFixed(1)} ก้อน`)}
+      ${line('หินออฟ (ขาย NPC)',d.opt,`≈ ${d.optN.toFixed(1)} ก้อน`)}
+      </table></div>
+      <p style="margin:10px 0 0">ต้องฟาร์ม <b>${esc(row.name)}</b> วันละ <b>${fmtH(h)}</b> ที่ ${MST.kpm} ตัว/นาที${MST.bset!=='none'&&MST.bk?` + ล่าบอส ${MST.bk} ตัว`:''} ถึงจะได้ ${fmtC(MST.goal)}</p>`;
+    const p=$('#mPlan');if(p){const t=[5,10,15,20].map(k=>{const s=MST.kpm;MST.kpm=k;const hh=hoursFor(row,MST.goal);MST.kpm=s;return `<td class="n">${fmtH(hh)}</td>`}).join('');
+      p.innerHTML=`<div class="tblwrap"><table class="tbl" style="margin-top:8px"><tr><th>${esc(row.name)} + บอส ${MST.bset==='none'?0:MST.bk} ตัว</th><th class="n">5 ตัว/นาที</th><th class="n">10</th><th class="n">15</th><th class="n">20</th></tr><tr><td>เวลาที่ต้องฟาร์มต่อวันให้ถึง ${fmtC(MST.goal)}</td>${t}</tr></table></div>`;}
+    saveMST();
+  };
+  const num=(id,k,lo,hi)=>{$(id).oninput=e=>{let v=+e.target.value;if(!(v>=lo))return;MST[k]=Math.min(hi,v);if(k==='L'){rows=fill();}calc();};};
+  num('#mL','L',1,99);num('#mBk','bk',0,500);num('#mD','drill',0,1e9);num('#mG','goal',0,1e12);
+  $('#mK').oninput=e=>{MST.kpm=+e.target.value;$('#mKv').textContent=MST.kpm;calc()};
+  $('#mH').oninput=e=>{MST.hrs=+e.target.value;$('#mHv').textContent=MST.hrs;calc()};
+  sel.onchange=e=>{MST.map=e.target.value;calc()};
+  $('#mB').onchange=e=>{MST.bset=e.target.value;calc()};
+  calc();
 }
 
 /* ================= BUILDS ================= */
