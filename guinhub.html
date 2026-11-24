@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="GuinHub — แอปสถานีชาร์จรถไฟฟ้า จองหัวชาร์จ ดูสถานะตู้แบบเรียลไทม์ และแนะนำการชาร์จ (เวอร์ชันจำลองบนเว็บ) · เปิดตัว 11 มกราคม 2570">
+<title>GuinHub</title>
+<link rel="icon" href="img/penguin-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg1:#05080f; --bg2:#0c1426; --app:#0a0f1c; --card:#121a2c; --card-2:#0f1626; --rim:#22304a; --ink:#eef2fa; --muted:#8c99b3;
+  --orange:#ff8a3d; --orange-soft:rgba(255,138,61,.14); --blue:#4f7cff; --blue-soft:rgba(79,124,255,.16);
+  --yellow:#f5c542; --yellow-soft:rgba(245,197,66,.14); --violet:#9b7bff; --violet-soft:rgba(155,123,255,.16);
+  --ok:#3ccf8e; --bad:#ff5d6c;
+  --grad:linear-gradient(100deg,#ff8a3d,#c76bd6 55%,#4f7cff);
+  --display:"Kanit","Sarabun",system-ui,sans-serif; --body:"Sarabun","Kanit",system-ui,sans-serif;
+  --shadow:0 10px 30px rgba(0,0,0,.45); color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:var(--body);color:var(--ink);background:radial-gradient(800px 500px at 15% 0%,rgba(255,138,61,.16),transparent 60%),radial-gradient(700px 500px at 90% 100%,rgba(79,124,255,.18),transparent 60%),linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;display:flex;justify-content:center;align-items:flex-start}
+.page{display:flex;gap:40px;align-items:center;justify-content:center;padding:28px 16px;width:100%;max-width:1100px}
+.blurb{max-width:350px}
+.blurb h1{font-family:var(--display);font-size:42px;margin:0;line-height:1.1}
+.blurb h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.blurb p{color:var(--muted);line-height:1.6}
+.blurb b{color:var(--ink)}
+.blurb a{color:var(--orange)}
+.blurb .back{display:inline-block;margin-bottom:14px;text-decoration:none;font-weight:600}
+.launch{display:inline-flex;align-items:center;gap:8px;margin:10px 0 2px;padding:7px 12px;border-radius:12px;background:var(--orange-soft);border:1px solid rgba(255,138,61,.35);color:var(--orange);font-family:var(--display);font-weight:600;font-size:14px}
+.blurb ul{color:var(--muted);padding-left:18px;line-height:1.7;margin:8px 0}
+.blurb .small{font-size:13px}
+@media (max-width:900px){.blurb{display:none}.page{padding:0}}
+/* phone */
+.phone{width:400px;height:min(860px,calc(100vh - 56px));min-height:640px;border-radius:46px;background:#02040a;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 2px #273249;position:relative;flex:none}
+.phone::before{content:"";position:absolute;top:22px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:20px;background:#02040a;z-index:20}
+.screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--app);display:flex;flex-direction:column}
+@media (max-width:900px){.phone{width:100%;height:100vh;height:100dvh;min-height:0;border-radius:0;padding:0;box-shadow:none;background:none}.phone::before{display:none}.screen{border-radius:0}}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:52px 16px 104px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+@media (max-width:900px){.scroll{padding-top:max(18px,env(safe-area-inset-top))}}
+h2,h3,.disp{font-family:var(--display)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.row{display:flex;align-items:center;gap:10px}
+.sp{flex:1}
+.card{background:var(--card);border:1px solid var(--rim);border-radius:20px;padding:14px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;margin:20px 2px 10px}
+.sec h3{margin:0;font-size:17px}
+.sec small{color:var(--muted);font-size:12.5px}
+/* header */
+.hello{color:var(--muted);font-size:14px;margin:0}
+.brand{font-family:var(--display);font-weight:700;font-size:27px;letter-spacing:.5px;margin:0;line-height:1.15;background:linear-gradient(90deg,#ff8a3d,#ffb36b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ic-btn{width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--rim);display:grid;place-items:center;color:var(--ink);cursor:pointer;position:relative;font-size:18px;padding:0}
+.ic-btn .dot{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--grad);display:grid;place-items:center;overflow:hidden;cursor:pointer;border:0;padding:0}
+.avatar svg{width:34px;margin-top:6px}
+.station{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 12px;border-radius:14px;background:var(--card-2);border:1px solid var(--rim);cursor:pointer;width:100%;color:var(--ink);font:inherit;text-align:left}
+.station .pin{color:var(--orange)}
+.station small{color:var(--muted)}
+/* launch banner */
+.banner{margin-top:12px;border-radius:18px;padding:12px 14px;background:linear-gradient(110deg,rgba(255,138,61,.2),rgba(79,124,255,.2));border:1px solid rgba(255,138,61,.3);display:flex;align-items:center;gap:12px}
+.banner .em{font-size:26px}
+.banner b{font-family:var(--display);font-size:15px}
+.banner small{color:var(--muted);display:block;font-size:12.5px}
+.banner .cd{margin-left:auto;text-align:center;font-family:var(--display);line-height:1}
+.banner .cd b{font-size:24px;color:var(--orange)}
+.banner .cd small{font-size:11px}
+/* wallet */
+.wallet{position:relative;overflow:hidden;margin-top:14px;border-radius:22px;padding:16px 18px;background:linear-gradient(150deg,#161f35,#0f1628);border:1px solid var(--rim)}
+.wallet::after{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(255,138,61,.35),rgba(255,138,61,.05) 70%)}
+.wallet small{color:var(--muted)}
+.wallet .bal{font-family:var(--display);font-weight:700;font-size:38px;color:var(--orange);line-height:1.1;margin:4px 0}
+.wallet .bal span{font-size:17px;color:var(--muted);font-weight:500}
+.wallet .st{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.wallet .st i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.wallet .topup{position:absolute;right:14px;bottom:14px;z-index:1}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stats div{background:var(--card);border:1px solid var(--rim);border-radius:18px;padding:12px 6px;text-align:center}
+.stats b{font-family:var(--display);font-size:28px;display:block;line-height:1.1}
+.stats span{font-size:12px;color:var(--muted)}
+.c-or{color:var(--orange)}.c-bl{color:var(--blue)}.c-ye{color:var(--yellow)}
+/* recommend */
+.reco{border-radius:20px;padding:14px;background:linear-gradient(160deg,rgba(255,138,61,.12),rgba(79,124,255,.10));border:1px solid rgba(255,138,61,.35)}
+.reco .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:8px;background:var(--orange-soft);color:var(--orange)}
+.reco h4{margin:8px 0 2px;font-family:var(--display);font-size:20px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.kv div{background:rgba(0,0,0,.25);border-radius:12px;padding:8px 6px;text-align:center}
+.kv b{display:block;font-family:var(--display);font-size:16px}
+.kv span{font-size:11.5px;color:var(--muted)}
+/* charger grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cab{background:var(--card);border:1px solid var(--rim);border-radius:18px;padding:12px}
+.cab .hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cab .bolt{width:30px;height:30px;border-radius:50%;background:var(--orange-soft);display:grid;place-items:center;color:var(--orange)}
+.cab.ultra .bolt{background:var(--violet-soft);color:var(--violet)}
+.cab .hd b{font-family:var(--display);font-size:16px}
+.kw{margin-left:auto;font-size:11px;font-weight:700;padding:3px 7px;border-radius:7px;background:var(--orange-soft);color:var(--orange)}
+.cab.ultra .kw{background:var(--violet-soft);color:var(--violet)}
+.head{width:100%;display:flex;align-items:center;gap:6px;padding:8px 10px;margin-top:7px;border-radius:12px;font:600 12.5px var(--body);cursor:pointer;border:1px solid;text-align:left}
+.head i{width:7px;height:7px;border-radius:50%;flex:none}
+.head .r{margin-left:auto;font-weight:500;font-size:11.5px;opacity:.85}
+.head.free{background:var(--orange-soft);border-color:rgba(255,138,61,.35);color:#ffb27f}.head.free i{background:var(--orange)}
+.head.chg{background:var(--blue-soft);border-color:rgba(79,124,255,.35);color:#9db4ff;cursor:default}.head.chg i{background:var(--blue);animation:pulse 1.2s infinite}
+.head.res{background:var(--yellow-soft);border-color:rgba(245,197,66,.35);color:#f7d77a;cursor:default}.head.res i{background:var(--yellow)}
+.head.mine{background:linear-gradient(100deg,rgba(255,138,61,.25),rgba(79,124,255,.25));border-color:#ff8a3d;color:#fff;cursor:pointer}.head.mine i{background:#fff}
+.head.best{box-shadow:0 0 0 2px rgba(255,138,61,.6)}
+@keyframes pulse{50%{opacity:.3}}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:12px 2px 0}
+.legend span{display:flex;align-items:center;gap:5px}.legend i{width:7px;height:7px;border-radius:50%}
+/* buttons */
+.btn{border:0;border-radius:14px;padding:12px 16px;font:600 15px var(--display);color:#fff;background:var(--grad);cursor:pointer;box-shadow:0 8px 20px rgba(199,107,214,.25)}
+.btn.block{width:100%}
+.btn.ghost{background:var(--card-2);border:1px solid var(--rim);box-shadow:none;color:var(--ink)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:11px}
+.btn.danger{background:rgba(255,93,108,.15);border:1px solid rgba(255,93,108,.4);color:#ff8c97;box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+/* session */
+.sess{border-radius:22px;padding:16px;background:linear-gradient(160deg,#16213a,#0e1527);border:1px solid rgba(79,124,255,.45);text-align:center}
+.ring{width:190px;height:190px;margin:6px auto 4px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .in{position:absolute;inset:0;display:grid;place-items:center;align-content:center}
+.ring .in b{font-family:var(--display);font-size:44px;line-height:1}
+.ring .in small{color:var(--muted)}
+.car{font-size:13px;color:var(--muted)}
+/* lists */
+.li{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--rim);margin-bottom:8px}
+.li .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--orange-soft);color:var(--orange);font-size:18px;flex:none}
+.li b{font-family:var(--display);font-weight:600}
+.li small{color:var(--muted);display:block}
+.li .amt{margin-left:auto;text-align:right;font-family:var(--display)}
+.tip{display:flex;gap:12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--rim);margin-bottom:8px}
+.tip .e{font-size:22px}
+.tip b{font-family:var(--display);font-weight:600;display:block}
+.tip small{color:var(--muted);line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 14px;border-radius:12px;background:var(--card);border:1px solid var(--rim);color:var(--ink);font:600 14px var(--display);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--orange);background:var(--orange-soft);color:var(--orange)}
+.field{display:block;margin:12px 0}
+.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input[type=text],.field select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--rim);background:var(--card-2);color:var(--ink);font:500 15px var(--body)}
+.field input[type=range]{width:100%;accent-color:var(--orange)}
+.big{font-family:var(--display);font-size:30px;font-weight:700}
+/* scan */
+.scanbox{width:230px;height:230px;margin:16px auto;border-radius:24px;position:relative;background:repeating-linear-gradient(45deg,#0f1626 0 10px,#111a2d 10px 20px)}
+.scanbox::before{content:"";position:absolute;inset:0;border-radius:24px;border:3px solid transparent;background:var(--grad) border-box;-webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.scanbox .ln{position:absolute;left:14px;right:14px;height:3px;border-radius:3px;background:var(--orange);box-shadow:0 0 14px var(--orange);top:14px;animation:scan 2s ease-in-out infinite alternate}
+@keyframes scan{to{top:calc(100% - 17px)}}
+.scanbox .qr{position:absolute;inset:50px;display:grid;grid-template-columns:repeat(7,1fr);gap:3px;opacity:.5}
+.scanbox .qr i{background:#cfd8ee;border-radius:2px}.scanbox .qr i.o{background:transparent}
+/* tabs */
+.tabs{position:absolute;left:12px;right:12px;bottom:12px;height:70px;border-radius:24px;background:rgba(18,26,44,.92);backdrop-filter:blur(14px);border:1px solid var(--rim);display:grid;grid-template-columns:1fr 1fr 70px 1fr 1fr;align-items:center;box-shadow:var(--shadow);z-index:10}
+.tabs button{background:none;border:0;font-family:var(--body);font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0}
+.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-current="page"]{color:var(--orange);font-weight:700}
+.tabs .fab{width:60px;height:60px;margin:-30px auto 0;border-radius:18px;background:var(--grad);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(199,107,214,.45);border:4px solid var(--app);padding:0}
+.tabs .fab svg{width:26px;height:26px}
+.tabs .fab small{display:none}
+/* sheet */
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:30;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88%;background:#111a2c;border:1px solid var(--rim);border-bottom:0;border-radius:28px 28px 0 0;z-index:31;transform:translateY(105%);transition:transform .3s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;box-shadow:0 -10px 30px rgba(0,0,0,.4)}
+.sheet.on{transform:none}
+.sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--rim);margin:8px auto 4px;flex:none}
+.sheet .inner{overflow-y:auto;padding:6px 18px 24px}
+.sheet h3{font-size:20px;margin:6px 0 12px;display:flex;align-items:center}
+.sheet h3 .x{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--rim);background:var(--card);color:var(--ink);cursor:pointer;font-size:15px}
+.sumtbl{background:var(--card-2);border:1px solid var(--rim);border-radius:16px;padding:6px 14px;margin-bottom:12px}
+.sumtbl div{display:flex;justify-content:space-between;padding:8px 0;font-size:14px}
+.sumtbl div+div{border-top:1px solid var(--rim)}
+.sumtbl span{color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+.toast{position:absolute;left:50%;top:60px;transform:translate(-50%,-20px);background:#eef2fa;color:#0a0f1c;padding:9px 16px;border-radius:14px;font-size:14px;font-weight:600;z-index:50;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="blurb">
+    <a class="back" href="./#portfolio">← PenguinzGear</a>
+    <h1><span>GuinHub</span> ⚡</h1>
+    <div class="launch">🚀 เปิดตัว 11 มกราคม 2570</div>
+    <p>แอปสถานีชาร์จรถไฟฟ้าของ GuinHub — <b>ดูตู้ชาร์จว่างแบบเรียลไทม์ จองหัวชาร์จ สแกนเริ่มชาร์จ และจ่ายด้วยวอลเล็ตในแอป</b></p>
+    <ul>
+      <li>แนะนำหัวชาร์จที่เหมาะกับรถของคุณ พร้อมบอกเวลาและค่าชาร์จโดยประมาณ</li>
+      <li>หน้าชาร์จสด: % แบต · kW · kWh · ค่าใช้จ่าย</li>
+      <li>เคล็ดลับชาร์จให้ไวและถนอมแบต</li>
+    </ul>
+    <p>นี่คือ<b>เวอร์ชันจำลองบนเว็บ</b> สถานีและรถคนอื่นเป็นข้อมูลจำลอง เวลาชาร์จเร่ง 60 เท่า (1 วินาที = 1 นาที) ลองจองหัวชาร์จแล้วกดเริ่มได้เลย</p>
+    <p class="small">ข้อมูลเก็บในเครื่องนี้เท่านั้น ไม่มีการตัดเงินจริง · สเปกรถเป็นค่าประมาณ</p>
+  </div>
+  <div class="phone"><div class="screen" id="screen">
+    <div class="scroll" id="view"></div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</button>
+      <button data-tab="wallet"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></svg>เติมเงิน</button>
+      <button class="fab" data-tab="scan" aria-label="สแกนเริ่มชาร์จ"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg><small>สแกน</small></button>
+      <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>ประวัติ</button>
+      <button data-tab="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>บัญชี</button>
+    </nav>
+    <div class="sheet-bg" id="sheetBg"></div>
+    <div class="sheet" id="sheet"><div class="grab"></div><div class="inner" id="sheetIn"></div></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div></div>
+</div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(n,d=0)=>Number(n).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+const LAUNCH=new Date(2027,0,11);
+const PRICE=7.5, OFFPEAK=5.5; // บาท/kWh (จำลอง)
+const PENG='<svg viewBox="0 0 200 250"><path d="M100 34C150 34 159 80 159 145C159 220 140 232 100 232C60 232 41 220 41 145C41 80 50 34 100 34Z" fill="#141a22"/><path d="M100 80C140 72 150 120 148 160C146 210 125 228 100 228C75 228 54 210 52 160C50 120 60 72 100 80Z" fill="#fff"/><ellipse cx="78" cy="88" rx="27" ry="25" fill="#fff"/><ellipse cx="122" cy="88" rx="27" ry="25" fill="#fff"/><path d="M70 96q8-9 16 0M114 96q8-9 16 0" stroke="#141a22" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="66" cy="112" rx="9" ry="6" fill="#f4b6b9"/><ellipse cx="134" cy="112" rx="9" ry="6" fill="#f4b6b9"/><path d="M86 107q14-12 28 0q-2 13-14 16q-12-3-14-16z" fill="#f6e7a8" stroke="#141a22" stroke-width="2.6"/></svg>';
+const BOLT='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>';
+/* รถ (สเปกประมาณ): ความจุแบต kWh · รับไฟ DC สูงสุด kW · กินไฟ kWh/100km */
+const CARS=[
+  {id:'atto3',n:'BYD Atto 3',bat:60,kw:88,eff:16},
+  {id:'seal',n:'BYD Seal',bat:82,kw:150,eff:17},
+  {id:'m3',n:'Tesla Model 3 Long Range',bat:75,kw:250,eff:15},
+  {id:'mg4',n:'MG4 Electric',bat:64,kw:135,eff:16},
+  {id:'ioniq5',n:'Hyundai IONIQ 5',bat:77,kw:230,eff:18},
+  {id:'goodcat',n:'ORA Good Cat',bat:63,kw:64,eff:15},
+  {id:'netav',n:'NETA V',bat:38,kw:50,eff:14},
+];
+const STATIONS=[
+  {id:'bangna',n:'GuinHub บางนา',d:'2.4 กม.',cabs:[500,500,500,500,720,720]},
+  {id:'rama9',n:'GuinHub พระราม 9',d:'6.1 กม.',cabs:[360,360,500,500,720,720]},
+  {id:'ayutthaya',n:'GuinHub อยุธยา (ทางหลวง 32)',d:'68 กม.',cabs:[500,500,720,720,720,720]},
+];
+/* ---------- state ---------- */
+const DEF={name:'สมชาย',bal:1250,car:'atto3',soc:22,target:80,station:'bangna',hist:[],notif:3};
+let S; try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem('guinhub1')||'{}'))}catch(e){S={...DEF}}
+if(!CARS.some(c=>c.id===S.car))S.car=DEF.car; if(!STATIONS.some(s=>s.id===S.station))S.station=DEF.station;
+const save=()=>{try{localStorage.setItem('guinhub1',JSON.stringify({name:S.name,bal:S.bal,car:S.car,soc:S.soc,target:S.target,station:S.station,hist:S.hist.slice(0,40),notif:S.notif}))}catch(e){}};
+const car=()=>CARS.find(c=>c.id===S.car);
+const station=()=>STATIONS.find(s=>s.id===S.station);
+/* station simulation: each head {st:'free'|'chg'|'res', m: minutes left} */
+let SIM={}; let MY=null; /* MY={key, kw, phase:'booked'|'chg', hold, soc0, soc, kwh, cost, min} */
+function seed(id){ const st=STATIONS.find(s=>s.id===id), H={}; let r=id.length*7+3; const rnd=()=>{r=(r*9301+49297)%233280;return r/233280};
+  st.cabs.forEach((kw,i)=>['A','B'].forEach(h=>{ const x=rnd(); H['C0'+(i+1)+'-'+h]= x<.45?{st:'free',m:0}:x<.8?{st:'chg',m:8+Math.round(rnd()*45)}:{st:'res',m:4+Math.round(rnd()*12)}; }));
+  return H; }
+STATIONS.forEach(s=>SIM[s.id]=seed(s.id));
+const heads=()=>SIM[S.station];
+const kwOf=key=>station().cabs[+key.slice(1,3)-1];
+/* ---------- charging model ---------- */
+function power(chKw,c,soc){ const peak=Math.min(chKw,c.kw); return soc<50?peak:soc<80?peak*(1-(soc-50)/30*.35):peak*Math.max(.12,.65-(soc-80)/20*.53); }
+function estimate(chKw,c,from,to){ let soc=from,min=0,kwh=0; while(soc<to&&min<600){ const p=power(chKw,c,soc); const e=p/60; kwh+=e; soc+=e/c.bat*100; min++; } return {min,kwh,cost:kwh*PRICE,km:Math.round(kwh/c.eff*100)}; }
+function recommend(){ const c=car(), H=heads(); let best=null;
+  for(const [k,h] of Object.entries(H)){ if(h.st!=='free')continue; const kw=kwOf(k), eff=Math.min(kw,c.kw);
+    const sc=eff*100-(+k.slice(1,3)); if(!best||sc>best.sc) best={k,kw,eff,sc}; }
+  if(!best) return null; return {...best,est:estimate(best.kw,c,S.soc,S.target)}; }
+const mm=m=>m<60?m+' นาที':Math.floor(m/60)+' ชม. '+(m%60)+' นาที';
+/* ---------- ui shell ---------- */
+let TAB='home';
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+function openSheet(h){$('sheetIn').innerHTML=h;$('sheet').classList.add('on');$('sheetBg').classList.add('on')}
+function closeSheet(){$('sheet').classList.remove('on');$('sheetBg').classList.remove('on')}
+$('sheetBg').onclick=closeSheet;
+function go(t){TAB=t;document.querySelectorAll('#tabs button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.tab===t)&&b.setAttribute('aria-current','page'));render();$('view').scrollTop=0}
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.tab)};
+function render(){ const v=$('view'); v.innerHTML=(VIEWS[TAB]||VIEWS.home)(); }
+/* ---------- views ---------- */
+const VIEWS={
+home(){ const H=heads(), n={free:0,chg:0,res:0}; Object.values(H).forEach(h=>n[h.st]++);
+  const days=Math.max(0,Math.ceil((LAUNCH-new Date())/864e5)); const R=recommend(), c=car();
+  let h=`<div class="row"><div><p class="hello">สวัสดี, คุณ${esc(S.name)} 👋</p><p class="brand">GUINHUB</p></div><div class="sp"></div>
+    <button class="ic-btn" data-act="notif" aria-label="การแจ้งเตือน">🔔${S.notif?`<span class="dot">${S.notif}</span>`:''}</button><button class="avatar" data-go="account" aria-label="บัญชี">${PENG}</button></div>
+  <button class="station" data-act="station"><span class="pin">📍</span><span><b>${esc(station().n)}</b><br><small>${station().d} · เปิด 24 ชม. · ${station().cabs.length} ตู้ · ${station().cabs.length*2} หัวชาร์จ</small></span><span class="sp"></span><span class="muted">▾</span></button>
+  <div class="banner"><span class="em">🚀</span><div><b>${days?'เปิดตัว 11 ม.ค. 2570':'เปิดให้บริการแล้ว!'}</b><small>${days?'ตอนนี้เป็นเวอร์ชันจำลอง · ลองจองหัวชาร์จได้เลย':'ขอบคุณที่ใช้ GuinHub'}</small></div>${days?`<div class="cd"><b>${days}</b><small>วัน</small></div>`:''}</div>
+  <div class="wallet"><small>ยอดเงินคงเหลือ</small><div class="bal">${fmt(Math.floor(S.bal))}<span>.${String(Math.round((S.bal%1)*100)).padStart(2,'0')} ฿</span></div><div class="st"><i></i>พร้อมใช้งาน</div><button class="btn sm topup" data-go="wallet">+ เติมเงิน</button></div>
+  <div class="stats"><div><b class="c-or">${n.free}</b><span>ว่างอยู่</span></div><div><b class="c-bl">${n.chg}</b><span>กำลังชาร์จ</span></div><div><b class="c-ye">${n.res}</b><span>จองแล้ว</span></div></div>`;
+  if(MY) h+=`<div class="sec"><h3>${MY.phase==='chg'?'⚡ กำลังชาร์จ':'🎫 การจองของคุณ'}</h3><small>${esc(station().n)}</small></div>`+myCard();
+  else { h+=`<div class="sec"><h3>✨ แนะนำสำหรับคุณ</h3><small>${esc(c.n)} · ${S.soc}% → ${S.target}%</small></div>`;
+    h+= R?`<div class="reco"><span class="tag">ไวที่สุดตอนนี้</span><h4>ตู้ ${R.k.slice(0,3)} · หัว ${R.k}</h4><div class="muted small">ตู้ ${R.kw} kW · รถคุณรับได้สูงสุด ${c.kw} kW → ชาร์จจริงสูงสุด ~${Math.round(R.eff)} kW</div>
+      <div class="kv"><div><b>${mm(R.est.min)}</b><span>เวลาโดยประมาณ</span></div><div><b>${fmt(R.est.cost)} ฿</b><span>${fmt(R.est.kwh,1)} kWh</span></div><div><b>+${R.est.km} กม.</b><span>วิ่งได้เพิ่ม</span></div></div>
+      <button class="btn block" data-book="${R.k}">จองหัวนี้</button></div>`
+      :`<div class="card muted">ตอนนี้ไม่มีหัวว่าง ลองเปลี่ยนสถานี หรือรอสักครู่</div>`; }
+  h+=`<div class="sec"><h3>จองตู้ชาร์จ</h3><small>${station().cabs.length} ตู้ · ${station().cabs.length*2} หัวชาร์จ</small></div><div class="grid">`;
+  station().cabs.forEach((kw,i)=>{ const id='C0'+(i+1); h+=`<div class="cab${kw>=700?' ultra':''}"><div class="hd"><span class="bolt">${BOLT}</span><b>${id}</b><span class="kw">${kw}kW</span></div>`;
+    ['A','B'].forEach(x=>{ const k=id+'-'+x, s=H[k], mine=MY&&MY.key===k;
+      if(mine) h+=`<button class="head mine" data-go="home" data-act="my"><i></i>${x} · ${MY.phase==='chg'?'ของคุณ '+Math.floor(MY.soc)+'%':'จองไว้'}<span class="r">›</span></button>`;
+      else if(s.st==='free') h+=`<button class="head free${R&&R.k===k&&!MY?' best':''}" data-book="${k}"><i></i>${x} · ว่าง<span class="r">›</span></button>`;
+      else if(s.st==='chg') h+=`<div class="head chg"><i></i>${x} · กำลังชาร์จ<span class="r">${s.m} น.</span></div>`;
+      else h+=`<div class="head res"><i></i>${x} · จองแล้ว<span class="r">${s.m} น.</span></div>`; });
+    h+='</div>'; });
+  h+=`</div><div class="legend"><span><i style="background:var(--orange)"></i>ว่าง</span><span><i style="background:var(--blue)"></i>ชาร์จอยู่</span><span><i style="background:var(--yellow)"></i>จองแล้ว</span></div>`;
+  h+=`<div class="sec"><h3>💡 แนะนำการชาร์จ</h3><small>ให้ไวและถนอมแบต</small></div>`+TIPS.slice(0,3).map(tipH).join('')+`<button class="btn ghost block" data-act="tips">ดูเคล็ดลับทั้งหมด</button>`;
+  return h; },
+wallet(){ return `<h2 style="margin:0 0 4px">เติมเงิน</h2><p class="muted small" style="margin:0 0 12px">วอลเล็ต GuinHub ใช้จ่ายค่าชาร์จทุกสถานี (จำลอง ไม่ตัดเงินจริง)</p>
+  <div class="wallet" style="margin-top:0"><small>ยอดเงินคงเหลือ</small><div class="bal">${fmt(S.bal,2)}<span> ฿</span></div><div class="st"><i></i>พร้อมใช้งาน</div></div>
+  <div class="sec"><h3>เลือกจำนวน</h3><small>ขั้นต่ำ 100 ฿</small></div>
+  <div class="chips" id="amts">${[100,300,500,1000,2000].map(a=>`<button class="chip" data-amt="${a}" aria-pressed="${a===TOP.amt}">${fmt(a)} ฿</button>`).join('')}</div>
+  <div class="sec"><h3>ช่องทาง</h3></div>
+  <div class="chips">${[['pp','📱 พร้อมเพย์'],['card','💳 บัตร'],['tm','🟠 TrueMoney']].map(([k,n])=>`<button class="chip" data-pay="${k}" aria-pressed="${k===TOP.pay}">${n}</button>`).join('')}</div>
+  <div class="card" style="margin-top:14px"><div class="row"><span class="muted">ชาร์จได้ประมาณ</span><span class="sp"></span><b class="disp">${fmt(TOP.amt/PRICE,1)} kWh · ~${fmt(Math.round(TOP.amt/PRICE/car().eff*100))} กม.</b></div></div>
+  <button class="btn block" style="margin-top:14px" data-act="topup">เติม ${fmt(TOP.amt)} ฿</button>
+  <div class="sec"><h3>ราคาค่าไฟ</h3><small>ทุกสถานี</small></div>
+  <div class="li"><span class="ico">☀️</span><div><b>ช่วงปกติ 09:00–22:00</b><small>DC ทุกตู้</small></div><div class="amt">${fmt(PRICE,2)} ฿<small>/kWh</small></div></div>
+  <div class="li"><span class="ico" style="background:var(--blue-soft);color:var(--blue)">🌙</span><div><b>Off-Peak 22:00–09:00</b><small>ชาร์จกลางคืนถูกกว่า</small></div><div class="amt">${fmt(OFFPEAK,2)} ฿<small>/kWh</small></div></div>`; },
+scan(){ const free=Object.entries(heads()).filter(([k,h])=>h.st==='free').map(([k])=>k);
+  return `<h2 style="margin:0 0 4px;text-align:center">สแกนเริ่มชาร์จ</h2><p class="muted small" style="text-align:center;margin:0">สแกน QR บนหัวชาร์จเพื่อเริ่มทันที</p>
+  <div class="scanbox"><div class="qr">${Array.from({length:49},(_,i)=>`<i class="${[3,10,17,22,26,31,38,45,24,16,32].includes(i)?'o':''}"></i>`).join('')}</div><div class="ln"></div></div>
+  ${MY&&MY.phase==='booked'?`<button class="btn block" data-act="start">สแกนหัว ${MY.key} ที่จองไว้ · เริ่มชาร์จ</button>`:MY?`<div class="card muted" style="text-align:center">คุณกำลังชาร์จที่หัว ${MY.key} อยู่</div>`:
+   free.length?`<p class="muted small" style="text-align:center">เวอร์ชันจำลอง: เลือกหัวว่างที่ ${esc(station().n)} แทนการสแกน</p><div class="chips" style="justify-content:center">${free.map(k=>`<button class="chip" data-scan="${k}">${k}</button>`).join('')}</div>`:`<div class="card muted">ไม่มีหัวว่างที่สถานีนี้</div>`}`; },
+history(){ const T=S.hist.reduce((a,x)=>({kwh:a.kwh+x.kwh,cost:a.cost+x.cost,km:a.km+x.km}),{kwh:0,cost:0,km:0});
+  return `<h2 style="margin:0 0 12px">ประวัติการชาร์จ</h2>
+  <div class="stats" style="margin-top:0"><div><b class="c-or" style="font-size:22px">${fmt(T.kwh,1)}</b><span>kWh รวม</span></div><div><b class="c-bl" style="font-size:22px">${fmt(T.cost)}</b><span>บาท</span></div><div><b class="c-ye" style="font-size:22px">${fmt(T.km)}</b><span>กม. ที่ได้</span></div></div>
+  <p class="muted small" style="margin:10px 2px 14px">🌱 ลด CO₂ ได้ประมาณ ${fmt(T.km*0.12,1)} กก. เทียบกับรถน้ำมัน (ประมาณ 120 ก./กม.)</p>
+  ${S.hist.length?S.hist.map(x=>`<div class="li"><span class="ico">⚡</span><div><b>${esc(x.st)} · ${esc(x.key)}</b><small>${new Date(x.t).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})} · ${x.soc0}% → ${x.soc1}% · ${mm(x.min)}</small></div><div class="amt">-${fmt(x.cost,2)} ฿<small>${fmt(x.kwh,1)} kWh</small></div></div>`).join(''):'<div class="card muted" style="text-align:center">ยังไม่มีประวัติ — ลองจองหัวชาร์จที่หน้าหลัก</div>'}`; },
+account(){ const c=car(); return `<div class="row" style="margin-bottom:12px"><div class="avatar" style="width:56px;height:56px">${PENG}</div><div><h2 style="margin:0">คุณ${esc(S.name)}</h2><span class="muted small">สมาชิก GuinHub · เวอร์ชันจำลอง</span></div></div>
+  <label class="field"><span>ชื่อ</span><input type="text" id="fName" value="${esc(S.name)}" maxlength="20"></label>
+  <label class="field"><span>รถของฉัน</span><select id="fCar">${CARS.map(x=>`<option value="${x.id}"${x.id===S.car?' selected':''}>${esc(x.n)} · ${x.bat} kWh · DC ${x.kw} kW</option>`).join('')}</select></label>
+  <label class="field"><span>แบตตอนนี้ <b id="oSoc">${S.soc}%</b></span><input type="range" id="fSoc" min="5" max="95" value="${S.soc}"${MY&&MY.phase==='chg'?' disabled':''}></label>
+  <label class="field"><span>ชาร์จถึง <b id="oTgt">${S.target}%</b> <small>(แนะนำ 80% ไวและถนอมแบต)</small></span><input type="range" id="fTgt" min="50" max="100" step="5" value="${S.target}"></label>
+  <div class="card"><div class="row"><span class="muted">วิ่งได้ตอนนี้ประมาณ</span><span class="sp"></span><b class="disp">${fmt(Math.round(c.bat*S.soc/100/c.eff*100))} กม.</b></div></div>
+  <button class="btn ghost block" style="margin-top:14px" data-act="reset">ล้างข้อมูลเดโม</button>
+  <p class="muted small" style="text-align:center;margin-top:16px">GuinHub · เปิดตัว 11 มกราคม 2570<br>ข้อมูลเก็บในเครื่องนี้เท่านั้น</p>`; },
+};
+const TIPS=[
+  ['🔋','ชาร์จช่วง 20–80% ไวที่สุด','แบตรับไฟเต็มกำลังตอนต่ำ พอเกิน 80% รถจะลดกำลังลงมาก 80→100% อาจใช้เวลาพอ ๆ กับ 20→80%'],
+  ['⚡','ตู้แรงกว่ารถรับได้ ไม่ได้ช่วย','กำลังจริง = ค่าที่ต่ำกว่าระหว่างตู้กับรถ แอปเลยแนะนำหัวที่เหมาะกับรถคุณ ไม่ใช่แค่ตู้ที่แรงสุด'],
+  ['🌙','ชาร์จกลางคืนถูกกว่า','ช่วง Off-Peak 22:00–09:00 ค่าไฟ '+OFFPEAK.toFixed(2)+' ฿/kWh จาก '+PRICE.toFixed(2)+' ฿'],
+  ['🌡️','แบตอุ่นชาร์จไวกว่า','ขับมาสักพักก่อนชาร์จ หรือเปิดโหมดอุ่นแบตก่อนถึงสถานี (ถ้ารถมี) จะได้กำลังสูงกว่าตอนแบตเย็น'],
+  ['⏱️','จองแล้วมาให้ทันใน 15 นาที','เลยเวลาจะถูกยกเลิกอัตโนมัติ เพื่อให้คนอื่นใช้หัวต่อ'],
+  ['🚗','ชาร์จเสร็จแล้วเลื่อนรถ','ช่วยให้คิวเดินไว และเลี่ยงค่าจอดเกินเวลาในบางสถานี'],
+];
+const tipH=([e,t,d])=>`<div class="tip"><span class="e">${e}</span><div><b>${t}</b><small>${d}</small></div></div>`;
+let TOP={amt:500,pay:'pp'};
+function myCard(){ const c=car();
+  if(MY.phase==='booked') return `<div class="reco"><span class="tag">จองไว้ · เหลือ ${MY.hold} นาที</span><h4>ตู้ ${MY.key.slice(0,3)} · หัว ${MY.key}</h4><div class="muted small">${MY.kw} kW · ${esc(c.n)} · ${S.soc}% → ${S.target}%</div>
+    <div class="row" style="gap:8px;margin-top:12px"><button class="btn block" data-act="start">เสียบสายแล้ว · เริ่มชาร์จ</button><button class="btn ghost sm" data-act="cancel">ยกเลิก</button></div></div>`;
+  const p=power(MY.kw,c,MY.soc), pct=Math.min(100,MY.soc), C=2*Math.PI*84, left=estimate(MY.kw,c,MY.soc,S.target).min;
+  return `<div class="sess"><div class="car">${esc(c.n)} · หัว ${MY.key}</div>
+    <div class="ring"><svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="84" stroke="#1f2b45" stroke-width="12" fill="none"/><circle cx="95" cy="95" r="84" stroke="url(#gg)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}"/><defs><linearGradient id="gg"><stop offset="0" stop-color="#ff8a3d"/><stop offset="1" stop-color="#4f7cff"/></linearGradient></defs></svg>
+      <div class="in"><b>${Math.floor(MY.soc)}%</b><small>เป้า ${S.target}% · อีก ${mm(left)}</small></div></div>
+    <div class="kv"><div><b class="c-bl">${Math.round(p)} kW</b><span>กำลังตอนนี้</span></div><div><b>${fmt(MY.kwh,1)}</b><span>kWh</span></div><div><b class="c-or">${fmt(MY.cost,2)} ฿</b><span>${mm(MY.min)}</span></div></div>
+    ${MY.soc>=80?'<p class="note" style="margin:0 0 10px">⚠️ เกิน 80% แล้ว รถจะชาร์จช้าลงมาก</p>':''}
+    <button class="btn danger block" data-act="stop">หยุดชาร์จและชำระเงิน</button></div>`; }
+function bookSheet(k){ const c=car(), kw=kwOf(k), est=estimate(kw,c,S.soc,S.target);
+  openSheet(`<h3>ยืนยันการจอง<button class="x" data-act="close" aria-label="ปิด">✕</button></h3>
+  <div class="sumtbl"><div><span>สถานี</span><b>${esc(station().n)}</b></div><div><span>ตู้ชาร์จ</span><b>${k.slice(0,3)}</b></div><div><span>หัวชาร์จ</span><b>${k}</b></div><div><span>กำลังตู้</span><b class="c-or">${kw} kW</b></div><div><span>รถคุณรับได้</span><b>${c.kw} kW</b></div><div><span>ราคา</span><b>${PRICE.toFixed(2)} ฿/kWh</b></div></div>
+  <div class="sumtbl"><div><span>${S.soc}% → ${S.target}% ใช้เวลาประมาณ</span><b>${mm(est.min)}</b></div><div><span>ค่าชาร์จประมาณ</span><b class="c-or">${fmt(est.cost,2)} ฿</b></div><div><span>วิ่งได้เพิ่ม</span><b>~${est.km} กม.</b></div></div>
+  ${S.bal<est.cost?`<p class="note" style="color:#ff8c97">ยอดเงินไม่พอ (มี ${fmt(S.bal,2)} ฿) — เติมเงินก่อน</p>`:''}
+  <p class="note">* การจองมีอายุ 15 นาที หากไม่มาตามเวลาการจองจะถูกยกเลิกอัตโนมัติ</p>
+  ${S.bal<est.cost?'<button class="btn block" data-go="wallet" data-act="close">ไปเติมเงิน</button>':`<button class="btn block" data-confirm="${k}">ยืนยันการจอง</button>`}`); }
+function stationSheet(){ openSheet(`<h3>เลือกสถานี<button class="x" data-act="close" aria-label="ปิด">✕</button></h3>`+STATIONS.map(s=>{ const f=Object.values(SIM[s.id]).filter(h=>h.st==='free').length;
+  return `<button class="li" style="width:100%;color:inherit;font:inherit;text-align:left;cursor:pointer${s.id===S.station?';border-color:var(--orange)':''}" data-st="${s.id}"><span class="ico">📍</span><div><b>${esc(s.n)}</b><small>${s.d} · ${s.cabs.length} ตู้ · สูงสุด ${Math.max(...s.cabs)} kW</small></div><div class="amt"><b class="c-or">${f}</b><small>หัวว่าง</small></div></button>`; }).join('')+(MY?'<p class="note">มีการจอง/ชาร์จอยู่ที่ '+esc(station().n)+' — เปลี่ยนสถานีได้หลังเสร็จ</p>':'')); }
+/* ---------- actions ---------- */
+document.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!$('screen').contains(b)) return; const d=b.dataset;
+  if(d.act==='close') closeSheet();
+  if(d.go){ closeSheet(); go(d.go); }
+  if(d.book){ if(MY){ toast('คุณมีการจองอยู่แล้ว'); return; } bookSheet(d.book); }
+  if(d.confirm){ const h=heads()[d.confirm]; if(!h||h.st!=='free'){ closeSheet(); toast('หัวนี้ไม่ว่างแล้ว ลองหัวอื่น'); render(); return; }
+    h.st='mine'; MY={key:d.confirm,kw:kwOf(d.confirm),phase:'booked',hold:15,soc0:S.soc,soc:S.soc,kwh:0,cost:0,min:0}; closeSheet(); toast('จองหัว '+d.confirm+' แล้ว ⚡'); go('home'); }
+  if(d.scan){ if(MY) return; const h=heads()[d.scan]; if(h.st!=='free'){ toast('หัวนี้ไม่ว่างแล้ว'); render(); return; } h.st='mine'; MY={key:d.scan,kw:kwOf(d.scan),phase:'booked',hold:15,soc0:S.soc,soc:S.soc,kwh:0,cost:0,min:0}; startCharge(); }
+  if(d.st){ if(!MY){ S.station=d.st; save(); } closeSheet(); render(); }
+  switch(d.act){
+    case 'station': stationSheet(); break;
+    case 'notif': S.notif=0; save(); openSheet(`<h3>การแจ้งเตือน<button class="x" data-act="close" aria-label="ปิด">✕</button></h3>
+      <div class="li"><span class="ico">🚀</span><div><b>GuinHub เปิดตัว 11 ม.ค. 2570</b><small>ลงทะเบียนวันนี้รับเครดิตค่าชาร์จฟรี (จำลอง)</small></div></div>
+      <div class="li"><span class="ico">🌙</span><div><b>ชาร์จ Off-Peak ถูกกว่า</b><small>22:00–09:00 เหลือ ${OFFPEAK.toFixed(2)} ฿/kWh</small></div></div>
+      <div class="li"><span class="ico">📍</span><div><b>สถานีใหม่: GuinHub อยุธยา</b><small>ตู้ 720 kW 4 ตู้ ริมทางหลวง 32</small></div></div>`); render(); break;
+    case 'tips': openSheet(`<h3>แนะนำการชาร์จ<button class="x" data-act="close" aria-label="ปิด">✕</button></h3>`+TIPS.map(tipH).join('')); break;
+    case 'start': startCharge(); break;
+    case 'cancel': heads()[MY.key].st='free'; MY=null; toast('ยกเลิกการจองแล้ว'); render(); break;
+    case 'stop': stopCharge(); break;
+    case 'topup': S.bal+=TOP.amt; save(); toast('เติมเงิน '+fmt(TOP.amt)+' ฿ แล้ว'); render(); break;
+    case 'reset': if(confirm('ล้างข้อมูลเดโมทั้งหมด?')){ try{localStorage.removeItem('guinhub1')}catch(err){} S={...DEF,hist:[]}; MY=null; STATIONS.forEach(s=>SIM[s.id]=seed(s.id)); go('home'); } break;
+  }
+  if(d.amt){ TOP.amt=+d.amt; render(); } if(d.pay){ TOP.pay=d.pay; render(); }
+});
+document.addEventListener('input',e=>{ const t=e.target;
+  if(t.id==='fSoc'){ S.soc=+t.value; $('oSoc').textContent=S.soc+'%'; if(S.target<=S.soc) S.target=Math.min(100,Math.ceil((S.soc+5)/5)*5); save(); }
+  if(t.id==='fTgt'){ S.target=Math.max(+t.value,S.soc+5>100?100:+t.value); $('oTgt').textContent=S.target+'%'; save(); }
+  if(t.id==='fName'){ S.name=t.value.trim()||'สมชาย'; save(); } });
+document.addEventListener('change',e=>{ if(e.target.id==='fCar'){ S.car=e.target.value; save(); render(); } if(e.target.id==='fSoc'||e.target.id==='fTgt') render(); });
+function startCharge(){ if(!MY) return; MY.phase='chg'; MY.soc0=S.soc; MY.soc=S.soc; toast('เริ่มชาร์จที่หัว '+MY.key+' ⚡'); go('home'); }
+function stopCharge(){ if(!MY) return; const c=car(), x={t:Date.now(),st:station().n,key:MY.key,soc0:MY.soc0,soc1:Math.floor(MY.soc),kwh:MY.kwh,cost:MY.cost,min:MY.min,km:Math.round(MY.kwh/c.eff*100)};
+  S.bal=Math.max(0,S.bal-MY.cost); S.soc=Math.min(100,Math.floor(MY.soc)); S.hist.unshift(x); heads()[MY.key].st='free'; MY=null; save();
+  openSheet(`<h3>ชาร์จเสร็จแล้ว ✅<button class="x" data-act="close" aria-label="ปิด">✕</button></h3>
+  <div class="sumtbl"><div><span>หัวชาร์จ</span><b>${x.key}</b></div><div><span>แบต</span><b>${x.soc0}% → ${x.soc1}%</b></div><div><span>พลังงาน</span><b>${fmt(x.kwh,1)} kWh</b></div><div><span>เวลา</span><b>${mm(x.min)}</b></div><div><span>วิ่งได้เพิ่ม</span><b>~${x.km} กม.</b></div><div><span>ชำระจากวอลเล็ต</span><b class="c-or">${fmt(x.cost,2)} ฿</b></div></div>
+  <button class="btn block" data-go="history">ดูประวัติ</button>`); render(); }
+/* ---------- simulation tick: 1 s = 1 simulated minute ---------- */
+setInterval(()=>{ for(const sid in SIM) for(const [k,h] of Object.entries(SIM[sid])){
+    if(h.st==='chg'||h.st==='res'){ h.m--; if(h.m<=0){ if(h.st==='res'){ h.st='chg'; h.m=15+Math.floor(Math.random()*35); } else { h.st='free'; h.m=0; } } }
+    else if(h.st==='free'&&Math.random()<.012){ if(Math.random()<.6){ h.st='chg'; h.m=12+Math.floor(Math.random()*40); } else { h.st='res'; h.m=5+Math.floor(Math.random()*10); } } }
+  if(MY){ if(MY.phase==='booked'){ MY.hold--; if(MY.hold<=0){ heads()[MY.key].st='free'; MY=null; toast('การจองหมดเวลา ยกเลิกอัตโนมัติ'); } }
+    else { const c=car(), p=power(MY.kw,c,MY.soc), e=p/60; MY.kwh+=e; MY.cost+=e*PRICE; MY.min++; MY.soc=Math.min(100,MY.soc+e/c.bat*100);
+      if(MY.soc>=S.target){ MY.soc=S.target; toast('ถึง '+S.target+'% แล้ว 🔋'); stopCharge(); return; } } }
+  if(TAB==='home'&&!$('sheet').classList.contains('on')){ const sc=$('view').scrollTop; render(); $('view').scrollTop=sc; }
+},1000);
+go('home');
+</script>
+</body>
+</html>

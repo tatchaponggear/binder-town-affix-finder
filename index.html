@@ -172,8 +172,7 @@ section.block{margin:0 0 80px}
 .stat{padding:22px;display:flex;flex-direction:column;justify-content:center}
 .stat b{font-family:var(--display);font-size:38px;font-weight:700;line-height:1;background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .stat span{color:var(--muted);font-size:14px;margin-top:6px}
-.projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-@media (max-width:960px){.projects{grid-template-columns:1fr 1fr}}
+.projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 @media (max-width:640px){.projects{grid-template-columns:1fr}}
 .proj{display:flex;flex-direction:column;overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s}
 a.proj:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
@@ -187,6 +186,13 @@ a.proj:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
 .shot.gf{background:linear-gradient(180deg,#9fdcf0,#eefafd)}
 .shot.bt{background:linear-gradient(135deg,#1b2a4a,#2e4f7a)}
 .shot.ar{background:linear-gradient(135deg,#21313f,#0f1a24)}
+.shot.gh{background:radial-gradient(260px 160px at 20% 10%,rgba(255,138,61,.35),transparent 70%),radial-gradient(260px 160px at 90% 100%,rgba(79,124,255,.35),transparent 70%),#070b16}
+.gh-phone{width:128px;height:206px;border-radius:22px;background:#02040a;padding:6px;box-shadow:0 14px 30px rgba(0,0,0,.45);transform:rotate(5deg) translateY(20px)}
+.gh-phone>div{width:100%;height:100%;border-radius:17px;background:#0a0f1c;padding:14px 9px;display:flex;flex-direction:column;gap:6px;font-family:var(--display)}
+.gh-phone .b{font-weight:700;font-size:13px;color:#ff8a3d;letter-spacing:.5px}
+.gh-phone .w{border-radius:9px;background:#141d33;border:1px solid #22304a;padding:5px 7px;color:#ff8a3d;font-weight:700;font-size:15px;line-height:1.1}.gh-phone .w small{display:block;color:#8c99b3;font-size:8px;font-weight:500}
+.gh-phone .g{display:grid;grid-template-columns:1fr 1fr;gap:4px}.gh-phone .g i{height:16px;border-radius:5px;background:rgba(255,138,61,.2);border:1px solid rgba(255,138,61,.4)}.gh-phone .g i.c{background:rgba(79,124,255,.22);border-color:rgba(79,124,255,.45)}.gh-phone .g i.r{background:rgba(245,197,66,.18);border-color:rgba(245,197,66,.4)}
+.gh-launch{position:absolute;left:14px;top:14px;font-family:var(--display);font-weight:600;font-size:12px;color:#ffb27f;background:rgba(255,138,61,.16);border:1px solid rgba(255,138,61,.4);border-radius:9px;padding:4px 9px}
 .mini-phone{width:118px;height:200px;border-radius:22px;background:#0b1118;padding:6px;box-shadow:0 14px 30px rgba(0,0,0,.25);transform:rotate(-6deg) translateY(18px)}
 .mini-phone div{width:100%;height:100%;border-radius:17px;background:linear-gradient(180deg,#bfe7f5,#f4fbfd 70%);display:grid;place-items:center}
 .mini-phone svg{width:74%}
@@ -240,7 +246,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
       <span class="eyebrow">🧊 บ้านเพนกวินน้ำแข็ง</span>
       <h1>สวัสดีครับ ผม <span class="grad">Penguin</span></h1>
       <p class="lead">ยินดีต้อนรับสู่บ้านของผม — ที่รวมเครื่องมือช่วยเล่น <b>Binder Town</b>, แอป <b>GuinFit</b> และโปรเจกต์อื่นๆ</p>
-      <div class="cta"><a class="btn pri" href="guinfit">🐧 ลองเล่น GuinFit</a><a class="btn" href="#bindertown">⚔️ Bindertown</a></div>
+      <div class="cta"><a class="btn pri" href="guinfit">🐧 ลองเล่น GuinFit</a><a class="btn" href="guinhub">⚡ GuinHub</a><a class="btn" href="#bindertown">⚔️ Bindertown</a></div>
     </div>
     <div class="bubble" id="bubble">แตะผมได้นะ 🐧</div>
     <div class="pg" id="pg"></div>
@@ -280,6 +286,11 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
         <div class="shot gf"><div class="mini-phone"><div id="miniPenguin"></div></div></div>
         <div class="body"><h3>GuinFit 🐧</h3><p>แอปนับแคลอรีที่มาสคอตเป็นเพนกวิน หุ่นเปลี่ยนตาม BMI · ฟักไข่ ป้อนอาหาร เก็บเหรียญซื้อหมวก · มีเวอร์ชันเว็บให้ลองเล่น</p>
           <div class="tags"><span class="tag">SwiftUI</span><span class="tag">HealthKit</span><span class="tag">Core ML</span><span class="tag">Web demo</span></div><span class="more">ลองเล่นบนเว็บ →</span></div>
+      </a>
+      <a class="glass proj" href="guinhub">
+        <div class="shot gh"><span class="gh-launch">🚀 เปิดตัว 11 ม.ค. 2570</span><div class="gh-phone"><div><span class="b">GUINHUB ⚡</span><span class="w"><small>ยอดเงินคงเหลือ</small>1,250 ฿</span><span class="g"><i></i><i class="c"></i><i></i><i></i><i class="r"></i><i class="c"></i><i></i><i></i></span></div></div></div>
+        <div class="body"><h3>GuinHub ⚡</h3><p>แอปสถานีชาร์จรถไฟฟ้า: ดูตู้ว่างแบบเรียลไทม์ จองหัวชาร์จ สแกนเริ่มชาร์จ จ่ายด้วยวอลเล็ต · แนะนำหัวที่เหมาะกับรถพร้อมเวลาและค่าชาร์จ · เปิดตัว 11 มกราคม 2570</p>
+          <div class="tags"><span class="tag">Mobile app</span><span class="tag">EV Charging</span><span class="tag">Realtime</span><span class="tag">Web demo</span></div><span class="more">ลองเดโมบนเว็บ →</span></div>
       </a>
       <a class="glass proj" href="#bindertown">
         <div class="shot bt"><div class="bt-grid"><span>⏰</span><span>👹</span><span>🗺️</span><span>⚔️</span><span>🃏</span><span>🌳</span></div></div>
