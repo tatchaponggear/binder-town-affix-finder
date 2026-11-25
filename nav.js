@@ -57,14 +57,15 @@
   var SUN='<svg viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="pzs" cx="40%" cy="38%" r="65%"><stop offset="0" stop-color="#fff6c2"/><stop offset=".55" stop-color="#ffcf3f"/><stop offset="1" stop-color="#ff9a1f"/></radialGradient></defs><g stroke="#ffc43a" stroke-width="3.2" stroke-linecap="round"><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9.2 9.2l4.2 4.2M34.6 34.6l4.2 4.2M9.2 38.8l4.2-4.2M34.6 13.4l4.2-4.2"/></g><circle cx="24" cy="24" r="10.5" fill="url(#pzs)"/></svg>',
       MOON='<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="pzm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fb6ff"/><stop offset="1" stop-color="#4b5fc9"/></linearGradient></defs><path d="M30.5 5.5A19 19 0 1 0 42.5 33 15.5 15.5 0 0 1 30.5 5.5z" fill="url(#pzm)"/><circle cx="20" cy="27" r="2.6" fill="#3f50b0" opacity=".45"/><circle cx="27" cy="36" r="1.8" fill="#3f50b0" opacity=".4"/><path d="M38 9l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#ffd96a"/></svg>';
   /* วงล้อ: พระอาทิตย์อยู่บน พระจันทร์อยู่ล่าง · กดแล้วหมุน 180° ตามเข็ม = ดวงหนึ่งตกขวา อีกดวงขึ้นซ้าย */
-  var ang=null;
+  var ang=null, tgN=0;
   function syncTg(){ var d=theme()==='dark'; if(ang===null) ang=d?180:0;
     [].forEach.call(document.querySelectorAll('.pz-tg'),function(b){
       var w=b.querySelector('.pz-wh'); if(w) w.style.transform='rotate('+ang+'deg)';
       b.setAttribute('aria-label',d?'เปลี่ยนเป็นโหมดสว่าง':'เปลี่ยนเป็นโหมดมืด'); b.title=b.getAttribute('aria-label'); }); }
   function themeBtn(corner){
     var b=document.createElement('button'); b.type='button'; b.className='pz-tg pz-na'+(corner?' corner':'');
-    b.innerHTML='<span class="pz-wh"><span class="pz-ic pz-sun">'+SUN+'</span><span class="pz-ic pz-moon">'+MOON+'</span></span>';
+    var k='pz'+(++tgN); /* id ไล่สีต้องไม่ซ้ำ — ปุ่มที่ซ่อนอยู่ทำให้ gradient หาย */
+    b.innerHTML='<span class="pz-wh"><span class="pz-ic pz-sun">'+SUN.replace(/pzs/g,k+'s')+'</span><span class="pz-ic pz-moon">'+MOON.replace(/pzm/g,k+'m')+'</span></span>';
     setTimeout(function(){ b.classList.remove('pz-na'); },60);
     b.onclick=function(e){ e.stopPropagation(); setTheme(theme()==='dark'?'light':'dark'); ang+=180; syncTg(); };
     return b;
