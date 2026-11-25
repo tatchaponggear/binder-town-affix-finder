@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Penguin Status · ขบวนการเพนกวิน</title>
+<meta name="description" content="มาร่วมเป็นขบวนการเพนกวินด้วยกันเถอะ! โปรแกรมตั้งสถานะ Discord ว่ากำลังเล่น Penguin ฟรี ทั้ง Windows และ Mac">
+<meta property="og:title" content="มาร่วมเป็นขบวนการเพนกวินด้วยกันเถอะ! · Penguin Status">
+<meta property="og:description" content="ตั้งสถานะ Discord ว่า กำลังเล่น Penguin พร้อมรูปเพนกวินนักดาบ · ฟรี Windows / Mac">
+<meta property="og:image" content="https://penguinzgear.com/img/penguin-status-cover.jpg">
+<link rel="icon" href="img/penguin-icon.jpg">
+<style>
+:root{--bg:#0f1020;--bg2:#171833;--card:#1d1f3a;--ink:#f1f2fa;--muted:#a9adc8;--line:#2d3060;--blue:#5fd0ff;--orange:#ff8a3a;--acc:#6b72ff;--red:#e2384a}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f5fc;--bg2:#e9ebfb;--card:#fff;--ink:#1a1c33;--muted:#5a5f7d;--line:#dcdff2;--acc:#4f57e8}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI","Leelawadee UI","Noto Sans Thai",sans-serif;overflow-x:hidden}
+a{color:var(--blue)}
+.top{display:flex;align-items:center;gap:10px;max-width:1100px;margin:0 auto;padding:14px 16px}
+.top a.brand{display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;font-weight:800}
+.top img{width:28px;height:28px;border-radius:8px}
+.top .sp{flex:1}
+.top a.lnk{color:var(--muted);text-decoration:none;font-size:14px}
+
+.hero{position:relative;max-width:1100px;margin:0 auto 10px;padding:0 16px}
+.hero .art{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:16/9;max-height:560px;width:100%;background:#1e1b3a;box-shadow:0 30px 80px -30px rgba(0,0,0,.7)}
+.hero .art img{width:100%;height:100%;object-fit:cover;object-position:62% 40%;display:block}
+.hero .art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,30,.85) 0%,rgba(10,10,30,.55) 38%,rgba(10,10,30,0) 62%)}
+.hero .txt{position:absolute;left:52px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;max-width:52%;z-index:1;color:#fff}
+.kick{display:inline-flex;align-self:flex-start;gap:6px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:12px;backdrop-filter:blur(6px)}
+h1{font-size:clamp(28px,4.4vw,54px);line-height:1.15;margin:0 0 12px;font-weight:900;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+h1 .b{color:var(--blue)}h1 .o{color:var(--orange)}
+.hero p.lead{font-size:clamp(15px,1.6vw,18px);margin:0 0 20px;color:#e3e5f5;max-width:30em}
+.dlrow{display:flex;flex-wrap:wrap;gap:10px}
+.dl{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;text-decoration:none;color:#fff;font-weight:800;font-size:16px;border:2px solid transparent;transition:transform .15s,box-shadow .15s}
+.dl small{display:block;font-weight:500;font-size:12px;opacity:.85}
+.dl svg{width:26px;height:26px;flex:none}
+.dl.win{background:linear-gradient(135deg,#2d6cff,#5fd0ff)}
+.dl.mac{background:linear-gradient(135deg,#ff6a3a,#ffb35a)}
+.dl:hover{transform:translateY(-2px);box-shadow:0 12px 30px -10px rgba(0,0,0,.6)}
+.dl.rec{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.18)}
+.dl .rb{font-size:11px;background:rgba(0,0,0,.25);padding:1px 7px;border-radius:999px;margin-left:4px}
+.free{margin-top:10px;font-size:13px;color:#cfd2ea}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+h2{font-size:clamp(22px,3vw,30px);margin:46px 0 6px;font-weight:900}
+.sub2{color:var(--muted);margin:0 0 18px}
+
+.oath{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.dc{background:#232428;color:#f2f3f5;border-radius:14px;padding:14px 16px;max-width:380px;box-shadow:0 20px 50px -25px #000}
+.dc .h{font-size:12px;font-weight:800;color:#b5bac1;margin-bottom:8px;letter-spacing:.02em}
+.dc .r{display:flex;gap:12px;align-items:flex-start}
+.dc img{width:84px;height:84px;border-radius:10px;flex:none}
+.dc b{display:block;font-size:15px}
+.dc .m{color:#b5bac1;font-size:13px}
+.dc .bt{display:block;margin-top:10px;background:#4e5058;border-radius:6px;padding:7px;text-align:center;font-size:14px;font-weight:600}
+#st{transition:opacity .3s}
+
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+.step{position:relative;padding-top:26px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:18px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,var(--acc),var(--blue))}
+.step h3{margin:0 0 4px;font-size:18px}
+.step p{margin:0;color:var(--muted);font-size:15px}
+
+.feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.feat .card{padding:14px 16px}
+.feat .i{font-size:26px}
+.feat h3{margin:4px 0 2px;font-size:16px}
+.feat p{margin:0;color:var(--muted);font-size:14px}
+
+.menu{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.menu a{background:var(--bg2);border:1px solid var(--line);color:var(--ink);text-decoration:none;border-radius:10px;padding:5px 10px;font-size:14px}
+.menu a:hover{border-color:var(--blue)}
+
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:8px}
+summary{cursor:pointer;font-weight:700}
+details p,details ol{margin:8px 0 0;color:var(--muted)}
+
+.join{margin:50px 0 30px;text-align:center;border-radius:22px;padding:34px 18px;background:radial-gradient(120% 140% at 50% 0%,#3a2a72 0%,#1a1838 60%);color:#fff;border:1px solid #3d3a80}
+.join h2{margin:0 0 6px}
+.join p{color:#d4d6ef;margin:0 0 18px}
+.join .dlrow{justify-content:center}
+footer{color:var(--muted);text-align:center;font-size:14px;padding:10px 0 40px}
+
+@media (max-width:760px){
+  .hero .art{aspect-ratio:auto;max-height:none;min-height:520px}
+  .hero .art img{position:absolute;left:0;right:0;top:0;height:330px;object-position:66% 30%}
+  .hero .art::after{background:linear-gradient(0deg,#0f1030 0%,#0f1030 52%,rgba(15,16,48,0) 72%)}
+  .hero .txt{position:relative;left:0;max-width:none;padding:280px 18px 22px;min-height:520px;justify-content:flex-end}
+  .oath{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr;gap:26px}
+  .dl{flex:1 1 100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="brand" href="./"><img src="img/penguin-icon.jpg" alt="">PenguinzGear</a>
+  <span class="sp"></span>
+  <a class="lnk" href="#how">วิธีใช้</a>
+  <a class="lnk" href="#faq">คำถาม</a>
+</div>
+
+<header class="hero">
+  <div class="art">
+    <img src="img/penguin-status-cover.jpg" alt="เพนกวินนักดาบถือดาบสองมือ ยืนบนหน้าผามองพระอาทิตย์ตก" width="1600" height="900">
+    <div class="txt">
+      <span class="kick">🐧 PENGUIN SQUAD · รับสมัครสมาชิก</span>
+      <h1>มาร่วมเป็น<br><span class="b">ขบวนการ</span><span class="o">เพนกวิน</span><br>ด้วยกันเถอะ!</h1>
+      <p class="lead">ติดสถานะ Discord ว่า <b>“กำลังเล่น Penguin”</b> พร้อมรูปเพนกวินนักดาบ ให้เพื่อนทั้งเซิร์ฟรู้ว่าคุณอยู่ฝั่งไหน</p>
+      <div class="dlrow">
+        <a class="dl win" id="dWin" href="dl/PenguinStatus-Windows.zip" download>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1 10.4 4v7.2H3zm0 13.8 7.4 1.1v-7.1H3zm8.3 1.2L21 21.5V12.9h-9.7zm0-16.2v7.3H21V2.5z"/></svg>
+          <span>ดาวน์โหลด Windows<small>Windows 10 / 11 · 110 KB</small></span>
+        </a>
+        <a class="dl mac" id="dMac" href="dl/PenguinStatus-Mac.zip" download>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.5 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.3-3.9zM14 5.2c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>
+          <span>ดาวน์โหลด Mac<small>macOS 12+ · Apple Silicon / Intel · 720 KB</small></span>
+        </a>
+      </div>
+      <div class="free">ฟรี · ไม่มีโฆษณา · ไม่ต้องใช้รหัสผ่านหรือ token Discord</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>คำปฏิญาณของสมาชิก 🐧⚔️</h2>
+  <p class="sub2">เปิดโปรแกรมแล้ว เพื่อนจะเห็นการ์ดนี้บนโปรไฟล์ Discord ของคุณ</p>
+  <div class="oath">
+    <div class="card">
+      <p style="margin:0 0 10px">ขบวนการเพนกวินไม่มีค่าสมัคร ไม่มีกฎยุ่งยาก มีแค่สามข้อ:</p>
+      <ol style="margin:0;padding-left:22px;color:var(--muted)">
+        <li><b style="color:var(--ink)">ติดสถานะ Penguin</b> ให้โลกรู้ว่าเราอยู่ด้วยกัน</li>
+        <li><b style="color:var(--ink)">แชร์ความรู้ Binder Town</b> บิลด์ ออฟชั่น เวลาบอส มีครบที่ penguinzgear.com</li>
+        <li><b style="color:var(--ink)">ชวนเพื่อนมาเป็นเพนกวิน</b> ยิ่งเยอะ ยิ่งเท่</li>
+      </ol>
+    </div>
+    <div class="dc" aria-label="ตัวอย่างสถานะบน Discord">
+      <div class="h">กำลังเล่น</div>
+      <div class="r">
+        <img src="img/penguin-status.png" alt="">
+        <div>
+          <b>Penguin</b>
+          <div>Binder Town</div>
+          <div id="st">penguinzgear.com</div>
+          <div class="m" id="el">00:00 elapsed</div>
+        </div>
+      </div>
+      <span class="bt">penguinzgear.com</span>
+    </div>
+  </div>
+
+  <h2 id="how">เข้าร่วมใน 3 ขั้น</h2>
+  <p class="sub2">ต้องเปิด Discord แบบแอปบนเครื่องไว้ (Discord บนเว็บใช้ไม่ได้)</p>
+  <div class="steps">
+    <div class="card step"><h3>ดาวน์โหลด</h3><p>เลือก Windows หรือ Mac ด้านบน แล้วแตกไฟล์ zip</p></div>
+    <div class="card step"><h3>เปิดโปรแกรม</h3><p><b>Windows:</b> ดับเบิลคลิก PenguinStatus.exe<br><b>Mac:</b> ลาก Penguin Status.app ไปไว้ใน Applications แล้วเปิด</p></div>
+    <div class="card step"><h3>กด ▶ เริ่มแสดงสถานะ</h3><p>เสร็จ! โปรไฟล์ขึ้น “กำลังเล่น Penguin” เปิดโปรแกรมทิ้งไว้ ปิดแล้วสถานะหาย</p></div>
+  </div>
+
+  <h2>อาวุธของเพนกวิน</h2>
+  <p class="sub2">ทุกอย่างในโปรแกรมเดียว ทั้ง Windows และ Mac</p>
+  <div class="feat">
+    <div class="card"><div class="i">🖼️</div><h3>รูปเพนกวินนักดาบ</h3><p>รูปในสถานะเป็นเพนกวินถือดาบสองมือ โหลดจากเว็บเราอัตโนมัติ</p></div>
+    <div class="card"><div class="i">🔄</div><h3>ข้อความหมุนเปลี่ยน</h3><p>ใส่ได้หลายข้อความ เช่น ฟาร์มบอสอยู่ · ตีบวกของ เปลี่ยนเองตามเวลาที่ตั้ง</p></div>
+    <div class="card"><div class="i">🔗</div><h3>ปุ่มลิงก์ 2 ปุ่ม</h3><p>เพื่อนกดจากโปรไฟล์คุณไปเว็บหรือเซิร์ฟที่อยากชวนได้เลย</p></div>
+    <div class="card"><div class="i">⏱️</div><h3>เวลาที่เล่น</h3><p>โชว์ว่าเล่นมานานเท่าไหร่ เหมือนเกมจริง</p></div>
+    <div class="card"><div class="i">🧭</div><h3>ทางลัดเมนู Binder Town</h3><p>กดปุ่มเดียวเปิดหน้าบิลด์ ออฟชั่น Skill Tree เวลาบอส ฯลฯ</p>
+      <div class="menu">
+        <a href="builds">⚔️ บิลด์</a><a href="affix">💎 ออฟชั่น</a><a href="skill-tree">🌳 Skill Tree</a><a href="class2">2️⃣ คลาส 2</a><a href="cards">🃏 การ์ด</a><a href="gear">🛡️ อุปกรณ์</a><a href="boss">⏰ บอส</a><a href="miniboss">🐉 มินิบอส</a>
+      </div></div>
+    <div class="card"><div class="i">🔒</div><h3>ปลอดภัย</h3><p>ไม่ขอรหัสผ่านหรือ token ไม่เก็บข้อมูล คุยกับแอป Discord ในเครื่องเท่านั้น · <a href="penguin-status-privacy">นโยบายความเป็นส่วนตัว</a></p></div>
+  </div>
+
+  <h2 id="faq">คำถามที่พบบ่อย</h2>
+  <details><summary>Windows ขึ้น “Windows protected your PC”</summary><p>เพราะโปรแกรมยังไม่ได้ซื้อใบรับรองเซ็นชื่อ กด <b>More info</b> → <b>Run anyway</b> ครั้งเดียวพอ</p></details>
+  <details><summary>Mac ขึ้นว่าเปิดไม่ได้ / ไม่รู้จักผู้พัฒนา</summary>
+    <ol><li>ปิดหน้าต่างแจ้งเตือน</li><li>ไปที่ <b>System Settings → Privacy &amp; Security</b></li><li>เลื่อนลงล่าง กด <b>Open Anyway</b> ข้าง “Penguin Status” แล้วยืนยัน (ทำครั้งเดียว)</li></ol></details>
+  <details><summary>เปิดโปรแกรมแล้วแต่สถานะไม่ขึ้น</summary><p>เช็ก Discord → Settings → <b>Activity Privacy</b> → เปิด “Share your detected activities with others” · ปิดโหมด Invisible · ต้องใช้ Discord แบบแอป ไม่ใช่บนเว็บ</p></details>
+  <details><summary>โดนแบนไหม / ผิดกฎ Discord ไหม</summary><p>ไม่ใช่ selfbot ไม่ได้ใช้ token บัญชี ใช้ Rich Presence ช่องทางเดียวกับที่เกมทั่วไปใช้ผ่านแอป Discord ในเครื่อง</p></details>
+  <details><summary>เปลี่ยนข้อความหรือปุ่มได้ไหม</summary><p>ได้ทุกช่อง แก้ระหว่างเปิดอยู่ได้เลย สถานะอัปเดตเองภายใน 15 วินาที ค่าที่ตั้งจะจำไว้ให้ครั้งหน้า</p></details>
+
+  <section class="join">
+    <h2>พร้อมเป็นเพนกวินหรือยัง? 🐧</h2>
+    <p>ดาวน์โหลดฟรี แล้วมาเจอกันบน Discord</p>
+    <div class="dlrow">
+      <a class="dl win" href="dl/PenguinStatus-Windows.zip" download><span>⬇ Windows</span></a>
+      <a class="dl mac" href="dl/PenguinStatus-Mac.zip" download><span>⬇ Mac</span></a>
+    </div>
+  </section>
+</main>
+<footer>Penguin Status · <a href="./">penguinzgear.com</a> · <a href="penguin-status-privacy">ความเป็นส่วนตัว</a></footer>
+
+<script>
+(function(){
+  var ua=navigator.userAgent||'', plat=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'';
+  var isMac=/Mac/i.test(plat)&&!/iPhone|iPad/.test(ua), isWin=/Win/i.test(plat);
+  var el=document.getElementById(isMac?'dMac':isWin?'dWin':'');
+  if(el){ el.classList.add('rec'); var s=el.querySelector('span'); if(s) s.insertAdjacentHTML('beforeend','<span class="rb">เครื่องคุณ</span>'); if(isMac) el.parentNode.insertBefore(el,el.parentNode.firstChild); }
+  var states=['penguinzgear.com','ฟาร์มบอสอยู่','ตีบวกของ','นั่งรอมินิบอส'], i=0, t0=Date.now();
+  var st=document.getElementById('st'), elp=document.getElementById('el');
+  setInterval(function(){ var s=Math.floor((Date.now()-t0)/1000); elp.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+' elapsed';
+    if(s>0&&s%4===0){ st.style.opacity=0; setTimeout(function(){ i=(i+1)%states.length; st.textContent=states[i]; st.style.opacity=1; },300); } },1000);
+})();
+</script>
+</body>
+</html>
