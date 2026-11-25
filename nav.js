@@ -4,6 +4,8 @@
    - ปุ่มสลับ มืด / สว่าง มุมขวาบน (ค่าเริ่มต้น = มืด · จำค่าไว้ในเครื่อง) */
 (function(){
   var css='.pz-burger{display:none}'+
+    '.sitenav a.pz-gang{background:linear-gradient(135deg,#ff8a3a,#5fd0ff)!important;color:#0f1020!important;font-weight:800;border-radius:999px;box-shadow:0 2px 10px -4px rgba(0,0,0,.4)}'+
+    '.sitenav a.pz-gang:hover{filter:brightness(1.08)}'+
     '.sitenav .pz-dd{position:relative;display:inline-flex}'+
     '.sitenav .pz-ddb{font:inherit;color:inherit;background:transparent;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:inherit;border-radius:inherit}'+
     '.sitenav .pz-dd.has-cur>.pz-ddb{font-weight:700}'+
@@ -55,6 +57,9 @@
     var navs=document.querySelectorAll('.sitenav');
     [].forEach.call(navs,function(nav){
       if(nav.querySelector('.pz-burger')) return;
+      /* ลิงก์โปรแกรม Penguin Status */
+      if(!nav.querySelector('a.pz-gang')){ var g=document.createElement('a'); g.href='penguin-status'; g.className='pz-gang'; g.textContent='🐧 อยากมีสเตตัสแก๊งไหม';
+        if(/penguin-status\/?$/.test(location.pathname.replace(/\.html$/,''))) g.setAttribute('aria-current','page'); nav.appendChild(g); }
       /* ล่าบอส dropdown */
       var bl=[].filter.call(nav.querySelectorAll(':scope > a'),function(a){ return BOSS.indexOf(hrefId(a))>=0; });
       if(bl.length>=2){
