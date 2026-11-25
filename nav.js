@@ -1,7 +1,7 @@
 /* เมนูกลางของทุกหน้า
    - มือถือ: ย่อเหลือ ชื่อเว็บ + หน้าปัจจุบัน + ปุ่ม ☰ (กดแล้วกางทุกหน้า)
    - รวม เวลาบอส / มินิบอส / ออโต้บอส เป็นเมนู "ล่าบอส ▾"
-   - ปุ่มสลับ มืด / สว่าง มุมขวาบน (ค่าเริ่มต้น = มืด · จำค่าไว้ในเครื่อง) */
+   - ปุ่มสลับ มืด / สว่าง (รูปพระอาทิตย์/พระจันทร์) มุมขวาบนของหน้า (ค่าเริ่มต้น = มืด · จำค่าไว้ในเครื่อง) */
 (function(){
   var css='.pz-burger{display:none}'+
     '.sitenav a.pz-gang{background:linear-gradient(135deg,#ff8a3a,#5fd0ff)!important;color:#0f1020!important;font-weight:800;border-radius:999px;box-shadow:0 2px 10px -4px rgba(0,0,0,.4)}'+
@@ -16,10 +16,18 @@
     '.sitenav .pz-dd:not(:has(.pz-ddm a:not(.pz-no))){display:none!important}'+
     '.sitenav .pz-ddm a:hover{background:rgba(127,127,127,.16)}'+
     '.sitenav .pz-ddm a[aria-current]{font-weight:700;background:rgba(127,127,127,.18)}'+
-    '.sitenav .pz-tg{margin-left:auto;display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:999px;border:1px solid rgba(127,127,127,.4);background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}'+
-    '.sitenav .pz-tg:hover{background:rgba(127,127,127,.16)}'+
-    '.pz-tg.fixed{position:fixed;top:12px;right:12px;z-index:70;display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(127,127,127,.4);background:rgba(255,255,255,.8);color:#14202e;font:13px system-ui,sans-serif;cursor:pointer}'+
-    '[data-theme="dark"] .pz-tg.fixed{background:rgba(16,38,56,.8);color:#e7edf8}'+
+    '.pz-tg{--s:52px;--i:38px;--r:46px;position:relative;display:inline-block;overflow:hidden;width:var(--s);height:var(--s);padding:0;border:0;background:transparent;cursor:pointer;border-radius:12px;-webkit-mask-image:linear-gradient(#000 62%,transparent 96%);mask-image:linear-gradient(#000 62%,transparent 96%)}'+
+    '.pz-tg:hover .pz-ic{filter:brightness(1.12) drop-shadow(0 0 8px rgba(255,210,90,.45))}'+
+    '.pz-tg:focus-visible{outline:2px solid rgba(127,160,255,.7);outline-offset:-2px}'+
+    '.pz-wh{position:absolute;left:0;right:0;top:calc(var(--s)/2);height:calc(var(--r)*2);transform-origin:50% 50%;transition:transform 1.1s cubic-bezier(.55,0,.25,1)}'+
+    '.pz-tg.pz-na .pz-wh{transition:none}'+
+    '.pz-ic{position:absolute;left:50%;width:var(--i);height:var(--i);margin-left:calc(var(--i)/-2);transition:filter .2s}'+
+    '.pz-ic svg{display:block;width:100%;height:100%;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}'+
+    '.pz-sun{top:calc(var(--i)/-2)}.pz-moon{bottom:calc(var(--i)/-2);transform:rotate(180deg)}'+
+    '.sitenav .pz-tg{display:none}'+
+    '.pz-tg.corner{position:absolute;top:8px;right:10px;z-index:70}'+
+    '@media (prefers-reduced-motion:reduce){.pz-wh{transition-duration:.01s}}'+
+    '@media (min-width:761px){.pz-hastg .sitenav{max-width:min(1440px,calc(100% - 128px))}}'+
     '@media (max-width:760px){'+
       '.sitenav{align-items:center}'+
       '.sitenav .pz-burger{display:inline-flex;align-items:center;justify-content:center;margin-left:auto;width:40px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;cursor:pointer;color:inherit}'+
@@ -35,7 +43,7 @@
       '.sitenav.pz-open .pz-ddb{display:none}'+
       '.sitenav.pz-open .pz-ddm{display:flex!important;position:static;flex-direction:row;flex-wrap:wrap;margin:0;padding:0;box-shadow:none;border:0;background:transparent;color:inherit;min-width:0;gap:inherit}'+
       '.sitenav.pz-open .pz-ddm a{flex:1 1 40%;text-align:center}'+
-      '.sitenav a.brand{order:-4}.sitenav a[aria-current],.sitenav .pz-dd.has-cur{order:-3;flex:0 1 auto}.sitenav .pz-tg{order:-2;margin-left:auto;padding:0;width:36px;justify-content:center}.sitenav .pz-tg span{display:none}.sitenav .pz-burger{order:-1;margin-left:2px}'+
+      '.sitenav a.brand{order:-4}.sitenav a[aria-current],.sitenav .pz-dd.has-cur{order:-3;flex:0 1 auto}.sitenav .pz-tg{display:inline-block;order:-2;margin-left:auto;--s:40px;--i:30px;--r:36px}.pz-hastg .pz-tg.corner{display:none}.sitenav .pz-burger{order:-1;margin-left:2px}'+
       '.sitenav.pz-open a:not(.brand):not([aria-current]),.sitenav.pz-open .pz-dd{order:0}'+
     '}';
   var st=document.createElement('style'); st.textContent=css; (document.head||document.documentElement).appendChild(st);
@@ -46,10 +54,19 @@
   var root=document.documentElement;
   function theme(){ return root.getAttribute('data-theme')==='light'?'light':'dark'; }
   function setTheme(t){ root.setAttribute('data-theme',t); try{ localStorage.setItem('pz.theme',t); sessionStorage.setItem('pz.theme',t); }catch(e){} }
-  function themeBtn(fixed){
-    var b=document.createElement('button'); b.type='button'; b.className='pz-tg'+(fixed?' fixed':'');
-    function lab(){ var d=theme()==='dark'; b.innerHTML=d?'☀️ <span>สว่าง</span>':'🌙 <span>มืด</span>'; b.setAttribute('aria-label',d?'เปลี่ยนเป็นโหมดสว่าง':'เปลี่ยนเป็นโหมดมืด'); b.title=b.getAttribute('aria-label'); }
-    lab(); b.onclick=function(e){ e.stopPropagation(); setTheme(theme()==='dark'?'light':'dark'); lab(); };
+  var SUN='<svg viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="pzs" cx="40%" cy="38%" r="65%"><stop offset="0" stop-color="#fff6c2"/><stop offset=".55" stop-color="#ffcf3f"/><stop offset="1" stop-color="#ff9a1f"/></radialGradient></defs><g stroke="#ffc43a" stroke-width="3.2" stroke-linecap="round"><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9.2 9.2l4.2 4.2M34.6 34.6l4.2 4.2M9.2 38.8l4.2-4.2M34.6 13.4l4.2-4.2"/></g><circle cx="24" cy="24" r="10.5" fill="url(#pzs)"/></svg>',
+      MOON='<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="pzm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fb6ff"/><stop offset="1" stop-color="#4b5fc9"/></linearGradient></defs><path d="M30.5 5.5A19 19 0 1 0 42.5 33 15.5 15.5 0 0 1 30.5 5.5z" fill="url(#pzm)"/><circle cx="20" cy="27" r="2.6" fill="#3f50b0" opacity=".45"/><circle cx="27" cy="36" r="1.8" fill="#3f50b0" opacity=".4"/><path d="M38 9l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#ffd96a"/></svg>';
+  /* วงล้อ: พระอาทิตย์อยู่บน พระจันทร์อยู่ล่าง · กดแล้วหมุน 180° ตามเข็ม = ดวงหนึ่งตกขวา อีกดวงขึ้นซ้าย */
+  var ang=null;
+  function syncTg(){ var d=theme()==='dark'; if(ang===null) ang=d?180:0;
+    [].forEach.call(document.querySelectorAll('.pz-tg'),function(b){
+      var w=b.querySelector('.pz-wh'); if(w) w.style.transform='rotate('+ang+'deg)';
+      b.setAttribute('aria-label',d?'เปลี่ยนเป็นโหมดสว่าง':'เปลี่ยนเป็นโหมดมืด'); b.title=b.getAttribute('aria-label'); }); }
+  function themeBtn(corner){
+    var b=document.createElement('button'); b.type='button'; b.className='pz-tg pz-na'+(corner?' corner':'');
+    b.innerHTML='<span class="pz-wh"><span class="pz-ic pz-sun">'+SUN+'</span><span class="pz-ic pz-moon">'+MOON+'</span></span>';
+    setTimeout(function(){ b.classList.remove('pz-na'); },60);
+    b.onclick=function(e){ e.stopPropagation(); setTheme(theme()==='dark'?'light':'dark'); ang+=180; syncTg(); };
     return b;
   }
   function init(){
@@ -87,9 +104,10 @@
       document.addEventListener('click',function(e){ if(nav.classList.contains('pz-open')&&!nav.contains(e.target)) set(false); });
       document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&nav.classList.contains('pz-open')){ set(false); b.focus(); } });
       /* มืด / สว่าง มุมขวาบน */
-      if(hasTheme&&!nav.querySelector('.pz-tg')){ var tg=themeBtn(false); if(ref) tg.style.color=getComputedStyle(ref).color; nav.appendChild(tg); }
+      if(hasTheme&&!nav.querySelector('.pz-tg')){ nav.appendChild(themeBtn(false)); root.classList.add('pz-hastg'); }
     });
-    if(hasTheme&&!navs.length&&!document.querySelector('.pz-tg')&&!document.getElementById('orb')) document.body.appendChild(themeBtn(true));
+    if(hasTheme&&!document.querySelector('.pz-tg.corner')&&(navs.length||!document.getElementById('orb'))) document.body.appendChild(themeBtn(true));
+    syncTg();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
