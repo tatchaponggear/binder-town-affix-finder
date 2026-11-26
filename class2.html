@@ -116,6 +116,7 @@ function skill(id,P){ const s=C.sk[id]; if(!s) return ''; const mx=maxOf(s);
     if(s.s) body+='<div class="sc">แรงขึ้นตาม '+esc(s.s)+'</div>';
     const D=DM.sk[id]; if(D){ const [Pm,hits,ticks]=D, hx=(hits>1?' ×'+hits:'')+(ticks>1?' ×'+ticks+' ติ๊ก':'');
       body+='<div class="dm">ดาเมจ'+hx+': Lv 1 <b>'+f(Pm*100)+'%</b> → Lv '+mx+' <em>'+f(Pm*100*LD(mx))+'%</em></div>'; }
+    if(!D&&s.e&&s.e.length) body+='<div class="dm">ยิ่งอัปยิ่งได้อะไร: ไฟล์เกม<b>ไม่มีค่าที่เพิ่มตามเลเวล</b> · อัปถึง <b>Lv '+evoLv(s)+'</b> เพื่อปลด Evolution · Lv '+(evoLv(s)+1)+'–'+mx+' ไม่เพิ่มอะไรที่ไฟล์เกมบอกไว้</div>';
     if(s.e&&s.e.length) body+='<div class="evo"><div style="background:none;border:0;padding:0;color:var(--muted)">Evolution (ปลดที่ Lv '+evoLv(s)+' เลือก 1)</div>'+s.e.map((x,i)=>'<div><span class="k">'+(i?'B':'A')+'</span><b>'+esc(x[0])+'</b> — '+esc(x[1])+'</div>').join('')+'</div>'; }
   const txt=(s.n+' '+(s.o||'')+' '+(s.d||'')+' '+(s.r||[]).join(' ')+' '+(s.e||[]).map(x=>x.join(' ')).join(' ')+' '+(s.s||'')).toLowerCase();
   return '<div class="sk" data-t="'+esc(txt)+'"><div class="ic">'+(ic?'<img src="'+ic+'" alt="" loading="lazy">':'')+'</div><div><div class="nm"><b>'+esc(s.n)+'</b>'+tags+'</div>'+body+'</div></div>'; }
